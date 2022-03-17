@@ -127,3 +127,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# IDE Stuff
+.vscode
+.idea
+
+# For the vim users
+.swp
+
