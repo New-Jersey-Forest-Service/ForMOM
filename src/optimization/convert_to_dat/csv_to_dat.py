@@ -18,8 +18,38 @@ from pathlib import Path
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
+from model_data_classes import *
+
+
+
+
+
+# ======================================================
+#                 (0) Main Calls
+# ======================================================
 
 def main():
+	# Step 1: Get + Read Input
+	objFilepath, constFilepath, paramFilepath = getFilepathsFromInput()
+	print()
+	print("Now parsing & converting...")
+
+	objData = openAndReadObjectiveCSV(objFilepath)
+	constData = openAndReadConstraintCSV(constFilepath)
+
+	# Step 2: Validate the data & produce a FinalModel object
+	objData, constData = lintInputData(objData, constData)
+	finalModel = convertInputToFinalModel(objData, constData)
+
+	# Step 3: Write the finalModel
+	writeParamFile(finalModel, paramFilepath, objFilepath, constFilepath)
+
+	print()
+	print(f'All done')
+	print(f'View output in {paramFilepath}')
+
+
+def getFilepathsFromInput () -> Union[str, str, str]:
 	# First get the filepaths
 	# Try it with choosers
 
@@ -35,143 +65,200 @@ def main():
 	# input("Press any key to choose a Pyomo .dat filename")
 	# paramFilepath = askopenfilename()
 
-	objFilepath   = getCSVFilepath("Objective File:   ")
-	constFilepath = getCSVFilepath("Constraints File: ")
-	paramFilepath = makeDATFilepath("Output .dat File: ")
+	# objFilepath   = getCSVFilepath("Objective File:   ")
+	# constFilepath = getCSVFilepath("Constraints File: ")
+	# paramFilepath = makeDATFilepath("Output .dat File: ")
+	objFilepath = "/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/convert_to_dat/sample_data/SLmonthly1_obj.csv"
+	constFilepath = "/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/convert_to_dat/sample_data/SLmonthly1_con.csv"
+	paramFilepath = "/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/convert_to_dat/sample_data/SLmonthly1_out.dat"
 
-	print()
-	print("Now parsing & converting...")
-
-	# Read the objective file
-	dat_objVarNames, dat_objCoeffs = openAndReadObjectiveCSV(objFilepath)
-
-	# Read the constraints file
-	dat_constVarNames, \
-	dat_eqConstNames, dat_eqMatrix, dat_eqVector, \
-	dat_leConstNames, dat_leMatrix, dat_leVector = openAndReadConstraintCSV(constFilepath)
+	return objFilepath, constFilepath, paramFilepath
 
 
+def lintInputData (objData: InputObjectiveData, constData: InputConstraintData) -> Union[InputObjectiveData, InputConstraintData]:
+	objVars = objData.var_names
+	constVars = constData.var_names
+
+	# TODO: Check that all values are floats, strings, etc
+	# TODO: Check that the lists have correct lengths
 
 
-	# Before writing to file, do some linting on the csv data
+	# [ Check ]: No duplicate or unnamed variables
+	errMsg = checkVarNameList(objVars)
+	if (errMsg):
+		errorAndExit("Error in objective file variable names: " + errMsg)
 
-	# Check 1 - Making sure variable names are the same in objective file &
-	#			constraint file
-	listIsOK, errMsg = varNameListIsOK(dat_objVarNames)
-	if (not listIsOK):
+	errMsg = checkVarNameList(constVars)
+	if (errMsg):
+		errorAndExit("Error in constraint file variable names: " + errMsg)
+
+
+	# [ Check ]: Variables in the objective file match those in the 
+	# 			 constraint file
+	errMsg = checkVarNamesMatch(objVarNames=objVars, constVarNames=constVars)
+	if (errMsg):
 		errorAndExit(errMsg)
 
-	listIsOK, errMsg = varNameListIsOK(dat_constVarNames)
-	if (not listIsOK):
-		errorAndExit(errMsg)
 
-	# Check 2 - The variables in the objective function are the same as those in
-	#			the constraints file
-	if set(dat_objVarNames) != set(dat_constVarNames):
-		varsOnlyInConsts = set(dat_constVarNames) - set(dat_objVarNames)
-		varsOnlyInObj = set(dat_objVarNames) - set(dat_constVarNames)
+	# [ Check + Fix ]: All constraint are named
+	filledList, emptyNamesExisted = fillInEmptyNames(constData.const_names, "unnamedConst")
+	constData.const_names = filledList
+	if (emptyNamesExisted):
+		printWarning("Found unnamed constraints, giving them the name 'unnamedConst'")
 
-		# All variables in the constraints must be in the objective
-		# function, so this is an error
-		if varsOnlyInConsts:
-			errorAndExit(
-				"Found variables in constraint file that are not in the objective file: " +
-				" ".join([str(x) for x in varsOnlyInConsts])
-				)
 
-		# It might be ok if there are unused variables, hence why this is only a warning
-		if varsOnlyInObj:
-			printWarning(
-				"Found variables on in the objective file, i.e. they're unused in constraints: " +
-				" ".join([str(x) for x in varsOnlyInObj])
-				)
+	# [ Check ]: There exists at least one constraint
+	if len(constData.const_names) == 0:
+		errorAndExit("No constraints found!")
 
-	# Check 3 - Name all unnamed constraints
-	dat_eqConstNames = fillInEmptyNames(dat_eqConstNames, "unnamedEQ")
-	dat_leConstNames = fillInEmptyNames(dat_leConstNames, "unnamedLE")
 
-	# Check 4 - Existence of at least one LE & EQ constraint
-	# 			In the event that one constraint type is missing,
-	#			dummy variables are made
-	if len(dat_eqVector) == 0 and len(dat_leVector) == 0:
-		errorAndExit("No constraints at all found")
+	# [ Check ]: Remove unrecognized operators
+	allOps = constData.vec_operators
+	# TODO: This is really ugly for adding new constraint types
+	opClasses = ['le', 'eq', 'ge'] 
+	indsToRemove = []
 
-	elif len(dat_eqVector) == 0 or len(dat_leVector) == 0:
-		dumVar1 = getNextAvailableDummyName(dat_objVarNames, 'dummy')
-		dat_objVarNames.append(dumVar1)
-		dat_constVarNames.append(dumVar1)
+	for ind, op in enumerate(allOps):
+		if not op in opClasses:
+			indsToRemove.append(ind)
+			printWarning(f"Found unrecognized constraint operator {op}" + \
+					     f"named '{constData.constraint_names[ind]}'. Skipping it.")
+	
+	# Very important we start with the largest indicies first (reversed list)
+	for ind in reversed(indsToRemove):
+		constData.const_names.pop(ind)
+		constData.vec_const_bounds.pop(ind)
+		constData.vec_operators.pop(ind)
+		constData.mat_constraint_coeffs.pop(ind)
 
-		dumVar2 = getNextAvailableDummyName(dat_objVarNames, 'dummy')
-		dat_objVarNames.append(dumVar2)
-		dat_constVarNames.append(dumVar2)
 
-		# Adding the two variables means resizing all previous constraints
+	# [ Check ]: There is at least one of each constraint type
+	allOps = constData.vec_operators
+	opClasses = ['le', 'eq', 'ge']
+	missingOps = opClasses[:]
+
+	for op in allOps:
+		if op in missingOps:
+			missingOps.remove(op)
+	
+	if len(missingOps) != 0:
+		printWarning(f"No constraints found for types: {' '.join(missingOps)}. Adding dummy constraints & variables for them")
+
+
+	# [ Fix ]: Add dummy constraints & vars for each non-existent constraint class
+	for op in missingOps:
+		dumVar1, suffix = getNextAvailableDummyName(constData.var_names, 'dummy')
+		dumVar2, _ = getNextAvailableDummyName(constData.var_names, 'dummy', startInd=suffix+1)
+
+		constData.var_names.append(dumVar1)
+		constData.var_names.append(dumVar2)
+		objData.var_names.append(dumVar1)
+		objData.var_names.append(dumVar2)
 
 		# Resizing all previous constraints to have 0 coeffs for the new variables
-		for ind, _ in enumerate(dat_eqMatrix):
-			dat_eqMatrix[ind] += [0, 0]
-		for ind, _ in enumerate(dat_leMatrix):
-			dat_leMatrix[ind] += [0, 0]
+		for ind, _ in enumerate(constData.mat_constraint_coeffs):
+			constData.mat_constraint_coeffs[ind] += [0, 0]
 
 		# Since we're maximizing the function, making these negative
 		# will mean dummyVar1 & 2 always equal 0 and keep the actual objective
-		# values unaffected (potentially wrong, this is my idea)
-		dat_objCoeffs.append(-1)
-		dat_objCoeffs.append(-1)
+		objData.obj_coeffs.append(-1)
+		objData.obj_coeffs.append(-1)
 
-		constraint_coeffs = [0] * len(dat_objVarNames)
+		# Construct a list in the form [0, 0, ..., 0, 1, 1] so the constraint
+		# involves the two dummy variables
+		constraint_coeffs = [0] * len(constData.var_names)
 		constraint_coeffs[-2:] = [1, 1]
 
-		if len(dat_eqVector) == 0:
-			dumConstName = getNextAvailableDummyName(dat_eqConstNames, 'dummyEQ')
+		dumConstName, _ = getNextAvailableDummyName(constData.const_names, 'dummy' + op.upper())
 
-			# Add restriction dummy1 + dummy2 = 0
-			dat_eqConstNames.append(dumConstName)
-			dat_eqMatrix.append(constraint_coeffs)
-			dat_eqVector.append(0)
+		constData.const_names.append(dumConstName)
+		constData.vec_const_bounds.append(0)
+		constData.vec_operators.append(op)
+		constData.mat_constraint_coeffs.append(constraint_coeffs)
 
-			printWarning(f'No equals constraint found, adding variables' +
-				f' "{dumVar1}", "{dumVar2}" and constraint "{dumConstName}"'
-				)
-		else:
-			dumConstName = getNextAvailableDummyName(dat_leConstNames, 'dummyLE')
+		printWarning(f'No {op.upper()} constraint found, adding variables' + 
+			f' "{dumVar1}", "{dumVar2}" and constraint "{dumConstName}"'	
+			)
+	
+	return objData, constData
 
-			# Add restriction dumm1 + dummy2 <= 10 (any number >= 0 works)
-			dat_leConstNames.append(dumConstName)
-			dat_leMatrix.append(constraint_coeffs)
-			dat_leVector.append(10)
 
-			printWarning(f'No le constraint found, adding variables' +
-				f' "{dumVar1}", "{dumVar2}" and constraint "{dumConstName}"'
-				)
+def convertInputToFinalModel (objData: InputObjectiveData, constData: InputConstraintData) -> FinalModel:
+	# All the lists to populate
+	var_names = []
+	obj_coeffs = []
 
+	le_const_names = []
+	le_vec = []
+	le_mat = []
+
+	ge_const_names = []
+	ge_vec = []
+	ge_mat = []
+
+	eq_const_names = []
+	eq_vec = []
+	eq_mat = []
+
+	# Actually populating the lists
+	var_names = objData.var_names
+	obj_coeffs = objData.obj_coeffs
+
+	for ind, name in enumerate(constData.const_names):
+		# TODO: This .lower().strip() should happen in the linting step
+		op = constData.vec_operators[ind].lower().strip()
+
+		if op == 'le':
+			le_const_names.append(name)
+			le_vec.append(constData.vec_const_bounds[ind])
+			le_mat.append(constData.mat_constraint_coeffs[ind])
+		elif op == 'ge':
+			ge_const_names.append(name)
+			ge_vec.append(constData.vec_const_bounds[ind])
+			ge_mat.append(constData.mat_constraint_coeffs[ind])
+		elif op == 'eq':
+			eq_const_names.append(name)
+			eq_vec.append(constData.vec_const_bounds[ind])
+			eq_mat.append(constData.mat_constraint_coeffs[ind])
+
+	return FinalModel(
+		var_names=var_names, obj_coeffs=obj_coeffs,
+		le_const_names=le_const_names, le_vec=le_vec, le_mat=le_mat,
+		ge_const_names=ge_const_names, ge_vec=ge_vec, ge_mat=ge_mat,
+		eq_const_names=eq_const_names, eq_vec=eq_vec, eq_mat=eq_mat
+		)
+
+
+def writeParamFile (modelData: FinalModel, paramFilepath, objFilepath, constFilepath):
+	md = modelData
 
 	# Now write the entire model into the .dat file
 	with open(paramFilepath, 'w') as paramFile:
 		writeTopComment(paramFile, objFilepath, constFilepath)
 
 		# indexing sets
-		index_vars_str = " ".join([str(x) for x in dat_objVarNames])
-		index_eq_consts_str = " ".join([str(x) for x in dat_eqConstNames])
-		index_le_consts_str = " ".join([str(x) for x in dat_leConstNames])
+		str_index_vars = " ".join([str(x) for x in md.var_names])
+		str_index_le_consts = " ".join([str(x) for x in md.le_const_names])
+		str_index_ge_consts = " ".join([str(x) for x in md.ge_const_names])
+		str_index_eq_consts = " ".join([str(x) for x in md.eq_const_names])
 
-		paramFile.write(f'\nset index_vars := {index_vars_str};\n')
-		paramFile.write(f'\nset index_eq_consts := {index_eq_consts_str};\n')
-		paramFile.write(f'\nset index_le_consts := {index_le_consts_str};\n')
+		paramFile.write(f'\nset index_vars := {str_index_vars};\n')
+		paramFile.write(f'\nset index_le_consts := {str_index_le_consts};\n')
+		paramFile.write(f'\nset index_ge_consts := {str_index_ge_consts};\n')
+		paramFile.write(f'\nset index_eq_consts := {str_index_eq_consts};\n')
 
-		# objective
-		writeVector(paramFile, 'vec_objective', dat_objCoeffs, dat_objVarNames)
+		# objective function
+		writeVector(paramFile, 'vec_objective', md.obj_coeffs, md.var_names)
 
 		# constraints
-		writeVector(paramFile, 'vec_eq', dat_eqVector, dat_eqConstNames)
-		writeMatrix(paramFile, 'mat_eq', dat_eqMatrix, dat_eqConstNames, dat_constVarNames)
+		writeVector(paramFile, 'vec_le', md.le_vec, md.le_const_names)
+		writeMatrix(paramFile, 'mat_le', md.le_mat, md.le_const_names, md.var_names)
 
-		writeVector(paramFile, 'vec_le', dat_leVector, dat_leConstNames)
-		writeMatrix(paramFile, 'mat_le', dat_leMatrix, dat_leConstNames, dat_constVarNames)
+		writeVector(paramFile, 'vec_ge', md.ge_vec, md.ge_const_names)
+		writeMatrix(paramFile, 'mat_ge', md.ge_mat, md.ge_const_names, md.var_names)
 
-	print()
-	print(f'All done')
-	print(f'View output in {paramFilepath}')
+		writeVector(paramFile, 'vec_eq', md.eq_vec, md.eq_const_names)
+		writeMatrix(paramFile, 'mat_eq', md.eq_mat, md.eq_const_names, md.var_names)
 
 
 
@@ -188,14 +275,12 @@ def main():
 #                 (1) Data Input
 # ======================================================
 
-def openAndReadObjectiveCSV (objFilepath: Path):
+def openAndReadObjectiveCSV (objFilepath: Path) -> InputObjectiveData:
 	'''
-		Opens and reads the objective file csv, returning two lists
-		 - varNames: Names of the variables
-		 - objCoeffs: Coefficients of the objective function
+		Opens and reads the objective file csv, returning 
+		a InputObjectiveData object.
 	'''
-	varNames = []
-	objCoeffs = []
+	objectiveInput = InputObjectiveData()
 
 	with open(objFilepath, 'r') as objFile:
 		objCSVReader = csv.reader(objFile)
@@ -206,38 +291,17 @@ def openAndReadObjectiveCSV (objFilepath: Path):
 			lineCount += 1
 
 			if (lineCount > 1):
-				varNames.append(row[0])
-				objCoeffs.append(float(row[1]))
+				objectiveInput.var_names.append(row[0])
+				objectiveInput.obj_coeffs.append(float(row[1]))
 
-	return varNames, objCoeffs
+	return objectiveInput
 
 
-def openAndReadConstraintCSV (constFilepath: Path):
+def openAndReadConstraintCSV (constFilepath: Path) -> InputConstraintData:
 	'''
-		Opens and reads the constraint csv, returning 7 lists
-		 - varNames: Names of constraint variables, potentially
-			in a different order than the varNames from openAndReadObjectiveCSV()
-		 - leConstNames, leMatrix, leVector: Coefs for the <= constraints
-		 - geConstNames, geMatrix, geVector: Coefs for the >= constraints
-		 - eqConstNames, eqMatrix, eqVector: Coefs for the equality constraints. The vector
-		 	represents the actual amounts that the matrix product should equals
-
-		They are returned in the following order:
-			varNames, eqConstNames, eqMatrix, eqVector, leConstNames, leMatrix, leVector
+		Opens and reads the constraint csv, returning a InputConstraintData class
 	'''
-	varNames = []
-
-	leConstNames = []
-	leVector = []
-	leMatrix = []
-
-	geConstNames = []
-	geVector = []
-	geMatrix = []
-
-	eqConstNames = []
-	eqVector = []
-	eqMatrix = []
+	constraintInput = InputConstraintData()
 
 	with open(constFilepath, 'r') as constFile:
 		constCSVReader = csv.reader(constFile)
@@ -248,23 +312,19 @@ def openAndReadConstraintCSV (constFilepath: Path):
 			lineCount += 1
 
 			if (lineCount == 1):
-				varNames = row[1:-2]
+				constraintInput.var_names = row[1:-2]
 			else:
 				operator = row[-2]
-				if (operator == 'le'):
-					leVector.append(row[-1])
-					leMatrix.append(row[1:-2])
-					leConstNames.append(row[0])
-				elif (operator == 'eq'):
-					eqVector.append(row[-1])
-					eqMatrix.append(row[1: -2])
-					eqConstNames.append(row[0])
-				else:
-					printWarning(f'Unreognized constraint type: {operator}')
+				coeffs = row[1:-2]
+				constraint_bound = row[-1]
+				constraint_name = row[0]
 
-	return varNames, \
-		eqConstNames, eqMatrix, eqVector, \
-		leConstNames, leMatrix, leVector
+				constraintInput.vec_operators.append(operator)
+				constraintInput.mat_constraint_coeffs.append(coeffs)
+				constraintInput.vec_const_bounds.append(constraint_bound)
+				constraintInput.const_names.append(constraint_name)
+
+	return constraintInput
 
 
 
@@ -335,59 +395,100 @@ def makeDATFilepath (message: str) -> Path:
 #                 (2) Data Linting
 # ======================================================
 
-def varNameListIsOK (varNameList: list) -> Union[bool, str]:
+def checkVarNameList (varNameList: List[str]) -> str:
 	'''
 		Will check the provided list of variable names to find
 			- duplicates
 			- blank names
 
-		In the event of detection, this function returns True
-		and an error message, otherwise returning False and None
+		This function returns an error message string, and if
+		there's no error it returns None
 	'''
 	for varName in varNameList:
 		if varName.strip() == "":
-			return False, "Unnamed variable found"
+			return "Unnamed variable found"
 
 	if len(varNameList) != len(set(varNameList)):
 		duplicates = [name for name in varNameList if varNameList.count(name) > 1]
 		duplicates = [str(x) for x in list(set(duplicates))]
-		return False, f"Repeated variable names: {' '.join(duplicates)}"
+		return f"Repeated variable names: {' '.join(duplicates)}"
 
-	return True, None
+	return None
 
 
-def getNextAvailableDummyName (nameList: list, nameBase: str, start: int=0) -> str:
+def checkVarNamesMatch (objVarNames: List[str], constVarNames: List[str]) -> str:
 	'''
-		Given
-			- nameBase = 'unnamed'
-			- nameList = ['unnamed0', 'unnamed1', 'unnamed3']
-		this would return 'unnamed2'
+		Checks that the variable names in the objective file match
+		those in the constriant file.
+
+		Note: This does not check for duplicate or unnamed variables
+
+		Returns an error message if one is found, but otherwise a None
 	'''
-	num = start
+	if set(objVarNames) == set(constVarNames):
+		return None
+	
+	varsOnlyInConst = set(constVarNames) - set(objVarNames)
+	varsOnlyInObj = set(objVarNames) - set(constVarNames)
+
+	if varsOnlyInConst:
+		return 
+		'''
+			Found decision variables in the constraint file 
+			that don't exist in the objective file:
+		''' + ", ".join([str(x) for x in varsOnlyInConst])
+		
+	if varsOnlyInObj:
+		return 
+		'''
+			Found unconstrained variable, i.e. they exist in
+			the objective file but not the constraint file:
+		''' + ", ".join([str(x) for x in varsOnlyInObj])
+	
+	# If the two sets are unequal, one of them should have a member
+	# the other doesn't. The code should never reach here.
+	assert(False)
+
+
+#
+# Filling in lists
+
+def fillInEmptyNames (nameList: list, nameBase: str) -> Union[List[str], bool]:
+	'''
+		Goes through the list, filling in empty names in a seperate list.
+		Returns the now filled list, as well as true/false as to whether
+		any empty entries were found.
+	'''
+	filledList = [x for x in nameList] # duplicate the list
+	anyEmptiesFound = False
+
+	for ind, constName in enumerate(filledList):
+		if constName.strip() == "":
+			anyEmptiesFound = True
+			newConstName = getNextAvailableDummyName(filledList, nameList)
+			filledList[ind] = newConstName
+
+	return filledList, anyEmptiesFound
+
+
+def getNextAvailableDummyName (nameList: List[str], nameBase: str, startInd: int=0) -> Union[str, int]:
+	'''
+		This searches through a list to find the first unused
+		string in the form nameBase + a number.
+
+		For example, given
+			- nameBase = 'un'
+			- nameList = ['un0', 'un1', 'un3']
+		this would return 'un2'
+	'''
+	num = startInd
 	outStr = nameBase + str(num)
 
 	while (outStr in nameList):
 		num += 1
 		outStr = nameBase + str(num)
 
-	return outStr
-
-
-def fillInEmptyNames (nameList: list, nameBase: str) -> list:
-	'''
-		Goes through the nameList, fills in any empty
-		names, and returns the now filled in list.
-	'''
-	filledList = [x for x in nameList] # duplicate the list
-
-	for ind, constName in enumerate(filledList):
-		if constName.strip() == "":
-			newConstName = getNextAvailableDummyName(filledList, nameList)
-			filledList[ind] = newConstName
-			printWarning(f"Found unnamed constraint, renaming it to '{newConstName}'")
-
-	return filledList
-
+	return outStr, num
 
 
 
