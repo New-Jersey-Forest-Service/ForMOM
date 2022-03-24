@@ -20,7 +20,11 @@ from tkinter.filedialog import askopenfilename
 
 from model_data_classes import *
 
-
+#constants for file names
+#***Change filenames/paths here (for now)
+OBJFILE = 'named_pokomoke_obj.csv'
+CONSTRFILE = 'named_pokomoke_constsGe.csv'
+OUTPUTDAT = 'named_pokomoke_out.dat'
 
 
 
@@ -68,9 +72,9 @@ def getFilepathsFromInput () -> Union[str, str, str]:
 	# objFilepath   = getCSVFilepath("Objective File:   ")
 	# constFilepath = getCSVFilepath("Constraints File: ")
 	# paramFilepath = makeDATFilepath("Output .dat File: ")
-	objFilepath = "SLmonthly1_obj.csv"
-	constFilepath = "SLmonthly1_con.csv"
-	paramFilepath = "SLmonthly1_out.dat"
+	objFilepath = OBJFILE
+	constFilepath = CONSTRFILE
+	paramFilepath = OUTPUTDAT
 
 	return objFilepath, constFilepath, paramFilepath
 
