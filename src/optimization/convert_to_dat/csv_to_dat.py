@@ -72,10 +72,9 @@ def getFilepathsFromInput () -> Union[str, str, str]:
 	# objFilepath   = getCSVFilepath("Objective File:   ")
 	# constFilepath = getCSVFilepath("Constraints File: ")
 	# paramFilepath = makeDATFilepath("Output .dat File: ")
-
 	objFilepath = OBJFILE
 	constFilepath = CONSTRFILE
-	paramFilepath = OUTPUTDAT	
+	paramFilepath = OUTPUTDAT
 
 	return objFilepath, constFilepath, paramFilepath
 
