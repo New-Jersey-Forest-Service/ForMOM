@@ -20,7 +20,11 @@ from tkinter.filedialog import askopenfilename
 
 from model_data_classes import *
 
-
+#constants for file names
+#***Change filenames/paths here (for now)
+OBJFILE = 'named_pokomoke_obj.csv'
+CONSTRFILE = 'named_pokomoke_constsGe.csv'
+OUTPUTDAT = 'named_pokomoke_out.dat'
 
 
 
@@ -68,9 +72,9 @@ def getFilepathsFromInput () -> Union[str, str, str]:
 	# objFilepath   = getCSVFilepath("Objective File:   ")
 	# constFilepath = getCSVFilepath("Constraints File: ")
 	# paramFilepath = makeDATFilepath("Output .dat File: ")
-	objFilepath = "/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/convert_to_dat/sample_data/SLmonthly1_obj.csv"
-	constFilepath = "/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/convert_to_dat/sample_data/SLmonthly1_con.csv"
-	paramFilepath = "/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/convert_to_dat/sample_data/SLmonthly1_out.dat"
+	objFilepath = OBJFILE
+	constFilepath = CONSTRFILE
+	paramFilepath = OUTPUTDAT
 
 	return objFilepath, constFilepath, paramFilepath
 
@@ -93,7 +97,7 @@ def lintInputData (objData: InputObjectiveData, constData: InputConstraintData) 
 		errorAndExit("Error in constraint file variable names: " + errMsg)
 
 
-	# [ Check ]: Variables in the objective file match those in the 
+	# [ Check ]: Variables in the objective file match those in the
 	# 			 constraint file
 	errMsg = checkVarNamesMatch(objVarNames=objVars, constVarNames=constVars)
 	if (errMsg):
@@ -115,7 +119,7 @@ def lintInputData (objData: InputObjectiveData, constData: InputConstraintData) 
 	# [ Check ]: Remove unrecognized operators
 	allOps = constData.vec_operators
 	# TODO: This is really ugly for adding new constraint types
-	opClasses = ['le', 'eq', 'ge'] 
+	opClasses = ['le', 'eq', 'ge']
 	indsToRemove = []
 
 	for ind, op in enumerate(allOps):
@@ -123,7 +127,7 @@ def lintInputData (objData: InputObjectiveData, constData: InputConstraintData) 
 			indsToRemove.append(ind)
 			printWarning(f"Found unrecognized constraint operator {op}" + \
 					     f"named '{constData.constraint_names[ind]}'. Skipping it.")
-	
+
 	# Very important we start with the largest indicies first (reversed list)
 	for ind in reversed(indsToRemove):
 		constData.const_names.pop(ind)
@@ -140,7 +144,7 @@ def lintInputData (objData: InputObjectiveData, constData: InputConstraintData) 
 	for op in allOps:
 		if op in missingOps:
 			missingOps.remove(op)
-	
+
 	if len(missingOps) != 0:
 		printWarning(f"No constraints found for types: {' '.join(missingOps)}. Adding dummy constraints & variables for them")
 
@@ -176,10 +180,10 @@ def lintInputData (objData: InputObjectiveData, constData: InputConstraintData) 
 		constData.vec_operators.append(op)
 		constData.mat_constraint_coeffs.append(constraint_coeffs)
 
-		printWarning(f'No {op.upper()} constraint found, adding variables' + 
-			f' "{dumVar1}", "{dumVar2}" and constraint "{dumConstName}"'	
+		printWarning(f'No {op.upper()} constraint found, adding variables' +
+			f' "{dumVar1}", "{dumVar2}" and constraint "{dumConstName}"'
 			)
-	
+
 	return objData, constData
 
 
@@ -277,7 +281,7 @@ def writeParamFile (modelData: FinalModel, paramFilepath, objFilepath, constFile
 
 def openAndReadObjectiveCSV (objFilepath: Path) -> InputObjectiveData:
 	'''
-		Opens and reads the objective file csv, returning 
+		Opens and reads the objective file csv, returning
 		a InputObjectiveData object.
 	'''
 	objectiveInput = InputObjectiveData()
@@ -427,24 +431,24 @@ def checkVarNamesMatch (objVarNames: List[str], constVarNames: List[str]) -> str
 	'''
 	if set(objVarNames) == set(constVarNames):
 		return None
-	
+
 	varsOnlyInConst = set(constVarNames) - set(objVarNames)
 	varsOnlyInObj = set(objVarNames) - set(constVarNames)
 
 	if varsOnlyInConst:
-		return 
+		return
 		'''
-			Found decision variables in the constraint file 
+			Found decision variables in the constraint file
 			that don't exist in the objective file:
 		''' + ", ".join([str(x) for x in varsOnlyInConst])
-		
+
 	if varsOnlyInObj:
-		return 
+		return
 		'''
 			Found unconstrained variable, i.e. they exist in
 			the objective file but not the constraint file:
 		''' + ", ".join([str(x) for x in varsOnlyInObj])
-	
+
 	# If the two sets are unequal, one of them should have a member
 	# the other doesn't. The code should never reach here.
 	assert(False)
