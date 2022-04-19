@@ -113,7 +113,7 @@ def main():
     #create a main window
     root = Tk()
     root.title('NJ Forest Service ForMOM')
-    root.geometry('400x200')
+    root.geometry('400x300')
     #create a title label
     titleLabel = Label(root, text="Select Input CSV's & Output dat")
     #create labels for selection statuses
