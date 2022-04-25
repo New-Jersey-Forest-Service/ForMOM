@@ -129,10 +129,10 @@ dmypy.json
 .pyre/
 
 # Database work
-.db
+*.db
 
 
 # Extra details
-.swp
+*.swp
 
 
