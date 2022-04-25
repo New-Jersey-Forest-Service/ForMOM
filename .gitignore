@@ -131,8 +131,10 @@ dmypy.json
 # Database work
 *.db
 
+# IDE Stuff
+.vscode
+.idea
 
-# Extra details
-*.swp
-
+# For the vim users
+.swp
 
