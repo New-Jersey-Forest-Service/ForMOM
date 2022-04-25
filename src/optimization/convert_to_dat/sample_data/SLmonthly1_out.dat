@@ -1,0 +1,51 @@
+
+# Auto Generated File built from CSVs
+#  - Objective File: /home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/convert_to_dat/sample_data/SLmonthly1_obj.csv
+#  - Constraints File: /home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/convert_to_dat/sample_data/SLmonthly1_con.csv
+#
+# NJDEP
+	
+set index_vars := a1 a2 dummy0 dummy1 dummy2 dummy3;
+
+set index_le_consts := Acreage Budget Ccred;
+
+set index_ge_consts := dummyGE0;
+
+set index_eq_consts := dummyEQ0;
+
+param vec_objective := 
+	a1 40.0
+	a2 50.0
+	dummy0 -1
+	dummy1 -1
+	dummy2 -1
+	dummy3 -1
+;
+
+param vec_le := 
+	Acreage 1600
+	Budget 10000
+	Ccred 1000
+;
+
+param mat_le: a1 a2 dummy0 dummy1 dummy2 dummy3 :=
+	Acreage 1 1 0 0 0 0 
+	Budget 4 8 0 0 0 0 
+	Ccred 1 0 0 0 0 0 
+;
+
+param vec_ge := 
+	dummyGE0 0
+;
+
+param mat_ge: a1 a2 dummy0 dummy1 dummy2 dummy3 :=
+	dummyGE0 0 0 0 0 1 1 
+;
+
+param vec_eq := 
+	dummyEQ0 0
+;
+
+param mat_eq: a1 a2 dummy0 dummy1 dummy2 dummy3 :=
+	dummyEQ0 0 0 1 1 0 0 
+;
