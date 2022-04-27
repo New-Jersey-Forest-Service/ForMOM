@@ -38,7 +38,7 @@ constrSel = False
 outputSel = False
 objLabel = ''
 constrLabel = ''
-datLabel = ''
+outputLabel = ''
 
 
 # ======================================================
@@ -98,7 +98,7 @@ def setOutFile():
                 ('All Files','*.*')]
     outputDat = filedialog.asksaveasfilename(
         filetypes = files,defaultextension=files)
-    datLabel.config(text='Output DAT: '+str(outputDat))
+    outputLabel.config(text='Output DAT1: '+str(outputDat))
     outputSel = True
     if objSel and constrSel:
         allSel = True
@@ -110,6 +110,8 @@ def main():
     global objLabel
     global constrLabel
     global datLabel
+    global outputLabel
+    global procBtn
     #create a main window
     root = Tk()
     root.title('NJ Forest Service ForMOM')
