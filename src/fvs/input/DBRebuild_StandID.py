@@ -57,18 +57,24 @@ def do_replacement(cur: sqlite3.Cursor, table_name:str, cn_to_fortype_dict: list
 		'''
 		cur.execute(query)
 
-		if (ind % 1000 == 0):
-			print(f'Executed 100 queries')
-
-
 def do_id_replace(cur: sqlite3.Cursor):
 	# Actual processing
-	fortype_dict = extract_forest_types(cur, ["FVS_STANDINIT_PLOT", "FVS_PLOTINIT_PLOT"])
+	fortype_dict = extract_forest_types(cur, 
+	   ["FVS_STANDINIT_PLOT_20152019T", 
+		"FVS_PLOTINIT_PLOT_20152019T",
+		"FVS_STANDINIT_PLOT",
+		"FVS_STANDINIT_PLOT"])
 
 	# Now do replacements
 	do_replacement(cur, "FVS_PLOTINIT_PLOT", fortype_dict)
 	do_replacement(cur, "FVS_STANDINIT_PLOT", fortype_dict)
 	do_replacement(cur, "FVS_TREEINIT_PLOT", fortype_dict)
+
+	do_replacement(cur, "FVS_PLOTINIT_PLOT_20152019T", fortype_dict)
+	do_replacement(cur, "FVS_STANDINIT_PLOT_20152019T", fortype_dict)
+	do_replacement(cur, "FVS_TREEINIT_PLOT_20152019T", fortype_dict)
+
+	print("Finished ID Replace")
 
 
 if __name__ == '__main__':

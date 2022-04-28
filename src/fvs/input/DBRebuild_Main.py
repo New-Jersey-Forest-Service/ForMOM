@@ -91,10 +91,10 @@ def delete_extra_tables(cur: sqlite3.Cursor) -> None:
 
 	for table in all_tables:
 		if table in TABLES_TO_KEEP:
-			print(f'Keeping table: {table}')
+			print(f' > Keep: {table}')
 
 		else:
-			print(f'Deleting table: {table}')
+			print(f' > Remove: {table}')
 			cur.execute(f"DROP TABLE {table}")
 
 
