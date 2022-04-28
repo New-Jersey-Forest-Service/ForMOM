@@ -130,6 +130,7 @@ dmypy.json
 
 # Database work
 *.db
+*.db-journal
 
 # IDE Stuff
 .vscode
