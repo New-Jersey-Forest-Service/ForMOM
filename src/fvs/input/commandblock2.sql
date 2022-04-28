@@ -159,8 +159,8 @@ SET SITE_SPECIES =
 
 -- TODO: Figure out where the 9 rows are being filtered down from, 
 --	for now though I just cut out with
-DELETE FROM FVS_STANDINIT_PLOT_FT
-WHERE SITE_SPECIES IS NULL;
+-- DELETE FROM FVS_STANDINIT_PLOT_FT
+-- WHERE SITE_SPECIES IS NULL;
 
 -- I have NULL values for Stand_IDs
 -- STAND_ID	AGE		SITE_SPECIES
