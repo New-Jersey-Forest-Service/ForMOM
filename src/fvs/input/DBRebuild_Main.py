@@ -49,10 +49,6 @@ def main():
 	print("Running command block 2")
 	run_script(cur, './commandblock2.sql')
 
-	# Ask Lauren: No longer using the replacement DB,
-	#  I'm getting different results for some queries
-
-
 	db_con.commit()
 	db_con.close()
 
