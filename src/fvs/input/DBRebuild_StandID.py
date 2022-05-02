@@ -12,6 +12,7 @@ Michael Gorbunov
 '''
 
 import sqlite3
+import sys
 
 # TODO: Validate 
 #   - [ ] Check table names for table_name
@@ -85,6 +86,21 @@ if __name__ == '__main__':
 	DB_PATH = "./FIADB_NJ.db"
 	db_connection = sqlite3.connect(DB_PATH)
 	cur = db_connection.cursor()
+
+	print("WARNING: This file only runs the ID replacement steps.")
+	print("\tIt is automatically run from the main file, so you")
+	print("\tdo not need to run this seperately.")
+	print()
+
+	usr_input = str(input("Do you still wish to continue? (y/n)"))
+	print()
+
+	if (usr_input.strip().lower() != 'y'):
+		print("Ok, exiting")
+		sys.exit(0)
+	else:
+		print("Ok, continuing")
+
 
 	do_id_replace(cur)
 
