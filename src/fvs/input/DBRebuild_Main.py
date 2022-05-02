@@ -34,20 +34,30 @@ def main():
 	db_con = sqlite3.connect(DB_FILEPATH)
 	cur = db_con.cursor()
 
+	print(" [[ STARTING ]] ")
+
+	print()
 	print("Deleting tables")
 	delete_extra_tables(cur)
 
+	print()
 	print("Running command block 1")
 	run_script(cur, './commandblock1.sql')
 
+	print()
 	print("Updating groupaddfilesandkeywords")
 	update_groupaddfilesandkeywords(cur)
 
+	print()
 	print("Doing ID Replace")
 	dbStandID.do_id_replace(cur)
 
+	print()
 	print("Running command block 2")
 	run_script(cur, './commandblock2.sql')
+
+	print()
+	print(" [[ FINISHED ]] ")
 
 	db_con.commit()
 	db_con.close()
