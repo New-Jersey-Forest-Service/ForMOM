@@ -39,9 +39,6 @@ WHERE STAND_ID = "n/a";
 
 
 
--- AVG_AGE has 58 rows ???  => 105, 800 are added ???
--- This is because it's cominf from STANDINIT while the IDs came from PLOTINIT
-
 --- Set Average Ages
 CREATE VIEW IF NOT EXISTS AVG_AGE AS
 SELECT
@@ -80,7 +77,6 @@ ORDER BY
     -NUM_CORINGS;
 
 
--- This only has 48 distinct stand_ids ??
 CREATE VIEW STANDINIT_MAX_CORES_PER_FT_WITH_TIES AS
 SELECT ALL_FT.*
 FROM STANDINIT_CORES_BY_FT AS ALL_FT
@@ -105,7 +101,6 @@ FROM FVS_TREEINIT_PLOT_20152019T AS TREEINIT
 GROUP BY TREEINIT.STAND_ID, 
 	TREEINIT.SPECIES;
 
--- Generate table of target num_species ( only has 47 rows though :(, 46 if distinct stand_id )
 CREATE VIEW TREEINIT_MAX_SPECIES_PER_FT AS
 SELECT STAND_ID, MAX(NUM_SPECIES) AS MAX_NUM_SPECIES
 FROM TREEINIT_SPECIES_BY_FT INNER JOIN
@@ -113,9 +108,6 @@ FROM TREEINIT_SPECIES_BY_FT INNER JOIN
 USING (STAND_ID, SITE_SPECIES)
 GROUP BY STAND_ID;
 
-
--- Huh so we do end up with 49 rows in the end, I wonder which table that's coming from 
--- Something is wrong right now, there are certain stands getting null SITE_SPECIES values :(
 
 -- These two really can be turned into a natural join but izzz ok for now
 
