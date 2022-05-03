@@ -14,8 +14,6 @@ CREATE TABLE FVS_PLOTINIT_PLOT_20152019T AS
 	WHERE INV_YEAR IN (2015, 2016, 2017, 2018, 2019, 2020)
 ;
 
--- == For TREEINIT, why do we use STANDINIT and not also PLOTINIT ? (I did try and it crashed db viewer lmao)
-
 -- TREEINIT
 -- Treeinit doesn't have an INV_YEAR column so we cross reference with
 -- other tables and join with STAND_CN
