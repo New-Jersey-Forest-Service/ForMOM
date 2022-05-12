@@ -1,0 +1,693 @@
+-- how to create a db using FIADB_NJ data that can be used in FVS projections --
+--after downloading the FIADB_NJ file from the FIA DataMart, delete all tables except for COND, COUNTY, FVS_GROUPADDFILESANDKEYWORDS, FVS_PLOTINIT_PLOT,--
+-- FVS_STANDINIT_PLOT, FVS_TREEINIT_PLOT, PLOT, POP_STRATUM, REF_FOREST_TYPE, REF_FOREST_TYPE_GROUP, REF_SPECIES, SEEDLING, TREE --
+
+--Query out the most recent inventory cycle from the database and create views of those years. We will be using the years 2015-2019 --
+
+SELECT * FROM FVS_STANDINIT_PLOT 
+WHERE INV_YEAR IN(2015, 2016, 2017, 2018, 2019, 2020)
+
+--View named FVS_STANDINIT_PLOT_20152019--
+
+SELECT * FROM FVS_PLOTINIT_PLOT 
+WHERE INV_YEAR IN(2015, 2016, 2017, 2018, 2019, 2020)
+
+--View named FVS_PLOTINIT_PLOT_20152019--
+
+--Next, we want to turn the views for the proper years into tables.Copy the DDL from the original tables into the SQL editor. Change the --
+--CREATE “table name” at the top to your new table name (FVS_STANDINIT_PLOT_20152019T). We will then insert the data from the view into the new table --
+
+CREATE TABLE FVS_PLOTINIT_PLOT_20152019T (
+    STAND_CN             VARCHAR (40),
+    STAND_ID             VARCHAR (26),
+    STANDPLOT_CN         VARCHAR (40),
+    STANDPLOT_ID         VARCHAR (30),
+    VARIANT              VARCHAR (11),
+    INV_DAY              FLOAT,
+    INV_YEAR             FLOAT,
+    INV_MONTH            FLOAT,
+    [GROUPS]             VARCHAR (200),
+    ADDFILES             VARCHAR (200),
+    FVSKEYWORDS          VARCHAR (200),
+    GIS_LINK             VARCHAR (200),
+    LATITUDE             FLOAT,
+    LONGITUDE            FLOAT,
+    DATUM                VARCHAR (200),
+    REGION               FLOAT,
+    FOREST               FLOAT,
+    DISTRICT             FLOAT,
+    COMPARTMENT          FLOAT,
+    LOCATION             FLOAT,
+    ECOREGION            VARCHAR (7),
+    PV_CODE              VARCHAR (10),
+    PV_REF_CODE          FLOAT,
+    PV_FIA_HABTYPCD1     VARCHAR (10),
+    AGE                  FLOAT,
+    ASPECT               FLOAT,
+    SLOPE                FLOAT,
+    ELEVATION            FLOAT,
+    ELEVFT               FLOAT,
+    BASAL_AREA_FACTOR    FLOAT,
+    INV_PLOT_SIZE        FLOAT,
+    BRK_DBH              FLOAT,
+    NUM_PLOTS            FLOAT,
+    NONSTK_PLOTS         FLOAT,
+    SAM_WT               FLOAT,
+    STK_PCNT             FLOAT,
+    DG_TRANS             FLOAT,
+    DG_MEASURE           FLOAT,
+    HTG_TRANS            FLOAT,
+    HTG_MEASURE          FLOAT,
+    MORT_MEASURE         FLOAT,
+    MAX_BA               FLOAT,
+    MAX_SDI              FLOAT,
+    MAX_SDI_FIA          FLOAT,
+    SITE_SPECIES         VARCHAR (8),
+    SITE_INDEX           FLOAT,
+    SITE_INDEX_BASE_AG   FLOAT,
+    MODEL_TYPE           FLOAT,
+    PHYSIO_REGION        FLOAT,
+    FOREST_TYPE          FLOAT,
+    FOREST_TYPE_FIA      FLOAT,
+    STATE                FLOAT,
+    COUNTY               FLOAT,
+    FUEL_MODEL           FLOAT,
+    FUEL_0_25_H          FLOAT,
+    FUEL_25_1_H          FLOAT,
+    FUEL_1_3_H           FLOAT,
+    FUEL_3_6_H           FLOAT,
+    FUEL_6_12_H          FLOAT,
+    FUEL_12_20_H         FLOAT,
+    FUEL_20_35_H         FLOAT,
+    FUEL_35_50_H         FLOAT,
+    FUEL_GT_50_H         FLOAT,
+    FUEL_0_25_S          FLOAT,
+    FUEL_25_1_S          FLOAT,
+    FUEL_1_3_S           FLOAT,
+    FUEL_3_6_S           FLOAT,
+    FUEL_6_12_S          FLOAT,
+    FUEL_12_20_S         FLOAT,
+    FUEL_20_35_S         FLOAT,
+    FUEL_35_50_S         FLOAT,
+    FUEL_GT_50_S         FLOAT,
+    FUEL_LITTER          FLOAT,
+    FUEL_DUFF            FLOAT,
+    PHOTO_REF            FLOAT,
+    PHOTO_CODE           VARCHAR (13),
+    CREATED_BY           VARCHAR (30),
+    CREATED_DATE         DATE,
+    CREATED_IN_INSTANCE  VARCHAR (6),
+    MODIFIED_BY          VARCHAR (30),
+    MODIFIED_DATE        DATE,
+    MODIFIED_IN_INSTANCE VARCHAR (6),
+    VERSION              VARCHAR (15) 
+);
+
+--insert the data from the FVS_PLOTINIT_PLOT_20152019 view into the new FVS_PLOTINIT_PLOT_2052019T table--
+
+INSERT INTO FVS_PLOTINIT_PLOT_20152019T
+SELECT * FROM FVS_PLOTINIT_PLOT_20152019
+
+--Do the same thing with the FVS_STANDINIT_PLOT tables --
+
+CREATE TABLE FVS_STANDINIT_PLOT_20152019T (
+    STAND_CN             VARCHAR (40),
+    STAND_ID             VARCHAR (26),
+    VARIANT              VARCHAR (11),
+    INV_DAY              FLOAT,
+    INV_YEAR             FLOAT,
+    INV_MONTH            FLOAT,
+    [GROUPS]             VARCHAR (200),
+    ADDFILES             VARCHAR (200),
+    FVSKEYWORDS          VARCHAR (200),
+    GIS_LINK             VARCHAR (200),
+    LATITUDE             FLOAT,
+    LONGITUDE            FLOAT,
+    DATUM                VARCHAR (200),
+    REGION               FLOAT,
+    FOREST               FLOAT,
+    DISTRICT             FLOAT,
+    COMPARTMENT          FLOAT,
+    LOCATION             FLOAT,
+    ECOREGION            VARCHAR (7),
+    PV_CODE              VARCHAR (10),
+    PV_REF_CODE          FLOAT,
+    PV_FIA_HABTYPCD1     VARCHAR (10),
+    AGE                  FLOAT,
+    ASPECT               FLOAT,
+    SLOPE                FLOAT,
+    ELEVATION            FLOAT,
+    ELEVFT               FLOAT,
+    TOPO                 VARCHAR (200),
+    BASAL_AREA_FACTOR    FLOAT,
+    INV_PLOT_SIZE        FLOAT,
+    BRK_DBH              FLOAT,
+    NUM_PLOTS            FLOAT,
+    NONSTK_PLOTS         FLOAT,
+    SAM_WT               FLOAT,
+    STK_PCNT             FLOAT,
+    DG_TRANS             FLOAT,
+    DG_MEASURE           FLOAT,
+    HTG_TRANS            FLOAT,
+    HTG_MEASURE          FLOAT,
+    MORT_MEASURE         FLOAT,
+    MAX_BA               FLOAT,
+    MAX_SDI              FLOAT,
+    MAX_SDI_FIA          FLOAT,
+    SITE_SPECIES         VARCHAR (8),
+    SITE_INDEX           FLOAT,
+    SITE_INDEX_BASE_AG   FLOAT,
+    MODEL_TYPE           FLOAT,
+    PHYSIO_REGION        FLOAT,
+    FOREST_TYPE          FLOAT,
+    FOREST_TYPE_FIA      FLOAT,
+    STATE                FLOAT,
+    COUNTY               FLOAT,
+    FUEL_MODEL           FLOAT,
+    FUEL_0_1             FLOAT,
+    FUEL_0_25_H          FLOAT,
+    FUEL_25_1_H          FLOAT,
+    FUEL_1_3_H           FLOAT,
+    FUEL_3_6_H           FLOAT,
+    FUEL_6_12_H          FLOAT,
+    FUEL_12_20_H         FLOAT,
+    FUEL_20_35_H         FLOAT,
+    FUEL_35_50_H         FLOAT,
+    FUEL_GT_50_H         FLOAT,
+    FUEL_0_25_S          FLOAT,
+    FUEL_25_1_S          FLOAT,
+    FUEL_1_3_S           FLOAT,
+    FUEL_3_6_S           FLOAT,
+    FUEL_6_12_S          FLOAT,
+    FUEL_12_20_S         FLOAT,
+    FUEL_20_35_S         FLOAT,
+    FUEL_35_50_S         FLOATPLOT tabl
+    PHOTO_REF            FLOAT,
+    PHOTO_CODE           VARCHAR (13),
+    CREATED_BY           VARCHAR (30),
+    CREATED_DATE         DATE,
+    CREATED_IN_INSTANCE  VARCHAR (6),
+    MODIFIED_BY          VARCHAR (30),
+    MODIFIED_DATE        DATE,
+    MODIFIED_IN_INSTANCE VARCHAR (6),
+    VERSION              VARCHAR (15) 
+);
+
+
+INSERT INTO FVS_STANDINIT_PLOT_20152019T
+SELECT * FROM FVS_STANDINIT_PLOT_20152019
+
+
+=== Done
+
+--The FVS_TREEINIT_PLOT table does not have a Year column for us to query out the appropriate inventory years. Instead, we will perform a join between the --
+-- standinit table and the treeinit table based on the Stand CNs (specific to inventory year/plot/etc) to get the affiliated inventory cycle data--
+
+SELECT FVS_TREEINIT_PLOT.* 
+FROM FVS_TREEINIT_PLOT, FVS_STANDINIT_PLOT_20152019T
+WHERE FVS_TREEINIT_PLOT.STAND_CN = FVS_STANDINIT_PLOT_20152019T.STAND_CN
+
+--Create a view out of this data called FVS_TREEINIT_PLOT_20152019--
+
+CREATE TABLE FVS_TREEINIT_PLOT_20152019T (
+    STAND_CN             VARCHAR (40),
+    STAND_ID             VARCHAR (26),
+    PLOT_CN              VARCHAR (40),
+    STANDPLOT_CN         VARCHAR (40),
+    STANDPLOT_ID         VARCHAR (30),
+    PLOT_ID              FLOAT,
+    TREE_CN              VARCHAR (40),
+    TREE_ID              FLOAT,
+    TAG_ID               FLOAT,
+    AZIMUTH              FLOAT,
+    DISTANCE             FLOAT,
+    SITE_TREE_FLAG       FLOAT,
+    TREE_COUNT           FLOAT,
+    MORT_AGENT           FLOAT,
+    WDLND_STEMS          FLOAT,
+    HISTORY              FLOAT,
+    SPECIES              VARCHAR (18),
+    DIAMETER             FLOAT,
+    DIAMETER_HTCD        FLOAT,
+    DG                   FLOAT,
+    HT                   FLOAT,
+    HTG                  FLOAT,
+    HTTOPK               FLOAT,
+    HTBOLE               FLOAT,
+    TPBOLE               FLOAT,
+    HTSAW                FLOAT,
+    TPSAW                FLOAT,
+    HT_TO_CROWN_BASE     FLOAT,
+    CRRATIO              FLOAT,
+    UNCRRATIO            FLOAT,
+    CRCLASS              FLOAT,
+    DAMAGE1              FLOAT,
+    SEVERITY1            FLOAT,
+    DAMAGE2              FLOAT,
+    SEVERITY2            FLOAT,
+    DAMAGE3              FLOAT,
+    SEVERITY3            FLOAT,
+    DEFECT_CUBIC         FLOAT,
+    DEFECT_BOARD         FLOAT,
+    TREEVALUE            FLOAT,
+    PRESCRIPTION         FLOAT,
+    AGE                  FLOAT,
+    BH_YEARS             FLOAT,
+    SLOPE                FLOAT,
+    ASPECT               FLOAT,
+    PV_CODE              VARCHAR (20),
+    PV_REF_CODE          VARCHAR (20),
+    TOPOCODE             FLOAT,
+    SITEPREP             FLOAT,
+    CREATED_BY           VARCHAR (30),
+    CREATED_DATE         DATE,
+    CREATED_IN_INSTANCE  VARCHAR (6),
+    MODIFIED_BY          VARCHAR (30),
+    MODIFIED_DATE        DATE,
+    MODIFIED_IN_INSTANCE VARCHAR (6),
+    VERSION              VARCHAR (15) 
+);
+
+
+INSERT INTO FVS_TREEINIT_PLOT_20152019T
+SELECT * FROM FVS_TREEINIT_PLOT_20152019
+
+== Done
+
+--next we need to edit the FVS_GROUPADDFILESANDKEYWORDS table. If you click on the “Data” tab in the GROUPADDFILESANDKEYWORDS table, --
+--you can see that there are 3 groups: All_FIA_Conditions, All_FIA_Plots, and All_FIA_Subplots. Since we will be using our new FVS_STANDINIT_PLOT--
+--table in our FVS run and we are inserting our own group file, we need to rename the “All_FIA_Plots” row to “All_FIA_ForestTypes” --
+--(This can be changed in grid view or form view). Click the green checkmark to submit the changes to the db--
+
+--Within the “Data” tab, click into the “Form View” tab to make further changes. In the FVSKEYWORDS(VARCHAR) section, we will need to make some slight--
+--changes in the code. The name of the DB needs to be changed to reflect the name of the DB that you’re currently working in for each of the 3 groups! 
+--This needs to be changed for All_FIA_Conditions, the newly named All_FIA_ForestTypes, and All_FIA_Subplots. 
+
+--Perform the following changes for the groups as well 
+--All_FIA_Conditions: (Original format to New format) = WHERE Stand_CN = '%Stand_CN%' changes to WHERE Stand_ID = '%StandID%' *make sure to do this at both WHERE statements 
+--All_FIA_ForestTypes:(Original format to New format) =WHERE Stand_CN = '%Stand_CN%' changes to WHERE Stand_ID = '%StandID%' *make sure to do this at both WHERE statements 
+--All_FIA_Subplots: (Original format to New format)=WHERE StandPlot_CN = '%Stand_CN%' changes to WHERE StandPlot_ID = '%StandID%' make sure to do this at both WHERE statements 
+--MAKE SURE TO COMMIT CHANGES BY CLICKING THE GREEN CHECK MARK AFTER CHANGING EACH GROUP 
+
+
+== Done
+
+
+--Now, we need to make a new blank copy of the FVS_STANDINIT_PLOT table. The STANDINIT_PLOT table normally has 1,579 stand entries spanning 49 different 
+--forest types. For our new table, we want a single line for each forest type (the forest types will be replacing the data in the STAND_ID column) so that 
+--we can group by forest type in FVS in order to streamline management for the state. 
+
+--Copy the DDL from the original FVS_STANDINIT_PLOT(_BU) into the SQL editor. Change the CREATE “table name” at the top to our new table name 
+--(FVS_STANDINIT_PLOT_FT). This will give you a blank skeleton of the STANDINIT_PLOT table that we can now fill in. 
+--You can remove all of the columns that aren’t necessary for FVS from the DDL before you run it. Columns that should remain in the table include: 
+--STAND_ID, NUM_PLOTS, INV_YEAR, GROUPS, ADDFILES, KEYWORDS, AGE, BASAL_AREA_FACTOR, INV_PLOT_SIZE, BRK_DBH, SAM_WT, SITE_SPECIES, SITE_INDEX, VARIANT, 
+--STATE, LOCATION, REGION, FOREST, DG_TRANS, DG_MEASURE 
+
+CREATE TABLE FVS_STANDINIT_PLOT_FT (
+    STAND_ID             VARCHAR (26),
+    VARIANT              VARCHAR (11),
+    INV_YEAR             FLOAT,
+    [GROUPS]             VARCHAR (200),
+    ADDFILES             VARCHAR (200),
+    FVSKEYWORDS          VARCHAR (200),
+    REGION               FLOAT,
+    FOREST               FLOAT,
+    LOCATION             FLOAT,
+    AGE                  FLOAT,
+    BASAL_AREA_FACTOR    FLOAT,
+    INV_PLOT_SIZE        FLOAT,
+    BRK_DBH              FLOAT,
+    NUM_PLOTS            FLOAT,
+    SAM_WT               FLOAT,
+    DG_TRANS             FLOAT,
+    DG_MEASURE           FLOAT,
+    SITE_SPECIES         VARCHAR (8),
+    SITE_INDEX           FLOAT,
+    STATE                FLOAT
+);
+
+== Done
+
+
+
+
+
+
+
+==== Walk through this with Lauren to know if it's
+==== correct what I'm doing.
+
+--We have another existing table in which we were able to pull the forest types out of the Group columns and make them into their own column. This table 
+--can be found within the optimization (data --> FVS) folder and is named “FIADB_NJ2021_ForestTypesComplete.” Within this database, there are 3 tables 
+--called “FVS_STANDINIT_PLOT_IDreplace”, “FVS_PLOTINIT_PLOT_IDreplace”, and “FVS_TREEINIT_PLOT_IDreplace” that can be copied and pasted into our current 
+--database to pull out forest types. The Stand_ID column in these tables will be replaced with the forest types. **BILL I NEED HELP WITH TRYING TO ELIMINATE
+--THIS STEP!!!
+
+--To pull out our 49 distinct forest types and put them into the FVS_STANDINIT_PLOT_FT:
+
+==== This query is different
+==== The replacement db only has ~6k entries while
+==== starting from FIADB_NJ I have ~13k entries in
+==== FVS_STANDPLOT_PLOT
+====
+==== Also, I'm getting 56 forest types, not 49 ??
+==== Starting fresh from FIADB_NJ, we get all the
+==== same forest types as in the replace db, but also
+==== we get {102, 166, 381, 501, 509, 514, 995}
+
+
+
+=== It's not actually necessary to create a view,
+=== ???
+
+SELECT DISTINCT STAND_ID, COUNT(STAND_ID) AS NUMBER_PLOTS  
+FROM FVS_PLOTINIT_PLOT_IDreplace 
+GROUP BY STAND_ID 
+
+--save as a view named “NUM_PLOTS_PER_FT”
+--To get our 49 forest types into the STANDINIT_PLOT table, put this into the editor 
+
+INSERT INTO FVS_STANDINIT_PLOT_FT (STAND_ID) 
+SELECT STAND_ID FROM NUM_PLOTS_PER_FT 
+
+--There should now be 49 rows in the FVS_STANDINIT_PLOT_FT table, with forest types and nothing else
+
+=== Done
+
+
+=== TODO: Make this maybe? I'm skipping it
+--Now we'll make a backup column for the Stand_IDs because we'll be editing this column a lot and there's no undo button if we mess up
+--Go into the Structure tab of the FVS_STANDINIT_PLOT_FT table and click the "Add Column" button (looks like a graph with a green column). Name your new
+--column STAND_ID_BU & set it to VARCHAR (50). Click the green checkmark to commit changes to the table, then copy the column over:
+
+UPDATE FVS_STANDINIT_PLOT_FT
+SET STAND_ID_BU = STAND_ID 
+
+
+=== With the process I'm doing, I got no white space
+
+--In the tables we moved over from the ForestTypesComplete DB, there is white space in the Stand_ID column that SQL doesn't understand. We have to
+--remove the white space by doing this:
+
+SELECT STAND_ID, RTRIM(STAND_ID_BU) AS STAND_ID_TRIMMED 
+FROM FVS_STANDINIT_PLOT_FT
+
+--Save it as a view called 'STANDID_RTRIM_STAND'
+--Then we can update the original STAND_ID column to the trimmed version by typing this into the editor: 
+
+UPDATE FVS_STANDINIT_PLOT_FT 
+SET STAND_ID = (SELECT STAND_ID_TRIMMED FROM STANDID_RTRIM_STAND WHERE STAND_ID = FVS_STANDINIT_PLOT_FT.STAND_ID_BU) 
+
+=== 
+
+--FVS also doesn’t like the ‘/’ in the “n/a” forest type, and we need to remove it from each instance of that type: 
+
+==== Isn't this only one instance?
+UPDATE FVS_STANDINIT_PLOT_FT
+SET STAND_ID = REPLACE(STAND_ID, '/', '') 
+WHERE STAND_ID = "n/a" 
+;
+
+--To get the average age per forest type and enter it into our table (FVS_STANDINIT_PLOT_FT): 
+
+SELECT STAND_ID, ROUND(AVG(AGE)) AS AVERAGE_AGE 
+FROM FVS_STANDINIT_PLOT_IDreplace GROUP BY STAND_ID 
+
+--Create a view of this data named 'AVG_AGE'
+--Transfer the results into the FVS_STANDINIT_PLOT_FT table with the STAND_IDs (forest types): 
+
+==== I'm getting negative ages, and that seems wrong?
+==== Yea something more special was done for the 
+==== id replace table because all their numbers look fine 
+==== Grrrrrrrr >:(
+==== 
+==== So the FIADB_NJ age column has a lot of nulls
+==== and a lot of ages that are -999.0?
+==== I guess I need to ignore those ages
+
+UPDATE FVS_STANDINIT_PLOT_FT 
+SET AGE = (SELECT AVERAGE_AGE FROM AVG_AGE WHERE STAND_ID = FVS_STANDINIT_PLOT_FT.STAND_ID_BU) 
+
+--The FVS_STANDINIT_PLOT_FT table should now have ages of all plots in each forest type averaged out
+
+=== Done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--Pulling out the SITE_SPECIES for this table is quite a few steps. SITE_SPECIES are species that were cored (for age) for each forest type. There are 
+--multiple SITE_SPECIES for each forest type, and we are going to be inputting the SITE_SPECIES that was cored the most in each forest type. In cases 
+--where there are 2 species that are tied for the majority, we will be referencing the FVS_TREEINIT_PLOT_BU table to see which of those species appeared 
+--the most within that particular forest type. Once the information is gathered for each forest type, it must be manually entered. **I would like to figure
+--out a way to automate this, because I know it's a pain.
+
+--In order to see which SITE_SPECIES are within each forest type (again, a forest type may have multiple SITE_SPECIES):
+
+SELECT STAND_ID, SITE_SPECIES, SITE_INDEX 
+FROM FVS_STANDINIT_PLOT_IDreplace 
+WHERE SITE_SPECIES > 1 
+ORDER BY STAND_ID 
+
+--Save it as a view named 'SITESPECIES_BY_FT'
+
+--Next, we need to figure out how many occurrences of each SITE_SPECIES exists within each forest type so that we know which one to use in our table.
+
+SELECT STAND_ID, SITE_SPECIES, SITE_INDEX, COUNT(SITE_SPECIES) AS NUM_SPECIES, AVG(SITE_INDEX) AS AVG_SI 
+FROM FVS_STANDINIT_PLOT_IDreplace 
+WHERE SITE_SPECIES > 1 
+GROUP BY STAND_ID, SITE_SPECIES
+
+--save it as a view named 'SITE_SPECIES_SORTED'
+
+
+
+
+
+
+--Each SITE_SPECIES with the majority must be manually entered into our new FVS_STANDINIT_PLOT_FT table.
+--For forest types that have a SITE_SPECIES tie for the majority, we must reference the TREEINIT_PLOT table to see which SITE_SPECIES occurs that most 
+--over the entire forest type. 
+
+
+==== Why not just use TreeINIT for the entire thing?
+==== Whats the advantage of ordering first by coring (PlotINIT) and then by TreeINIT Species?
+====
+==== Num species seems to give much more info about the trees, could we use these numbers to
+==== produce more accurate carbon coefficients, i.e. use FVS to get carbon coeffs per species, and then 
+==== combine them together for each tree stand?
+
+SELECT STAND_ID, SPECIES, COUNT(SPECIES) AS NUM_SPECIES 
+FROM FVS_TREEINIT_PLOT 
+GROUP BY STAND_ID, SPECIES 
+
+--Save this as a view named 'MAJORITY_TIEBREAKERS'
+--Based on the SITE_SPECIES_SORTED & MAJORITY_TIEBREAKERS tables,manually fill in the SITE_SPECIES column in the FVS_STANDINIT_PLOT_FT table
+
+== Done :D
+
+
+
+
+
+
+
+
+
+--SITE_SPECIES is tied directly to SITE_INDEX. TO calculate average SITE_INDEX, we must take the average of the site indexes for our specific 
+--SITE_SPECIES for that forest type. We’ve already set this up for ourselves and can pull the average SITE_INDEX for each SITE_SPECIES from the 
+--“SITE_SPECIES_SORTED” view. Choose the averaged SITE_INDEX of the majority SITE_SPECIES (which we chose and entered into the table in the last step!),
+--and manually enter it into the FVS_STANDINIT_PLOT_FT table. Make sure to click the green checkmark after entry to save the modifications.
+--I currently have an excel cheat sheet for this in lieu of having it fully automated. It can be located in the Optimization team ***HERE*** 
+
+--In order to fill in the NUM_PLOTS column in the FVS_STANDINIT_PLOT_FT table, you need to count the number of instances of plots within each stand in 
+--the FVS_PLOTINIT_PLOT table. Reference the previously created view: “NUM_PLOTS_PER_FT” 
+--Transfer the results into the FVS_STANDINIT_PLOT_COPY table: 
+
+UPDATE FVS_STANDINIT_PLOT_FT
+SET NUM_PLOTS = (SELECT NUMBER_PLOTS FROM NUM_PLOTS_PER_FT WHERE STAND_ID = FVS_STANDINIT_PLOT_FT.STAND_ID_BU) 
+
+--Most of the rest of the table has results that stay the same across the State, and can be directly copied from the original FVS_STANDINIT_PLOT table
+--We will now copy over data for BASAL_AREA_FACTOR, INV_PLOT_SIZE, BRK_DBH, STATE, VARIANT, DG_TRANS, DG_MEASURE, FOREST, LOCATION & REGION
+
+UPDATE FVS_STANDINIT_PLOT_FT
+SET BASAL_AREA_FACTOR = (SELECT BASAL_AREA_FACTOR FROM FVS_STANDINIT_PLOT_IDreplace WHERE STAND_ID = FVS_STANDINIT_PLOT_FT.STAND_ID_BU) 
+
+UPDATE FVS_STANDINIT_PLOT_FT
+SET INV_PLOT_SIZE = (SELECT INV_PLOT_SIZE FROM FVS_STANDINIT_PLOT_IDreplace WHERE STAND_ID = FVS_STANDINIT_PLOT_FT.STAND_ID_BU) 
+
+UPDATE FVS_STANDINIT_PLOT_FT
+SET BRK_DBH = (SELECT BRK_DBH FROM FVS_STANDINIT_PLOT_IDreplace WHERE STAND_ID = FVS_STANDINIT_PLOT_FT.STAND_ID_BU) 
+
+UPDATE FVS_STANDINIT_PLOT_FT
+SET STATE = (SELECT STATE FROM FVS_STANDINIT_PLOT_IDreplace WHERE STAND_ID = FVS_STANDINIT_PLOT_FT.STAND_ID_BU) 
+
+UPDATE FVS_STANDINIT_PLOT_FT
+SET VARIANT = (SELECT VARIANT FROM FVS_STANDINIT_PLOT_IDreplace WHERE STAND_ID = FVS_STANDINIT_PLOT_FT.STAND_ID_BU) 
+
+UPDATE FVS_STANDINIT_PLOT_FT
+SET DG_TRANS = (SELECT DG_TRANS FROM FVS_STANDINIT_PLOT_IDreplace WHERE STAND_ID = FVS_STANDINIT_PLOT_FT.STAND_ID_BU) 
+
+UPDATE FVS_STANDINIT_PLOT_FT
+SET DG_MEASURE = (SELECT DG_MEASURE FROM FVS_STANDINIT_PLOT_IDreplace WHERE STAND_ID = FVS_STANDINIT_PLOT_FT.STAND_ID_BU) 
+
+UPDATE FVS_STANDINIT_PLOT_FT
+SET FOREST = (SELECT FOREST FROM FVS_STANDINIT_PLOT_IDreplace WHERE STAND_ID = FVS_STANDINIT_PLOT_FT.STAND_ID_BU) 
+
+UPDATE FVS_STANDINIT_PLOT_FT
+SET LOCATION = (SELECT LOCATION FROM FVS_STANDINIT_PLOT_IDreplace WHERE STAND_ID = FVS_STANDINIT_PLOT_FT.STAND_ID_BU) 
+
+UPDATE FVS_STANDINIT_PLOT_FT
+SET REGION = (SELECT REGION FROM FVS_STANDINIT_PLOT_IDreplace WHERE STAND_ID = FVS_STANDINIT_PLOT_FT.STAND_ID_BU) 
+
+--The Group column will have the same entry for the entire FVS_STANDINIT_PLOT_FT table and should be manually entered to match the 
+--FVS_GROUPADDFILESANDKEYWORDS table. Manually enter the string “All_FIA_ForestTypes” into each of the 49 rows in the table. Make sure you click the green
+--check mark to make sure you commit the structure changes to the table
+--The ADDFILES, FVSKEYWORDS, and SAM_WT columns do not need to be filled out, but we’re keeping them in the table just in case 
+
+--In order to fill in the INV_YEAR column in the FVS_STANDINIT_PLOT_FT table, we averaged the years for each forest type. Within each forest type, 
+--plots were collected from 2015-2019, meaning that each forest type doesn’t have a single inventory year instance. For that reason, we averaged out the 
+--years for each forest type. 
+
+SELECT DISTINCT STAND_ID, INV_YEAR, ROUND(AVG(INV_YEAR)) AS INV_YEAR_AVG 
+FROM FVS_STANDINIT_PLOT_IDreplace 
+WHERE INV_YEAR IN (2015, 2016, 2017, 2018, 2019, 2020)  
+GROUP BY STAND_ID  
+ORDER BY INV_YEAR 
+
+--save as a view named 'AVG_INV_YEAR'
+--Transfer the results into the FVS_STANDINIT_PLOT_FT table: 
+
+UPDATE FVS_STANDINIT_PLOT_FT
+SET INV_YEAR = (SELECT AVG_INV_YEAR.INV_YEAR_AVG FROM AVG_INV_YEAR WHERE AVG_INV_YEAR.STAND_ID = FVS_STANDINIT_PLOT_FT.STAND_ID_BU) 
+
+--This is it for the FVS_STANDINIT_PLOT_FT table whereas building is concerned! However, FVS will only recognize stand tables if they are named 
+--"FVS_STANDINIT_PLOT'. We will change the name of the original 'FVS_STANDINIT_PLOT' table to 'FVS_STANDINIT_PLOT_BU' and change the name of our new table
+--from 'FVS_STANDINIT_PLOT_FT' to 'FVS_STANDINIT_PLOT'. You can change the name of tables by clicking on them, going into the structure tab, changing the 
+--name up top, and then clicking the green check mark to commit the modifications.
+
+--Similar to our FVS_STANDINIT_PLOT_FT table, the STAND_ID column the forest types in the FVS_TREEINIT_PLOT_20152019T table have white space at the end of them that
+--affects how FVS reads them. In order to fix this, we need to add a new column to the table that we can call “STAND_ID_BU” just in case we mess 
+--everything up. For these edits, we are specifically using the FVS_TREEINIT_PLOT table that we created for the years 2015-2019 
+
+--in the “Structure” tab of the FVS_TREEINIT_PLOT_20152019T table, add a new column called STAND_ID_BU, and one called STANDPLOT_ID_BU & make the
+-- VARCHAR(50). Click the green checkmark to save your modifications
+
+UPDATE FVS_TREEINIT_PLOT_20152019T
+SET STAND_ID_BU = STAND_ID 
+
+UPDATE FVS_TREEINIT_PLOT_20152019T
+SET STANDPLOT_ID_BU = STANDPLOT_ID
+
+--Now, we will update the FVS_TREEINIT_PLOT_20152019T table so that the STAND_IDs are replaced by the forest types from the FVS_TREEINIT_PLOT_IDreplace table
+
+UPDATE FVS_TREEINIT_PLOT_20152019T
+SET STAND_ID = (SELECT STAND_ID FROM FVS_TREEINIT_PLOT_IDreplace WHERE STANDPLOT_ID = FVS_TREEINIT_PLOT_20152019T.STANDPLOT_ID_BU) 
+
+--Create a backup column for you NEW STAND_IDs (the forest types) by going into the table structure and adding a column named 'FT_BU' at VARCHAR (4)
+
+UPDATE FVS_TREEINIT_PLOT_20152019T
+SET FT_BU = STAND_ID
+
+--Now we have to trim the extra white space from the STAND_ID column 
+
+SELECT STAND_ID, RTRIM(FT_BU) AS STAND_ID_TRIM 
+FROM FVS_TREEINIT_PLOT_20152019T 
+
+--save as a view named 'STANDID_RTRIM_TREE'
+--Then we can update the original STAND_ID column to the trimmed version by typing this into the editor: 
+
+UPDATE FVS_TREEINIT_PLOT_20152019T
+SET STAND_ID = (SELECT STAND_ID_TRIM FROM STANDID_RTRIM_TREE WHERE STAND_ID = FVS_TREEINIT_PLOT_20152019T.FT_BU) 
+
+--FVS also doesn’t like the ‘/’ in the “n/a” forest type, and we need to remove it from each instance of that type 
+--(this may not actually change any of the data within the table) 
+
+UPDATE FVS_TREEINIT_PLOT_20152019T 
+SET STAND_ID = REPLACE(STAND_ID, '/', '') 
+WHERE STAND_ID = "n/a" 
+
+--Within the TREEINIT and PLOTINIT tables, STANDPLOT_ID must have a unique value. In order to make these values unique, we must concatenate the STAND_ID 
+--(Forest Type) with the STANDPLOT_ID 
+
+--Create a new column in your FVS_TREEINIT_PLOT table for the concatenated ID (We want to put it in a new column first in case it doesn’t work!). You can 
+--do this by going into the Structure tab of your table, and adding a column called “CONCAT_FT_SPID” and set it to VARCHAR(50). Make sure you click the
+--green checkmark to save your structure modifications!
+
+UPDATE FVS_TREEINIT_PLOT_20152019T
+SET CONCAT_FT_SPID = STAND_ID || '_' || STANDPLOT_ID_BU 
+
+--Now update the original STANDPLOT_ID to equal the CONCAT_FT_SPID column that we just created with the unique STANDPLOT_ID 
+
+UPDATE FVS_TREEINIT_PLOT_20152019T 
+SET STANDPLOT_ID = CONCAT_FT_SPID 
+
+--Everything that we just edited in the FVS_TREEINIT_PLOT_20152019T table will be edited the same way in the FVS_PLOTINIT_PLOT_20152019T table
+
+--in the “Structure” tab of the FVS_PLOTINIT_PLOT_20152019T table, add a new column called STAND_ID_BU, and one called STANDPLOT_ID_BU & make the
+-- VARCHAR(50). Click the green checkmark to save your modifications
+
+UPDATE FVS_PLOTINIT_PLOT_20152019T
+SET STAND_ID_BU = STAND_ID 
+
+UPDATE FVS_PLOTINIT_PLOT_20152019T
+SET STANDPLOT_ID_BU = STANDPLOT_ID
+
+--Now, we will update the FVS_PLOTINIT_PLOT_20152019T table so that the STAND_IDs are replaced by the forest types from the FVS_PLOTINIT_PLOT_IDreplace table
+
+UPDATE FVS_PLOTINIT_PLOT_20152019T
+SET STAND_ID = (SELECT STAND_ID FROM FVS_PLOTINIT_PLOT_IDreplace WHERE STANDPLOT_ID = FVS_PLOTINIT_PLOT_20152019T.STANDPLOT_ID_BU) 
+
+--Create a backup column for you NEW STAND_IDs (the forest types) by going into the table structure and adding a column named 'FT_BU' at VARCHAR (4)
+
+UPDATE FVS_PLOTINIT_PLOT_20152019T
+SET FT_BU = STAND_ID
+
+--Now we have to trim the extra white space from the STAND_ID column 
+
+SELECT STAND_ID, RTRIM(FT_BU) AS STAND_ID_TRIM 
+FROM FVS_PLOTINIT_PLOT_20152019T 
+
+--save as a view named 'STANDID_RTRIM_PLOT'
+--Then we can update the original STAND_ID column to the trimmed version by typing this into the editor: 
+
+UPDATE FVS_PLOTINIT_PLOT_20152019T
+SET STAND_ID = (SELECT STAND_ID_TRIM FROM STANDID_RTRIM_PLOT WHERE STAND_ID = FVS_PLOTINIT_PLOT_20152019T.FT_BU) 
+
+--FVS also doesn’t like the ‘/’ in the “n/a” forest type, and we need to remove it from each instance of that type 
+--(this may not actually change any of the data within the table) 
+
+UPDATE FVS_PLOTINIT_PLOT_20152019T 
+SET STAND_ID = REPLACE(STAND_ID, '/', '') 
+WHERE STAND_ID = "n/a" 
+
+--Within the TREEINIT and PLOTINIT tables, STANDPLOT_ID must have a unique value. In order to make these values unique, we must concatenate the STAND_ID 
+--(Forest Type) with the STANDPLOT_ID 
+
+--Create a new column in your FVS_TREEINIT_PLOT table for the concatenated ID (We want to put it in a new column first in case it doesn’t work!). You can 
+--do this by going into the Structure tab of your table, and adding a column called “CONCAT_FT_SPID” and set it to VARCHAR(50). Make sure you click the
+--green checkmark to save your structure modifications!
+
+UPDATE FVS_PLOTINIT_PLOT_20152019T
+SET CONCAT_FT_SPID = STAND_ID || '_' || STANDPLOT_ID_BU 
+
+--Now update the original STANDPLOT_ID to equal the CONCAT_FT_SPID column that we just created with the unique STANDPLOT_ID 
+
+UPDATE FVS_PLOTINIT_PLOT_20152019T 
+SET STANDPLOT_ID = CONCAT_FT_SPID 
+
+--Similar to the STANDINIT table, FVS will only run the TREEINIT and PLOTINIT tables if they are named 'FVS_TREEINIT_PLOT' and 'FVS_PLOTINIT_PLOT'. Change
+--the names of your original tables from 'FVS_TREEINIT_PLOT' to 'FVS_TREEINIT_PLOT_BU'. Do the same for the plot tables. Change the names of your new table
+--from 'FVS_TREEINIT_PLOT_20152019T' to 'FVS_TREEINIT_PLOT'. Do the same for the plot tables.
