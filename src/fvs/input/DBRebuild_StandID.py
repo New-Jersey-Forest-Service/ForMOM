@@ -62,9 +62,9 @@ def extract_forest_types(cur: sqlite3.Cursor, tables: list):
 				# if county in (5, 23, 25, 29) => 167 N
 				# if county in (1, 7, 11, 15, 19) => 167 S
 
-				if (county in (5, 23, 25, 29)):
+				if (county in (23, 25, 29, 1)):
 					for_type = '167N'
-				elif (county in (1, 7, 11, 15, 19)):
+				elif (county in (5, 7, 15, 11, 9)):
 					for_type = '167S'
 				else:
 					print(" > [[ Warning ]]")
