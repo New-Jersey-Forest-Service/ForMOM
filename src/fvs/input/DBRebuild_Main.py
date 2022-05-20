@@ -126,7 +126,7 @@ def update_groupaddfilesandkeywords(cur: sqlite3.Cursor) -> None:
 		fvskeywords = str(cur.fetchall()[0][0])
 
 		fvskeywords = fvskeywords.replace(DEFAULT_DBNAME, DB_NAME)	
-		fvskeywords = re.sub("_CN =\s?'%Stand_CN%'", "_ID = '%StandID%", fvskeywords)
+		fvskeywords = re.sub("_CN =\s?'%Stand_CN%'", "_ID = '%StandID%'", fvskeywords)
 		
 		cur.execute(f'''
 			UPDATE {TABLE_NAME}
