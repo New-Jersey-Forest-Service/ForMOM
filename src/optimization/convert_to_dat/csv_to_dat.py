@@ -31,7 +31,8 @@ def openAndReadObjectiveCSV (objFilepath: Path) -> models.InputObjectiveData:
 		Opens and reads the objective file csv, returning
 		a InputObjectiveData object.
 	'''
-	objectiveInput = models.InputObjectiveData()
+	var_name_list = []
+	obj_coeff_list = []
 
 	with open(objFilepath, 'r') as objFile:
 		objCSVReader = csv.reader(objFile)
@@ -42,17 +43,24 @@ def openAndReadObjectiveCSV (objFilepath: Path) -> models.InputObjectiveData:
 			lineCount += 1
 
 			if (lineCount > 1):
-				objectiveInput.var_names.append(row[0])
-				objectiveInput.obj_coeffs.append(float(row[1]))
+				var_name_list.append(row[0])
+				obj_coeff_list.append(float(row[1]))
 
-	return objectiveInput
+	return models.InputObjectiveData(
+		var_names=var_name_list, 
+		obj_coeffs=obj_coeff_list
+	)
 
 
 def openAndReadConstraintCSV (constFilepath: Path) -> models.InputConstraintData:
 	'''
 		Opens and reads the constraint csv, returning a InputConstraintData class
 	'''
-	constraintInput = models.InputConstraintData()
+	var_names = []
+	vec_operators = []
+	mat_constraint_coeffs = []
+	vec_const_bounds = []
+	const_names = []
 
 	with open(constFilepath, 'r') as constFile:
 		constCSVReader = csv.reader(constFile)
@@ -63,19 +71,25 @@ def openAndReadConstraintCSV (constFilepath: Path) -> models.InputConstraintData
 			lineCount += 1
 
 			if (lineCount == 1):
-				constraintInput.var_names = row[1:-2]
+				var_names = row[1:-2]
 			else:
 				operator = row[-2]
 				coeffs = row[1:-2]
 				constraint_bound = row[-1]
 				constraint_name = row[0]
 
-				constraintInput.vec_operators.append(operator)
-				constraintInput.mat_constraint_coeffs.append(coeffs)
-				constraintInput.vec_const_bounds.append(constraint_bound)
-				constraintInput.const_names.append(constraint_name)
+				vec_operators.append(operator)
+				mat_constraint_coeffs.append(coeffs)
+				vec_const_bounds.append(constraint_bound)
+				const_names.append(constraint_name)
 
-	return constraintInput
+	return models.InputConstraintData(
+		var_names=var_names,
+		const_names=const_names,
+		vec_const_bounds=vec_const_bounds,
+		vec_operators=vec_operators,
+		mat_constraint_coeffs=mat_constraint_coeffs
+	)
 
 
 def convertInputToFinalModel (objData: models.InputObjectiveData, constData: models.InputConstraintData) -> models.FinalModel:

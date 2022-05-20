@@ -19,19 +19,19 @@ from attrs import define, frozen
 
 @define
 class InputObjectiveData:
-	var_names: List[str] = []
-	obj_coeffs: List[float] = []
+	var_names: List[str]
+	obj_coeffs: List[float]
 
 
 @define
 class InputConstraintData:
-	var_names: List[str] = []
-	const_names: List[str] = []
+	var_names: List[str]
+	const_names: List[str]
 
 	# These are all parallel Lists
-	vec_const_bounds: List[float] = []
-	vec_operators: List[str] = []
-	mat_constraint_coeffs: List[List[float]] = []
+	vec_const_bounds: List[float]
+	vec_operators: List[str]
+	mat_constraint_coeffs: List[List[float]] 
 
 
 @frozen
