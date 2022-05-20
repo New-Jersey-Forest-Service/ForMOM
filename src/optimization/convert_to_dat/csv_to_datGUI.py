@@ -49,22 +49,12 @@ CSV_FILES = [('CSV Files','*.csv'), ('All Files','*.*')]
 DAT_FILES = [('DAT Files','*.dat'), ('All Files','*.*')]
 
 
+
+
 # ======================================================
-#                 (0) Main Calls
+#                 File Selection
 # ======================================================
 
-
-def shrinkPathString(pathstr: str) -> str:
-    pathstr = str(pathstr)
-    if len(pathstr) <= PATH_DISPLAY_LEN:
-        return pathstr
-    else:
-        return '...' + pathstr[-PATH_DISPLAY_LEN + 3:]
-
-
-#--------------------------------------------------------
-#GUI setup
-#--------------------------------------------------------
 def setObjFile() -> None:
     '''
         Select objective csv with a chooser
@@ -139,6 +129,57 @@ def updateProcessButtonStatus() -> None:
         btnProc['state'] = 'disabled'
 
 
+def shrinkPathString(pathstr: str) -> str:
+    pathstr = str(pathstr)
+    if len(pathstr) <= PATH_DISPLAY_LEN:
+        return pathstr
+    else:
+        return '...' + pathstr[-PATH_DISPLAY_LEN + 3:]
+
+
+
+
+
+
+# ======================================================
+#             Processing / Actual Conversion
+# ======================================================
+
+#file processing; old main function
+def processCSVs() -> None:
+    return_messages = []
+	# Step 1: Get + Read Input
+    return_messages.append("Now parsing & converting...")
+
+    # TODO: This
+    objData = openAndReadObjectiveCSV(objFilepath)
+    constData = openAndReadConstraintCSV(constFilepath)
+
+    # Step 2: Validate the data & produce a FinalModel object
+    objData, constData = lintInputData(objData, constData)
+    finalModel = convertInputToFinalModel(objData, constData)
+
+    # Step 3: Write the finalModel
+    writeParamFile(finalModel, paramFilepath, objFilepath, constFilepath)
+    
+    return_messages.append(f'All done')
+    return_messages.append(f'View output in {paramFilepath}')
+    return return_messages
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #new main; instantiate mainWindow
@@ -186,7 +227,7 @@ def main():
     frmProcess.rowconfigure(1, weight=1)
     frmProcess.columnconfigure(0, weight=1)
 
-    btnProc = Button(frmProcess,text='Process',command=proc)
+    btnProc = Button(frmProcess,text='Process',command=processCSVs)
     txtOutput = Text(frmProcess, height=20)
 
     btnProc.grid(row=0, column=0, pady=5, sticky="ns")
@@ -201,40 +242,6 @@ def main():
 
     root.mainloop()
 #end main()
-
-
-#file processing; old main function
-def proc() -> List[str]:
-    return_messages = []
-	# Step 1: Get + Read Input
-    return_messages.append("Now parsing & converting...")
-
-    # TODO: This
-    objData = openAndReadObjectiveCSV(objFilepath)
-    constData = openAndReadConstraintCSV(constFilepath)
-
-    # Step 2: Validate the data & produce a FinalModel object
-    objData, constData = lintInputData(objData, constData)
-    finalModel = convertInputToFinalModel(objData, constData)
-
-    # Step 3: Write the finalModel
-    writeParamFile(finalModel, paramFilepath, objFilepath, constFilepath)
-    
-    return_messages.append(f'All done')
-    return_messages.append(f'View output in {paramFilepath}')
-    return return_messages
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
