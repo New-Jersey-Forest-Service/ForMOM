@@ -437,30 +437,9 @@ def writeMatrix (outFile, matrixName: str, matrix: list, rowNames: list, varName
 
 
 
-# ======================================================
-#              Logging / Small Utilities
-# ======================================================
-
-def errorAndExit (errMessage: str):
-	print()
-	print('\t[[ Error ]]')
-	print(f'{errMessage}')
-	print()
-	print("Aborting.")
-	sys.exit(1)
-
-
-def printWarning (warnMessage: str):
-	print(f'\t[[ Warning ]] : {warnMessage}')
-
-
-
-
-
-
 
 # ======================================================
-#                Input via Command Line
+#               Input via Command Line
 # ======================================================
 
 def getFilepathsFromInput () -> Union[str, str, str]:
@@ -525,6 +504,23 @@ def makeDATFilepath (message: str) -> Path:
 			sys.exit(0)
 
 	return pathObj
+
+
+#
+# Utilities for logging to command line
+
+def errorAndExit (errMessage: str):
+	print()
+	print('\t[[ Error ]]')
+	print(f'{errMessage}')
+	print()
+	print("Aborting.")
+	sys.exit(1)
+
+
+def printWarning (warnMessage: str):
+	print(f'\t[[ Warning ]] : {warnMessage}')
+
 
 
 
