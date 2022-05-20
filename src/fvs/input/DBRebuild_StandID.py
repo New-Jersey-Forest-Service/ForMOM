@@ -26,20 +26,52 @@ import sys
 # TODO: Better integration
 #	- [ ] Rewrite the structs to use cur.executemany()
 
+
+def is_valid_float(float_str: str) -> bool:
+	try:
+		float(float_str)
+		return True
+	except:
+		return False
+
+
 def extract_forest_types(cur: sqlite3.Cursor, tables: list):
 	# creates a map from STAND_CN (int) -> for_type (str)
 	stand_fortype_map = {}
 
 	for table_name in tables:
-		query = f'SELECT GROUPS, STAND_CN FROM {table_name}'
+		query = f'SELECT GROUPS, STAND_CN, COUNTY FROM {table_name}'
 		cur.execute(query)
 
 		for row in cur:
 			stand_cn = int(row[1])
+
 			str_groups = str(row[0]).split(" ")
 			FOR_TYPE_IND = 7
 			# This is making a lot of assumptions about the db :(
 			for_type = str(str_groups[FOR_TYPE_IND]).split("=")[1]
+
+			# Do the 167 Split
+			if (for_type == '167'):
+				county = row[2]
+				if (is_valid_float(county)):
+					county = int(float(county))
+				else:
+					county = -1
+
+				# if county in (5, 23, 25, 29) => 167 N
+				# if county in (1, 7, 11, 15, 19) => 167 S
+
+				if (county in (23, 25, 29, 1)):
+					for_type = '167N'
+				elif (county in (5, 7, 15, 11, 9)):
+					for_type = '167S'
+				else:
+					print(" > [[ Warning ]]")
+					print(" > \tFound 167 forest type outside of specified counties")
+					print(f" > \tGroups: {str_groups}")
+					print(f" > \tStand CN: {stand_cn}")
+					print(f" > \tCounty: {county}")
 
 			if not stand_cn in stand_fortype_map.keys():
 				stand_fortype_map[stand_cn] = for_type
