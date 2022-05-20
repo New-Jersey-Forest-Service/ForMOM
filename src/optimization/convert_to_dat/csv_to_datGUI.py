@@ -28,173 +28,202 @@ OBJFILE = 'testObjNoSBP.csv'
 CONSTRFILE = 'testConstraintsPL2.csv'
 OUTPUTDAT = 'testMini99.dat'
 '''
+
 #global variables
-objFile = ''
-constrFile = ''
-outputDat = ''
-allSel = False
+objFileStr = ''
+constrFileStr = ''
+outputDatFileStr = ''
+
 objSel = False
 constrSel = False
 outputSel = False
-objLabel = ''
-constrLabel = ''
-outputLabel = ''
+
+lblObj = None
+lblConstr = None
+lblDat = None
+btnProc = None
+
+#global constants
+PATH_DISPLAY_LEN = 35
+CSV_FILES = [('CSV Files','*.csv'), ('All Files','*.*')]
+DAT_FILES = [('DAT Files','*.dat'), ('All Files','*.*')]
 
 
 # ======================================================
 #                 (0) Main Calls
 # ======================================================
 
+
+def shrinkPathString(pathstr: str) -> str:
+    pathstr = str(pathstr)
+    if len(pathstr) <= PATH_DISPLAY_LEN:
+        return pathstr
+    else:
+        return '...' + pathstr[-PATH_DISPLAY_LEN + 3:]
+
+
 #--------------------------------------------------------
 #GUI setup
 #--------------------------------------------------------
-#select objective CSV with a chooser
-def setObjFile():
-    global objFile
-    global outputSel
-    global objSel
-    global constrSel
-    global allSel
-    global objLabel
-    files = [('CSV Files','*.csv'),
-                ('All Files','*.*')]
-    objFile = filedialog.askopenfile(
-    filetypes = files,defaultextension=files)
-    objLabel.config(text='Objective CSV: '+str(objFile))
-    objSel = True
-    if outputSel and constrSel:
-        allSel = True
-    if allSel:
-        procBtn['state']='normal'
+def setObjFile() -> None:
+    '''
+        Select objective csv with a chooser
+    '''
+    global objFileStr, lblObj, objSel
 
-#select constraint CSV with a chooser
-def setConstrFile():
-    global constrFile
-    global outputSel
-    global objSel
-    global constrSel
-    global allSel
-    global constrLabel
-    files = [('CSV Files','*.csv'),
-                ('All Files','*.*')]
-    constrFile = filedialog.askopenfile(
-        filetypes = files,defaultextension=files)
-    constrLabel.config(text='Objective CSV: '+str(constrFile))
-    constrSel = True
-    if outputSel and objSel:
-        allSel = True
-    if allSel:
-        procBtn['state']='normal'
+    objFileStr = filedialog.askopenfilename(
+        filetypes=CSV_FILES,
+        defaultextension=CSV_FILES
+        )
 
-#select output dat with a chooser
-def setOutFile():
-    global outputDat
-    global outputSel
-    global objSel
-    global constrSel
-    global allSel
-    global outputLabel
-    files = [('DAT Files','*.dat'),
-                ('All Files','*.*')]
-    outputDat = filedialog.asksaveasfilename(
-        filetypes = files,defaultextension=files)
-    outputLabel.config(text='Output DAT1: '+str(outputDat))
-    outputSel = True
-    if objSel and constrSel:
-        allSel = True
-    if allSel:
-        procBtn['state']='normal'
+    print(objFileStr)
+
+    if objFileStr.strip() == "":
+        objSel = False
+        lblObj.config(text="No file selected")
+    else:
+        objSel = True
+        lblObj.config(text=shrinkPathString(objFileStr))
+    
+    updateProcessButtonStatus()
+    
+
+def setConstrFile() -> None:
+    '''
+        Select constraint csv with a chooser
+    '''
+    global constrFileStr, lblConstr, constrSel
+
+    constrFileStr = filedialog.askopenfilename(
+        filetypes=CSV_FILES,
+        defaultextension=CSV_FILES
+        )
+
+    if constrFileStr.strip() == "":
+        constrSel = False
+        lblConstr.config(text="No file selected")
+    else: 
+        constrSel = True
+        lblConstr.config(text=shrinkPathString(constrFileStr))
+
+    updateProcessButtonStatus()
+
+
+def setOutFile() -> None:
+    '''
+        Select output dat with a chooser 
+    '''
+    global outputDatFileStr, lblDat, constrSel
+
+    outputDatFileStr = filedialog.asksaveasfilename(
+        filetypes=DAT_FILES,
+        defaultextension=DAT_FILES
+        )
+
+    if outputDatFileStr.strip() == "":
+        outputSel = False
+        lblDat.config(text="No file selected")
+    else:
+        outputSel = True
+        lblDat.config(text=shrinkPathString(outputDatFileStr))
+
+    updateProcessButtonStatus()
+
+
+def updateProcessButtonStatus() -> None:
+    global btnProc
+
+    if objSel and constrSel and outputSel:
+        btnProc['state'] = 'normal'
+    else:
+        btnProc['state'] = 'disabled'
+
+
+
 
 #new main; instantiate mainWindow
 def main():
-    global objLabel
-    global constrLabel
-    global datLabel
-    global outputLabel
-    global procBtn
+    global lblObj, lblConstr, lblDat, btnProc
+
     #create a main window
     root = Tk()
-    root.title('NJ Forest Service ForMOM')
-    root.geometry('400x300')
+    root.title('NJFS ForMOM - CSV to Dat')
+    root.geometry('450x600')
+    root.rowconfigure(2, weight=1)
+    root.columnconfigure(0, weight=1)
 
-    #create a title label
-    titleLabel = Label(root, text="Select Input CSV's & Output dat")
+    #Title + Instruction Label
+    frmTitle = Frame(root)
 
-    #create labels for selection statuses
-    objLabel = Label(root, text="Obj CSV: ")
-    constrLabel = Label(root, text="Constraint CSV: ")
-    outputLabel = Label(root, text="Output DAT: ")
-    procLabel = Label(root, text = '')
-    #define buttons
-    objFileBtn = Button(root,text='Objective CSV',command=setObjFile)
-    constrFileBtn = Button(root,text='Constraint CSV',command=setConstrFile)
-    outputFileBtn = Button(root,text='Output DAT',command=setOutFile)
-    procBtn = Button(root,text='Process',command=proc)
-    #disable process button
-    procBtn['state']='disabled'
-    if allSel:
-        procBtn['state']='normal'
+    lblTitle = Label(frmTitle, text="NJFS .csv to .dat Converter", font=("Arial", 20), anchor="center")
+    lblInstruction = Label(frmTitle, text="Select Input CSV's and then Process", anchor="center")
+    lblTitle.grid(row=0, column=0)
+    lblInstruction.grid(row=1, column=0)
 
-    #display buttons and labels
-    titleLabel.pack()
-    objFileBtn.pack(padx=10,pady=10)
-    objLabel.pack()
-    constrFileBtn.pack(padx=10,pady=10)
-    constrLabel.pack()
-    outputFileBtn.pack(padx=10,pady=10)
-    outputLabel.pack()
-    procBtn.pack(padx=10,pady=10)
-    procLabel.pack()
+    #File Selectors
+    frmFileSelectors = Frame(root)
+    frmFileSelectors.rowconfigure([0, 1, 2], minsize=50, weight=1)
+    frmFileSelectors.columnconfigure([0, 1], weight=1)
+    frmFileSelectors.columnconfigure(0, minsize=125)
+
+    btnObjFile = Button(frmFileSelectors,text='Objective CSV',command=setObjFile)
+    lblObj     = Label(frmFileSelectors, text="No file selected", width=PATH_DISPLAY_LEN, anchor="w")
+    btnObjFile.grid(row=0, column=0, sticky="nse", pady=5)
+    lblObj.grid(row=0, column=1, sticky="nsw", padx=5)
+
+    btnConstrFile = Button(frmFileSelectors,text='Constraint CSV',command=setConstrFile)
+    lblConstr     = Label(frmFileSelectors, text="No file selected", width=PATH_DISPLAY_LEN, anchor="w")
+    btnConstrFile.grid(row=1, column=0, sticky="nse", pady=5)
+    lblConstr.grid(row=1, column=1, sticky="nsw", padx=5)
+
+    btnDatFile = Button(frmFileSelectors,text='Output DAT',command=setOutFile)
+    lblDat     = Label(frmFileSelectors, text="No file selected", width=PATH_DISPLAY_LEN, anchor="w")
+    btnDatFile.grid(row=2, column=0, sticky="nse", pady=5)
+    lblDat.grid(row=2, column=1, sticky="nsw", padx=5)
+
+    #Processing
+    frmProcess = Frame(root)
+    frmProcess.rowconfigure(1, weight=1)
+    frmProcess.columnconfigure(0, weight=1)
+
+    btnProc = Button(frmProcess,text='Process',command=proc)
+    txtOutput = Text(frmProcess, height=20)
+
+    btnProc.grid(row=0, column=0, pady=5, sticky="ns")
+    txtOutput.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+
+    #Gridding the main frames
+    frmTitle.grid(row=0, column=0)
+    frmFileSelectors.grid(row=1, column=0, padx=10, pady=(10, 0))
+    frmProcess.grid(row=2, column=0, sticky="ns")
+
+    updateProcessButtonStatus()
 
     root.mainloop()
 #end main()
 
+
 #file processing; old main function
-def proc():
+def proc() -> List[str]:
+    return_messages = []
 	# Step 1: Get + Read Input
-	objFilepath, constFilepath, paramFilepath = getFilepathsFromInput()
-	print()
-	print("Now parsing & converting...")
+    return_messages.append("Now parsing & converting...")
 
-	objData = openAndReadObjectiveCSV(objFilepath)
-	constData = openAndReadConstraintCSV(constFilepath)
+    # TODO: This
+    objData = openAndReadObjectiveCSV(objFilepath)
+    constData = openAndReadConstraintCSV(constFilepath)
 
-	# Step 2: Validate the data & produce a FinalModel object
-	objData, constData = lintInputData(objData, constData)
-	finalModel = convertInputToFinalModel(objData, constData)
+    # Step 2: Validate the data & produce a FinalModel object
+    objData, constData = lintInputData(objData, constData)
+    finalModel = convertInputToFinalModel(objData, constData)
 
-	# Step 3: Write the finalModel
-	writeParamFile(finalModel, paramFilepath, objFilepath, constFilepath)
+    # Step 3: Write the finalModel
+    writeParamFile(finalModel, paramFilepath, objFilepath, constFilepath)
+    
+    return_messages.append(f'All done')
+    return_messages.append(f'View output in {paramFilepath}')
+    return return_messages
 
-	print()
-	print(f'All done')
-	print(f'View output in {paramFilepath}')
-
-
-def getFilepathsFromInput () -> Union[str, str, str]:
-	# First get the filepaths
-	# Try it with choosers
-
-	# print("Let's choose some CSV's for making a Pyomo .dat file!")
-	# input("Press any key to choose decision variable CSV.")
-	# Tk().withdraw() #hide tk window since this is not a full GUI program
-	# objFilepath   = askopenfilename()
-	# input("Press any key to choose a constraint CSV.")
-	# constFilepath = askopenfilename()
-	# print("Next choose a Pyomo .dat file.")
-	# print("Note: You will have to right click in the file window")
-	# print("to create a new file and then select the file.")
-	# input("Press any key to choose a Pyomo .dat filename")
-	# paramFilepath = askopenfilename()
-
-	# objFilepath   = getCSVFilepath("Objective File:   ")
-	# constFilepath = getCSVFilepath("Constraints File: ")
-	# paramFilepath = makeDATFilepath("Output .dat File: ")
-	objFilepath = OBJFILE
-	constFilepath = CONSTRFILE
-	paramFilepath = OUTPUTDAT
-
-	return objFilepath, constFilepath, paramFilepath
 
 
 
