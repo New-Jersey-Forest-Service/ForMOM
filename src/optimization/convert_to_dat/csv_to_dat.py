@@ -15,16 +15,8 @@ import sys
 import csv
 from typing import Union
 from pathlib import Path
-from tkinter import Tk
-from tkinter.filedialog import askopenfilename
 
 from model_data_classes import *
-
-#constants for file names
-#***Change filenames/paths here (for now)
-OBJFILE = 'named_pokomoke_obj.csv'
-CONSTRFILE = 'named_pokomoke_constsGe.csv'
-OUTPUTDAT = 'named_pokomoke_out.dat'
 
 
 
@@ -54,27 +46,9 @@ def main():
 
 
 def getFilepathsFromInput () -> Union[str, str, str]:
-	# First get the filepaths
-	# Try it with choosers
-
-	# print("Let's choose some CSV's for making a Pyomo .dat file!")
-	# input("Press any key to choose decision variable CSV.")
-	# Tk().withdraw() #hide tk window since this is not a full GUI program
-	# objFilepath   = askopenfilename()
-	# input("Press any key to choose a constraint CSV.")
-	# constFilepath = askopenfilename()
-	# print("Next choose a Pyomo .dat file.")
-	# print("Note: You will have to right click in the file window")
-	# print("to create a new file and then select the file.")
-	# input("Press any key to choose a Pyomo .dat filename")
-	# paramFilepath = askopenfilename()
-
-	# objFilepath   = getCSVFilepath("Objective File:   ")
-	# constFilepath = getCSVFilepath("Constraints File: ")
-	# paramFilepath = makeDATFilepath("Output .dat File: ")
-	objFilepath = OBJFILE
-	constFilepath = CONSTRFILE
-	paramFilepath = OUTPUTDAT
+	objFilepath   = getCSVFilepath("Objective File:   ")
+	constFilepath = getCSVFilepath("Constraints File: ")
+	paramFilepath = makeDATFilepath("Output .dat File: ")
 
 	return objFilepath, constFilepath, paramFilepath
 
