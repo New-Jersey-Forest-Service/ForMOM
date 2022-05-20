@@ -20,6 +20,7 @@ from tkinter import messagebox
 from tkinter import filedialog
 
 from model_data_classes import *
+import csv_to_dat as converter
 
 #constants for file names
 #***Change filenames/paths here (for now)
@@ -36,12 +37,13 @@ outputDatFileStr = ''
 
 objSel = False
 constrSel = False
-outputSel = False
+datSel = False
 
 lblObj = None
 lblConstr = None
 lblDat = None
 btnProc = None
+txtOutput = None
 
 #global constants
 PATH_DISPLAY_LEN = 35
@@ -66,9 +68,7 @@ def setObjFile() -> None:
         defaultextension=CSV_FILES
         )
 
-    print(objFileStr)
-
-    if objFileStr.strip() == "":
+    if isInvalidFile(objFileStr):
         objSel = False
         lblObj.config(text="No file selected")
     else:
@@ -89,7 +89,7 @@ def setConstrFile() -> None:
         defaultextension=CSV_FILES
         )
 
-    if constrFileStr.strip() == "":
+    if isInvalidFile(constrFileStr):
         constrSel = False
         lblConstr.config(text="No file selected")
     else: 
@@ -103,27 +103,32 @@ def setOutFile() -> None:
     '''
         Select output dat with a chooser 
     '''
-    global outputDatFileStr, lblDat, constrSel
+    global outputDatFileStr, lblDat, datSel
 
     outputDatFileStr = filedialog.asksaveasfilename(
         filetypes=DAT_FILES,
         defaultextension=DAT_FILES
         )
 
-    if outputDatFileStr.strip() == "":
-        outputSel = False
+    if isInvalidFile(outputDatFileStr):
+        datSel = False
         lblDat.config(text="No file selected")
     else:
-        outputSel = True
+        datSel = True
         lblDat.config(text=shrinkPathString(outputDatFileStr))
 
     updateProcessButtonStatus()
 
 
+def isInvalidFile(dialogOutput) -> bool:
+    # For whatever reason, filedialog.askname() can return multiple different things ???
+    return dialogOutput == None or len(dialogOutput) == 0 or dialogOutput.strip() == ""
+
+
 def updateProcessButtonStatus() -> None:
     global btnProc
 
-    if objSel and constrSel and outputSel:
+    if objSel and constrSel and datSel:
         btnProc['state'] = 'normal'
     else:
         btnProc['state'] = 'disabled'
@@ -134,7 +139,7 @@ def shrinkPathString(pathstr: str) -> str:
     if len(pathstr) <= PATH_DISPLAY_LEN:
         return pathstr
     else:
-        return '...' + pathstr[-PATH_DISPLAY_LEN + 3:]
+        return '...' + pathstr[3 - PATH_DISPLAY_LEN:]
 
 
 
@@ -145,26 +150,40 @@ def shrinkPathString(pathstr: str) -> str:
 #             Processing / Actual Conversion
 # ======================================================
 
-#file processing; old main function
-def processCSVs() -> None:
-    return_messages = []
-	# Step 1: Get + Read Input
-    return_messages.append("Now parsing & converting...")
+def doProcessing() -> None:
+    '''
+    Actually does the file processing. Based heavily on the main
+    call of csv_to_dat.
 
-    # TODO: This
-    objData = openAndReadObjectiveCSV(objFilepath)
-    constData = openAndReadConstraintCSV(constFilepath)
+    Will output all errors & warnings to the textbook.
+    '''
+    global txtOutput
 
-    # Step 2: Validate the data & produce a FinalModel object
-    objData, constData = lintInputData(objData, constData)
-    finalModel = convertInputToFinalModel(objData, constData)
 
-    # Step 3: Write the finalModel
-    writeParamFile(finalModel, paramFilepath, objFilepath, constFilepath)
-    
-    return_messages.append(f'All done')
-    return_messages.append(f'View output in {paramFilepath}')
-    return return_messages
+    try:
+        # Read Data
+        objData = converter.openAndReadObjectiveCSV(objFileStr)
+        constrData = converter.openAndReadConstraintCSV(constrFileStr)
+
+        # Lint Data
+        objData, constrData, messages = converter.lintInputData(objData, constrData)
+
+        txtOutput.delete("1.0", END)
+        txtOutput.insert(END, "\n\n".join(messages))
+
+        if objData == None:
+            txtOutput.insert("1.0", "[[ Errors Occured - Unable to Convert ]] \n\n")
+            return
+
+        # Output to File
+        finalModel = converter.convertInputToFinalModel(objData, constrData)
+        converter.writeOutputDat(finalModel, outputDatFileStr, objFileStr, constrFileStr)
+
+        txtOutput.insert("1.0", "[[ Conversion Successful ]]\n\n")
+
+    except Exception:
+        txtOutput.delete("1.0", END)
+        txtOutput.insert(END, "[[ Unkown Errors Occured :( - Unable to Convert ]]")
 
 
 
@@ -184,7 +203,7 @@ def processCSVs() -> None:
 
 #new main; instantiate mainWindow
 def main():
-    global lblObj, lblConstr, lblDat, btnProc
+    global lblObj, lblConstr, lblDat, btnProc, txtOutput
 
     #create a main window
     root = Tk()
@@ -227,7 +246,7 @@ def main():
     frmProcess.rowconfigure(1, weight=1)
     frmProcess.columnconfigure(0, weight=1)
 
-    btnProc = Button(frmProcess,text='Process',command=processCSVs)
+    btnProc = Button(frmProcess,text='Process',command=doProcessing)
     txtOutput = Text(frmProcess, height=20)
 
     btnProc.grid(row=0, column=0, pady=5, sticky="ns")
