@@ -13,10 +13,10 @@ NJDEP
 import os
 import sys
 import csv
-from typing import Union
+from typing import Union, List
 from pathlib import Path
 
-from model_data_classes import *
+import model_data_classes as models
 
 
 
@@ -26,12 +26,12 @@ from model_data_classes import *
 #                 Reading Input Files
 # ======================================================
 
-def openAndReadObjectiveCSV (objFilepath: Path) -> InputObjectiveData:
+def openAndReadObjectiveCSV (objFilepath: Path) -> models.InputObjectiveData:
 	'''
 		Opens and reads the objective file csv, returning
 		a InputObjectiveData object.
 	'''
-	objectiveInput = InputObjectiveData()
+	objectiveInput = models.InputObjectiveData()
 
 	with open(objFilepath, 'r') as objFile:
 		objCSVReader = csv.reader(objFile)
@@ -48,11 +48,11 @@ def openAndReadObjectiveCSV (objFilepath: Path) -> InputObjectiveData:
 	return objectiveInput
 
 
-def openAndReadConstraintCSV (constFilepath: Path) -> InputConstraintData:
+def openAndReadConstraintCSV (constFilepath: Path) -> models.InputConstraintData:
 	'''
 		Opens and reads the constraint csv, returning a InputConstraintData class
 	'''
-	constraintInput = InputConstraintData()
+	constraintInput = models.InputConstraintData()
 
 	with open(constFilepath, 'r') as constFile:
 		constCSVReader = csv.reader(constFile)
@@ -78,7 +78,7 @@ def openAndReadConstraintCSV (constFilepath: Path) -> InputConstraintData:
 	return constraintInput
 
 
-def convertInputToFinalModel (objData: InputObjectiveData, constData: InputConstraintData) -> FinalModel:
+def convertInputToFinalModel (objData: models.InputObjectiveData, constData: models.InputConstraintData) -> models.FinalModel:
 	# All the lists to populate
 	var_names = []
 	obj_coeffs = []
@@ -116,7 +116,7 @@ def convertInputToFinalModel (objData: InputObjectiveData, constData: InputConst
 			eq_vec.append(constData.vec_const_bounds[ind])
 			eq_mat.append(constData.mat_constraint_coeffs[ind])
 
-	return FinalModel(
+	return models.FinalModel(
 		var_names=var_names, obj_coeffs=obj_coeffs,
 		le_const_names=le_const_names, le_vec=le_vec, le_mat=le_mat,
 		ge_const_names=ge_const_names, ge_vec=ge_vec, ge_mat=ge_mat,
@@ -136,7 +136,7 @@ def convertInputToFinalModel (objData: InputObjectiveData, constData: InputConst
 #                Input Linting & Validation
 # ======================================================
 
-def lintInputData (objData: InputObjectiveData, constData: InputConstraintData) -> Union[InputObjectiveData, InputConstraintData, str]:
+def lintInputData (objData: models.InputObjectiveData, constData: models.InputConstraintData) -> Union[models.InputObjectiveData, models.InputConstraintData, str]:
 	'''
 		Goes through the data in the CSVs and runs some checks. It will return either:
 			1. (None, None, ["Error Message"]) in the case of an error
@@ -360,7 +360,7 @@ def getNextAvailableDummyName (nameList: List[str], nameBase: str, startInd: int
 #                  Writing to .dat
 # ======================================================
 
-def writeOutputDat (modelData: FinalModel, outputFilepath: str, objFilepath: str, constFilepath: str):
+def writeOutputDat (modelData: models.FinalModel, outputFilepath: str, objFilepath: str, constFilepath: str):
 	md = modelData
 
 	# Now write the entire model into the .dat file
