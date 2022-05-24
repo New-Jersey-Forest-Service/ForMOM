@@ -14,7 +14,7 @@ from attrs import define, frozen
 
 
 @frozen
-class VarGroupIDs:
-	delim: str
+class VarTagsInfo:
+	tag_order: List[str]
 	all_vars: List[List[str]]
-	var_groups: Dict[str, List[str]]
+	tag_groups: Dict[str, List[str]]

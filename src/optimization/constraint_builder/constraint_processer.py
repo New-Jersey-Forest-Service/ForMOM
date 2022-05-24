@@ -29,38 +29,38 @@ import re
 # [ ] Have dataclass for constraint classes
 #    - There should be a sense of an abstract constraint class (group members)
 #      and a concrete constraint class (which can be exactly compiled into constraints)
+# [ ] Use Set instead of List for tag_groups in class models.VarTagsInfo
 
 def main():
 	# Input
 	objCSVPath = getCSVFilepath("Objective file: ")
-	varNames = readAllObjVarnames(objCSVPath)
+	varNamesRaw = readAllObjVarnames(objCSVPath)
 	delimiter = input("Delimiter: ")
 
 	# Linting
-	errMsg = lintVarNames(varNames, delimiter)
+	errMsg = lintVarNames(varNamesRaw, delimiter)
 	if errMsg != None:
 		errorAndExit(errMsg)
 
 	# Processing
-	numGroups = getNumGroups(varNames[0], delimiter)
-	groupIDLists = splitVarsToMakeGroups(varNames, delimiter, numGroups)
-	varGroupLists = splitVarsIntoGroups(varNames, delimiter)
+	varnameTags = splitVarsToTags(varNamesRaw, delimiter)
+	tagGroupMembersList = makeTagGroupMembersList(varnameTags)
 
 	# Input
-	groupNames = getGroupNames(groupIDLists)
+	tagGroupNames = getTagGroupNames(tagGroupMembersList)
 
 	# Processing
-	groupIDDict = {}
-	for ind, name in enumerate(groupNames):
-		groupIDDict[name] = groupIDLists[ind]
+	tagGroupsDict = {}
+	for ind, name in enumerate(tagGroupNames):
+		tagGroupsDict[name] = tagGroupMembersList[ind]
 
-	groupsData = models.VarGroupIDs(
-		all_vars = varGroupLists,
-		delim = delimiter,
-		var_groups = groupIDDict
+	groupsData = models.VarTagsInfo(
+		tag_order = tagGroupNames,
+		all_vars = varnameTags,
+		tag_groups = tagGroupsDict
 	)
 
-	print(groupsData.var_groups)
+	print(groupsData.tag_groups)
 	generateConstraint(groupsData, {"species": ['167N'], "year":['2021', '2025', '2030'], "mng": ["WFNM", "PLSQ"]})
 
 	
@@ -72,19 +72,19 @@ def main():
 # Processing
 #
 
-def generateConstraint (allVarsInfo: models.VarGroupIDs, includeGroupIDs: Dict[str, List[str]]) -> List[str]:
+def generateConstraint (allVarsInfo: models.VarTagsInfo, includedTagsDict: Dict[str, List[str]]) -> List[str]:
 	'''
 		Given the necessary definitions for a constraint class, this will return all variables
 		matching the includeGroupIDs
 	'''
-
 	matchingNames = []
-	allKeys = list(includeGroupIDs.keys())
-	individualGroupIds = [includeGroupIDs[k] for k in allKeys]
+	allKeys = list(includedTagsDict.keys())
+	individualGroupIds = [includedTagsDict[k] for k in allKeys]
 
 	for varGroups in itertools.product(*individualGroupIds):
-		varName = "_".join(varGroups)
-		if varName in allVarsInfo.all_vars:
+		varTags = list(varGroups)
+		varName = "_".join(varTags)
+		if varTags in allVarsInfo.all_vars:
 			matchingNames.append(varName)
 		else:
 			print(f"[[ Found unused var ]]: {varName}")
@@ -94,52 +94,52 @@ def generateConstraint (allVarsInfo: models.VarGroupIDs, includeGroupIDs: Dict[s
 	return matchingNames
 
 
-def splitVarsIntoGroups (varNames: List[str], delim: str) -> List[List[str]]:
+def makeTagGroupMembersList (allVarTags: List[List[str]]) -> List[List[str]]:
+	'''
+		Takes a list of variables in the form
+
+		[	[167S, 2021, NM],
+		 	[167S, 2025, NM],
+		 	[167N, 2025, NM],
+		 	[167N, 2030, SBP]	]
+
+		and returns lists of each individual tag group,
+		in the order they appear within the variables.
+
+		[	[167S, 167N],
+			[2021, 2025, 2030],
+			[NM, SBP]	] 
+	'''
+	tagGroupMembers = []
+	for i in range(len(allVarTags[0])):
+		tagGroupMembers.append(set())
+	
+	for varTags in allVarTags:
+		for ind, groupID in enumerate(varTags):
+			tagGroupMembers[ind].add(groupID)
+
+	for ind, tags in enumerate(tagGroupMembers):
+		tagGroupMembers[ind] = list(tags)
+		tagGroupMembers[ind].sort()
+
+	return tagGroupMembers
+
+
+def splitVarsToTags (rawVarnames: List[str], delim: str) -> List[List[str]]:
 	'''
 	Splits variables up by their delimiter
 	input:  [ "167S_2021_NM",          "167N_2030_SBP" ] 
 	output: [ ["167S", "2021", "NM"], ["167N", "2030", "SBP"] ]
 	'''
-	return [x.split(delim) for x in varNames]
+	return [splitRawVarIntoTags(x, delim) for x in rawVarnames]
 
 
-def splitVarsToMakeGroups (varNames: List[str], delim: str, numGroups: int) -> List[List[str]]:
-	'''
-		Takes a list of variables in the form
-
-		[	167S_2021_NM,
-		 	167S_2025_NM,
-		 	167N_2025_NM,
-		 	167N_2030_SBP	]
-
-		and returns lists of each individual group
-
-		[	[167S, 167N],
-			[2021, 2025, 2030],
-			[NM, SBP]	]
-	'''
-	groupIDLists = []
-	for i in range(numGroups):
-		groupIDLists.append([])
-	
-	for var in varNames:
-		splitUpGroups = splitVarIntoGroups(var, delim)
-		for ind, groupID in enumerate(splitUpGroups):
-			groupIDLists[ind].append(groupID)
-
-	for ind, groupIDs in enumerate(groupIDLists):
-		groupIDLists[ind] = list(set(groupIDs))
-		groupIDLists[ind].sort()
-
-	return groupIDLists
+def getNumTagsInRawVar (varnameRaw: str, delim: str) -> int:
+	return len(splitRawVarIntoTags(varnameRaw, delim))
 
 
-def getNumGroups (var: str, delim: str) -> int:
-	return len(splitVarIntoGroups(var, delim))
-
-
-def splitVarIntoGroups (var: str, delim: str) -> List[str]:
-	return re.split(delim + "+", var)
+def splitRawVarIntoTags (varnameRaw, delim: str) -> List[str]:
+	return re.split(delim + "+", varnameRaw)
 
 
 
@@ -149,7 +149,7 @@ def splitVarIntoGroups (var: str, delim: str) -> List[str]:
 # Linting
 #
 
-def lintVarNames (varNames: List[str], delim: str) -> str:
+def lintVarNames (varNamesRaw, delim: str) -> str:
 	'''
 	Goes through the list of variable names and checks that they're nice
 	 - returns None if there are no erors
@@ -161,7 +161,7 @@ def lintVarNames (varNames: List[str], delim: str) -> str:
 
 
 	# [[ Check ]] At least one variable
-	if (varNames == None or len(varNames) == 0):
+	if (varNamesRaw == None or len(varNamesRaw) == 0):
 		return "Empty or None list passed in"
 
 	
@@ -175,23 +175,23 @@ def lintVarNames (varNames: List[str], delim: str) -> str:
 
 
 	# [[ Check ]] All group names are valid
-	for var in varNames:
-		for group in splitVarIntoGroups(var, delim):
+	for var in varNamesRaw:
+		for group in splitRawVarIntoTags(var, delim):
 			if re.search(GROUP_NAME_REGEX, group) == None:
 				return f'Found invalid groupname "{group}" for variable "{var}". Groups must contain only letters and numbers'
 
 
 	# [[ Check ]] All variables have the same number of groups
-	firstVar = varNames[0]
-	numGroups = getNumGroups(firstVar, delim)
+	firstVar = varNamesRaw[0]
+	numGroups = getNumTagsInRawVar(firstVar, delim)
 
-	for var in varNames[1:]:
-		testNumGroups = getNumGroups(var, delim)
+	for var in varNamesRaw[1:]:
+		testNumGroups = getNumTagsInRawVar(var, delim)
 		if testNumGroups != numGroups:
 			return f'Variable "{var}" has a different number of groups ({testNumGroups}) compare to "{firstVar}" ({numGroups})'
 
 
-def lintGroupName (groupName: str) -> str:
+def lintTagGroupName (tagGroupName) -> str:
 	'''
 	Checks that the provided group name is valid, returning None if
 	there are no errors or the actual error message if there is one
@@ -199,10 +199,9 @@ def lintGroupName (groupName: str) -> str:
 	GROUPNAME_MAX_LENGTH = 15
 	GROUPNAME_MIN_LENGTH = 3
 
-
 	# [[ Check ]] Size
-	if len(groupName) < GROUPNAME_MIN_LENGTH or len(groupName) > GROUPNAME_MAX_LENGTH:
-			return f'Groupname "{groupName}" is incorrect length. ' + \
+	if len(tagGroupName) < GROUPNAME_MIN_LENGTH or len(tagGroupName) > GROUPNAME_MAX_LENGTH:
+			return f'Groupname "{tagGroupName}" is incorrect length. ' + \
 				   f'It must be between {GROUPNAME_MIN_LENGTH} to {GROUPNAME_MAX_LENGTH} ' + \
 				   f'characters long'
 
@@ -215,7 +214,7 @@ def lintGroupName (groupName: str) -> str:
 #
 
 def readAllObjVarnames (objCSVPath: Path) -> List[str]:
-	all_vars = []
+	allVarnames = []
 
 	with open(objCSVPath, 'r') as objFile:
 		objCSVReader = csv.reader(objFile)
@@ -228,9 +227,9 @@ def readAllObjVarnames (objCSVPath: Path) -> List[str]:
 			if lineCount == 1:
 				continue
 
-			all_vars.append(row[0])
+			allVarnames.append(row[0])
 	
-	return all_vars
+	return allVarnames
 
 
 
@@ -245,7 +244,7 @@ def readAllObjVarnames (objCSVPath: Path) -> List[str]:
 
 GROUPNAME_MAX_LENGTH = 15
 
-def getGroupNames (groupIDLists: List[List[str]]) -> List[str]:
+def getTagGroupNames (tagGroupsList: List[List[str]]) -> List[str]:
 	'''
 		Takes the list of different group ids and asks the user
 		to name them. For ex:
@@ -264,25 +263,25 @@ def getGroupNames (groupIDLists: List[List[str]]) -> List[str]:
 			"management"
 		]
 	'''
-	groupNames = []
+	tagGroupNames = []
 
-	for groupIDs in groupIDLists:
+	for tagGroup in tagGroupsList:
 		sampleMembers = None
-		if len(groupIDs) < 3:
-			sampleMembers = groupIDs
+		if len(tagGroup) < 3:
+			sampleMembers = tagGroup
 		else:
-			sampleMembers = groupIDs[:3] + ["..."]
-		membersStr = ", ".join(sampleMembers)
+			sampleMembers = tagGroup[:3] + ["..."]
+		sampleStr = ", ".join(sampleMembers)
 
-		name = input(f"\nGroup members: {membersStr}\nName for group? ").strip()
+		name = input(f"\nGroup members: {sampleStr}\nName for group? ").strip()
 
-		errMsg = lintGroupName(name)
+		errMsg = lintTagGroupName(name)
 		if errMsg:
 			errorAndExit(errMsg)
 
-		groupNames.append(name)
+		tagGroupNames.append(name)
 	
-	return groupNames
+	return tagGroupNames
 
 
 
