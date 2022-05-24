@@ -23,10 +23,10 @@ import re
 
 # TODO:
 # [ ] Remove main method, this file is not meant to actually be run
-# [ ] Come up with better names (groups, vars, varGroupList, etc is _really_ confusing)
+# [~] Come up with better names (groups, vars, varGroupList, etc is _really_ confusing)
 # [ ] Be more strict with delimiting
 #    - Only allow for one character in the delimiting ?
-# [ ] Have dataclass for constraint classes
+# [~] Have dataclass for constraint classes
 #    - There should be a sense of an abstract constraint class (group members)
 #      and a concrete constraint class (which can be exactly compiled into constraints)
 # [ ] Use Set instead of List for tag_groups in class models.VarTagsInfo
@@ -35,15 +35,15 @@ def main():
 	# Input
 	objCSVPath = getCSVFilepath("Objective file: ")
 	varNamesRaw = readAllObjVarnames(objCSVPath)
-	delimiter = input("Delimiter: ")
+	delim = input("Delimiter: ")
 
 	# Linting
-	errMsg = lintVarNames(varNamesRaw, delimiter)
+	errMsg = lintVarNames(varNamesRaw, delim)
 	if errMsg != None:
 		errorAndExit(errMsg)
 
 	# Processing
-	varnameTags = splitVarsToTags(varNamesRaw, delimiter)
+	varnameTags = splitVarsToTags(varNamesRaw, delim)
 	tagGroupMembersList = makeTagGroupMembersList(varnameTags)
 
 	# Input
@@ -54,16 +54,33 @@ def main():
 	for ind, name in enumerate(tagGroupNames):
 		tagGroupsDict[name] = tagGroupMembersList[ind]
 
-	groupsData = models.VarTagsInfo(
+	varTagGroupsData = models.VarTagsInfo(
 		tag_order = tagGroupNames,
 		all_vars = varnameTags,
 		tag_groups = tagGroupsDict
 	)
 
-	print(groupsData.tag_groups)
-	generateConstraint(groupsData, {"species": ['167N'], "year":['2021', '2025', '2030'], "mng": ["WFNM", "PLSQ"]})
+	constrAllPLSQBySpecies = models.ConstraintGroup(
+		included_tags = {"species": ["167N", "167S", "409"], "year": ["2021", "2025", "2030"], "mng": ["PLSQ"]},
+		split_by_groups = ["species"],
+		name = "All_PLSQ"
+	)
+
+	constrAllBySpeciesByYear = models.ConstraintGroup(
+		included_tags = {"species": ["167N", "409"], "year": ["2021", "2025", "2030", "2050"], "mng": ["PLSQ", "PLWF", "RBWF", "STQO", "TB", "TBWF", "RxB"]},
+		split_by_groups = ["species", "mng"],
+		name = "All"
+	)
+
+	compileConstraintGroupToConstraints(varTagGroupsData, constrAllPLSQBySpecies)
+
+	print("\n" * 5)
+
+	print("[[ Now generating constraints split by species & year ]]")
+	compileConstraintGroupToConstraints(varTagGroupsData, constrAllBySpeciesByYear)
 
 	
+
 
 
 
@@ -72,26 +89,63 @@ def main():
 # Processing
 #
 
-def generateConstraint (allVarsInfo: models.VarTagsInfo, includedTagsDict: Dict[str, List[str]]) -> List[str]:
-	'''
-		Given the necessary definitions for a constraint class, this will return all variables
-		matching the includeGroupIDs
-	'''
-	matchingNames = []
-	allKeys = list(includedTagsDict.keys())
-	individualGroupIds = [includedTagsDict[k] for k in allKeys]
+def compileConstraintGroupToConstraints (varInfo: models.VarTagsInfo, constrGroup: models.ConstraintGroup):
+	constrDict = {}
 
-	for varGroups in itertools.product(*individualGroupIds):
-		varTags = list(varGroups)
-		varName = "_".join(varTags)
-		if varTags in allVarsInfo.all_vars:
-			matchingNames.append(varName)
-		else:
-			print(f"[[ Found unused var ]]: {varName}")
+	# First generate all the names
+	constrNames = []
+	constrNameTags = []
+	for splitByGroup in constrGroup.split_by_groups:
+		includedTags = constrGroup.included_tags[splitByGroup]
+		constrNameTags.append(includedTags)
+	
+	for nameTags in itertools.product(*constrNameTags):
+		constrNames.append("_".join([constrGroup.name] + list(nameTags)))
+	
+	if len(constrNames) == 0:
+		constrNames = [constrGroup.name]
 
+	for name in constrNames:
+		constrDict[name] = []
+	
+	# Then generate all the constraints
+	tagLists = []
+	for tagGroup in varInfo.tag_order:
+		tagLists.append(constrGroup.included_tags[tagGroup])
+	
+	# This is useful for sorting into the constraint dict
+	splitByIndicies = []
+	for splitByGroup in constrGroup.split_by_groups:
+		ind = varInfo.tag_order.index(splitByGroup) # Unsafe !!
+		splitByIndicies.append(ind)
+	splitByIndicies.sort()
+
+	for varTags in itertools.product(*tagLists):
+		varTags = list(varTags)
+		if not (varTags in varInfo.all_vars):
+			continue
+
+		varNameRaw = "_".join(varTags)
+
+		tagsInConstrName = []
+		for ind in splitByIndicies:
+			tagsInConstrName.append(varTags[ind]) # Unsafe !!
+		constrName = "_".join([constrGroup.name] + list(tagsInConstrName))
+
+		constrDict[constrName].append(varNameRaw)
+
+	# As a last pass, check for empty constraints
+	allKeys = list(constrDict.keys())
+	for key in allKeys:
+		if len(constrDict[key]) == 0:
+			constrDict.pop(key)
+	
 	print()
-	print("\n > ".join(matchingNames))
-	return matchingNames
+	print()
+	for key in constrDict:
+		print(f"{key}: \t{' + '.join(constrDict[key])}")
+		
+
 
 
 def makeTagGroupMembersList (allVarTags: List[List[str]]) -> List[List[str]]:
