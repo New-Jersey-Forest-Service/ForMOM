@@ -32,6 +32,13 @@ import DBRebuild_StandID as dbStandID
 DB_FILEPATH = './FIADB_NJ.db'
 DB_NAME = 'FIADB_NJ.db'
 INV_YEARS = [2015, 2016, 2017, 2018, 2019, 2020]
+COUNTY_SPLIT_DICT = {
+	'167': {
+		'167N': [23, 25, 29, 1],
+		'167S': [5, 7, 15, 11, 9]
+	}
+}
+
 
 
 # FIA Specific Configuration - These are specified by the programmer
@@ -68,21 +75,21 @@ def main():
 	print("Deleting tables")
 	delete_extra_tables_and_check_for_all_expected_ones(cur)
 
-	# print()
-	# print("Creating tables with specific inventory years")
-	# create_inventory_year_tables(cur)
+	print()
+	print("Creating tables with specific inventory years")
+	create_inventory_year_tables(cur)
 
-	# print()
-	# print("Updating groupaddfilesandkeywords")
-	# update_groupaddfilesandkeywords(cur)
+	print()
+	print("Updating groupaddfilesandkeywords")
+	update_groupaddfilesandkeywords(cur)
 
-	# print()
-	# print("Doing ID Replace")
-	# dbStandID.do_id_replace(cur)
+	print()
+	print("Doing ID Replace")
+	dbStandID.do_id_replace(cur, COUNTY_SPLIT_DICT)
 
-	# print()
-	# print("Running command block 2")
-	# run_script(cur, './commandblock2.sql')
+	print()
+	print("Running command block 2")
+	run_script(cur, './commandblock2.sql')
 
 	print()
 	print("Checking for large stands")
