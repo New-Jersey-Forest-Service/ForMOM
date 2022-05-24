@@ -28,6 +28,11 @@ import DBRebuild_StandID as dbStandID
 DB_FILEPATH = './FIADB_NJ.db'
 DB_NAME = 'FIADB_NJ.db'
 
+INV_YEARS = [2015, 2016, 2017, 2018, 2019, 2020]
+# Convert to a string for easier formatting
+INV_YEARS = [str(x) for x in INV_YEARS]
+
+
 def main():
 	global DB_FILEPATH
 
@@ -41,8 +46,7 @@ def main():
 	delete_extra_tables(cur)
 
 	print()
-	print("Running command block 1")
-	run_script(cur, './commandblock1.sql')
+	print("Creating tables with specific inventory years")
 
 	print()
 	print("Updating groupaddfilesandkeywords")
@@ -68,8 +72,12 @@ def run_script(cur: sqlite3.Cursor, path: str) -> None:
 		cur.executescript(f.read())
 
 
-# TODO: Turn this into an SQL Query ?
-# TODO: Check that these tables do actually exist
+#
+# Steps 1 -3
+# 
+# Deleting Tables, Creating Tables, Editing groupaddfilesandkeywords
+#
+
 def delete_extra_tables(cur: sqlite3.Cursor) -> None:
 	'''
 		Deletes all tables except for a couple specified ones.
@@ -102,6 +110,27 @@ def delete_extra_tables(cur: sqlite3.Cursor) -> None:
 		else:
 			print(f' > Remove: {table}')
 			cur.execute(f"DROP TABLE {table}")
+
+
+
+
+def create_inventory_year_tables(cur: sqlite3.Cursor) -> None:
+	got_to_end = False
+
+	with open('./commandblock1.sql', 'r') as f:
+		entire_script = f.read()
+		entire_script = entire_script.replace(
+			"$$INVENTORY_YEARS$$", 
+			", ".join(INV_YEARS)
+		)
+		cur.executescript(entire_script)
+		got_to_end = True
+	
+	if not got_to_end:
+		err_and_exit("Unable to create inventory year tables")
+
+	print(f" > Succesfully created tables for years {', '.join(INV_YEARS)}")
+	
 
 
 def update_groupaddfilesandkeywords(cur: sqlite3.Cursor) -> None:
