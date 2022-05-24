@@ -107,9 +107,9 @@ def do_id_replace(cur: sqlite3.Cursor) -> None:
 	do_replacement(cur, "FVS_STANDINIT_PLOT", fortype_dict)
 	do_replacement(cur, "FVS_TREEINIT_PLOT", fortype_dict)
 
-	do_replacement(cur, "FVS_PLOTINIT_PLOT_20152019T", fortype_dict)
-	do_replacement(cur, "FVS_STANDINIT_PLOT_20152019T", fortype_dict)
-	do_replacement(cur, "FVS_TREEINIT_PLOT_20152019T", fortype_dict)
+	do_replacement(cur, "FVS_PLOTINIT_PLOT_INVYEARST", fortype_dict)
+	do_replacement(cur, "FVS_STANDINIT_PLOT_INVYEARST", fortype_dict)
+	do_replacement(cur, "FVS_TREEINIT_PLOT_INVYEARST", fortype_dict)
 
 	print("Finished ID Replace")
 
