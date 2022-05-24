@@ -15,6 +15,6 @@ from attrs import define, frozen
 
 @frozen
 class VarGroupIDs:
-	all_vars: List[str]
 	delim: str
+	all_vars: List[List[str]]
 	var_groups: Dict[str, List[str]]

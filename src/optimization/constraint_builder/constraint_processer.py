@@ -14,13 +14,22 @@ Started 05/21/2022
 
 import varname_dataclasses as models
 from pathlib import Path
-from typing import List
+from typing import List, Dict
+import itertools
 import csv
 import sys
 import re
 
 
-# TODO: Remove main method, this file is not meant to actually be run
+# TODO:
+# [ ] Remove main method, this file is not meant to actually be run
+# [ ] Come up with better names (groups, vars, varGroupList, etc is _really_ confusing)
+# [ ] Be more strict with delimiting
+#    - Only allow for one character in the delimiting ?
+# [ ] Have dataclass for constraint classes
+#    - There should be a sense of an abstract constraint class (group members)
+#      and a concrete constraint class (which can be exactly compiled into constraints)
+
 def main():
 	# Input
 	objCSVPath = getCSVFilepath("Objective file: ")
@@ -34,12 +43,25 @@ def main():
 
 	# Processing
 	numGroups = getNumGroups(varNames[0], delimiter)
-	groupIDLists = splitsVarsIntoGroupIDs(varNames, delimiter, numGroups)
+	groupIDLists = splitVarsToMakeGroups(varNames, delimiter, numGroups)
+	varGroupLists = splitVarsIntoGroups(varNames, delimiter)
 
 	# Input
 	groupNames = getGroupNames(groupIDLists)
 
 	# Processing
+	groupIDDict = {}
+	for ind, name in enumerate(groupNames):
+		groupIDDict[name] = groupIDLists[ind]
+
+	groupsData = models.VarGroupIDs(
+		all_vars = varGroupLists,
+		delim = delimiter,
+		var_groups = groupIDDict
+	)
+
+	print(groupsData.var_groups)
+	generateConstraint(groupsData, {"species": ['167N'], "year":['2021', '2025', '2030'], "mng": ["WFNM", "PLSQ"]})
 
 	
 
@@ -50,7 +72,38 @@ def main():
 # Processing
 #
 
-def splitsVarsIntoGroupIDs (varNames: List[str], delim: str, numGroups: int) -> List[List[str]]:
+def generateConstraint (allVarsInfo: models.VarGroupIDs, includeGroupIDs: Dict[str, List[str]]) -> List[str]:
+	'''
+		Given the necessary definitions for a constraint class, this will return all variables
+		matching the includeGroupIDs
+	'''
+
+	matchingNames = []
+	allKeys = list(includeGroupIDs.keys())
+	individualGroupIds = [includeGroupIDs[k] for k in allKeys]
+
+	for varGroups in itertools.product(*individualGroupIds):
+		varName = "_".join(varGroups)
+		if varName in allVarsInfo.all_vars:
+			matchingNames.append(varName)
+		else:
+			print(f"[[ Found unused var ]]: {varName}")
+
+	print()
+	print("\n > ".join(matchingNames))
+	return matchingNames
+
+
+def splitVarsIntoGroups (varNames: List[str], delim: str) -> List[List[str]]:
+	'''
+	Splits variables up by their delimiter
+	input:  [ "167S_2021_NM",          "167N_2030_SBP" ] 
+	output: [ ["167S", "2021", "NM"], ["167N", "2030", "SBP"] ]
+	'''
+	return [x.split(delim) for x in varNames]
+
+
+def splitVarsToMakeGroups (varNames: List[str], delim: str, numGroups: int) -> List[List[str]]:
 	'''
 		Takes a list of variables in the form
 
@@ -296,3 +349,30 @@ if __name__ == '__main__':
 	main()
 
 
+
+
+'''
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣤⣤⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣼⠟⠉⠉⠉⠉⠉⠉⠉⠙⠻⢶⣄⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⣷⡀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⡟⠀⣠⣶⠛⠛⠛⠛⠛⠛⠳⣦⡀⠀⠘⣿⡄⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⠁⠀⢹⣿⣦⣀⣀⣀⣀⣀⣠⣼⡇⠀⠀⠸⣷⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⡏⠀⠀⠀⠉⠛⠿⠿⠿⠿⠛⠋⠁⠀⠀⠀⠀⣿⡄⣠
+⠀⠀⢀⣀⣀⣀⠀⠀⢠⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⡇⠀
+⠿⠿⠟⠛⠛⠉⠀⠀⣸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⣿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣧⠀
+⠀⠀⠀⠀⠀⠀⠀⢸⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⠀
+⠀⠀⠀⠀⠀⠀⠀⣾⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀
+⠀⠀⠀⠀⠀⠀⠀⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀
+⠀⠀⠀⠀⠀⠀⢰⣿⠀⠀⠀⠀⣠⡶⠶⠿⠿⠿⠿⢷⣦⠀⠀⠀⠀⠀⠀⠀⣿⠀
+⠀⠀⣀⣀⣀⠀⣸⡇⠀⠀⠀⠀⣿⡀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⠀⠀⣿⠀
+⣠⡿⠛⠛⠛⠛⠻⠀⠀⠀⠀⠀⢸⣇⠀⠀⠀⠀⠀⠀⣿⠇⠀⠀⠀⠀⠀⠀⣿⠀
+⢻⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣼⡟⠀⠀⢀⣤⣤⣴⣿⠀⠀⠀⠀⠀⠀⠀⣿⠀
+⠈⠙⢷⣶⣦⣤⣤⣤⣴⣶⣾⠿⠛⠁⢀⣶⡟⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡟⠀
+⢷⣶⣤⣀⠉⠉⠉⠉⠉⠄⠀⠀⠀⠀⠈⣿⣆⡀⠀⠀⠀⠀⠀⠀⢀⣠⣴⡾⠃⠀
+⠀⠈⠉⠛⠿⣶⣦⣄⣀⠀⠀⠀⠀⠀⠀⠈⠛⠻⢿⣿⣾⣿⡿⠿⠟⠋⠁⠀⠀⠀
+
+
+			 Why so Sus ?
+
+'''
