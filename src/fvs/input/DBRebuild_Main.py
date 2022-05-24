@@ -16,7 +16,7 @@ NJDEP
 #  - Never index into elements without checking their length
 # [ ] Cleaner SQL
 #  - Run everything through an auto-formatter
-# [ ] Better Feedback
+# [x] Better Feedback
 #  - Debug progress of queries to console
 
 import sqlite3
@@ -25,10 +25,13 @@ import sys
 import DBRebuild_StandID as dbStandID
 
 
+# User Specified Constants
 DB_FILEPATH = './FIADB_NJ.db'
 DB_NAME = 'FIADB_NJ.db'
-
 INV_YEARS = [2015, 2016, 2017, 2018, 2019, 2020]
+
+# Programmer Specified Comments
+DEFAULT_DB_REGEX = r'FS_FIADB_STATECD_\d{2,2}\.db'
 # Convert to a string for easier formatting
 INV_YEARS = [str(x) for x in INV_YEARS]
 
@@ -47,6 +50,7 @@ def main():
 
 	print()
 	print("Creating tables with specific inventory years")
+	create_inventory_year_tables(cur)
 
 	print()
 	print("Updating groupaddfilesandkeywords")
@@ -70,6 +74,7 @@ def main():
 def run_script(cur: sqlite3.Cursor, path: str) -> None:
 	with open(path, 'r') as f:
 		cur.executescript(f.read())
+
 
 
 #
@@ -154,7 +159,7 @@ def update_groupaddfilesandkeywords(cur: sqlite3.Cursor) -> None:
 			''')
 		fvskeywords = str(cur.fetchall()[0][0])
 
-		fvskeywords = fvskeywords.replace(DEFAULT_DBNAME, DB_NAME)	
+		fvskeywords = re.sub(DEFAULT_DB_REGEX, DB_NAME, fvskeywords)	
 		fvskeywords = re.sub("_CN =\s?'%Stand_CN%'", "_ID = '%StandID%'", fvskeywords)
 		
 		cur.execute(f'''
