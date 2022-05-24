@@ -12,6 +12,7 @@ NJDEP / NJFS
 Started 05/21/2022
 '''
 
+# import optimization.constraint_builder.varname_dataclasses as models
 import varname_dataclasses as models
 from pathlib import Path
 from typing import List, Dict
@@ -30,6 +31,9 @@ import re
 #    - There should be a sense of an abstract constraint class (group members)
 #      and a concrete constraint class (which can be exactly compiled into constraints)
 # [ ] Use Set instead of List for tag_groups in class models.VarTagsInfo
+# [ ] Adjust architecture so all method for compiling constraints groups -> constraints
+#      live inside varname_dataclasses.py
+# [ ] Instead of returning lists of copmiled constraints, return an iterator or generator function
 
 def main():
 	# Input
@@ -60,24 +64,28 @@ def main():
 		tag_groups = tagGroupsDict
 	)
 
-	constrAllPLSQBySpecies = models.ConstraintGroup(
+	constrAllPLSQBySpecies = models.StandardConstraintGroup(
 		included_tags = {"species": ["167N", "167S", "409"], "year": ["2021", "2025", "2030"], "mng": ["PLSQ"]},
 		split_by_groups = ["species"],
-		name = "All_PLSQ"
+		name = "PLSQ_ALL"
 	)
 
-	constrAllBySpeciesByYear = models.ConstraintGroup(
+	constrAllBySpeciesByYear = models.StandardConstraintGroup(
 		included_tags = {"species": ["167N", "409"], "year": ["2021", "2025", "2030", "2050"], "mng": ["PLSQ", "PLWF", "RBWF", "STQO", "TB", "TBWF", "RxB"]},
-		split_by_groups = ["species", "mng"],
+		split_by_groups = ["species", "year"],
 		name = "All"
 	)
 
-	compileConstraintGroupToConstraints(varTagGroupsData, constrAllPLSQBySpecies)
+	print("\n" * 3)
+	constList = compileStandardConstraintGroup(varTagGroupsData, constrAllPLSQBySpecies)
+	for const in constList:
+		print(f"{const.name} \t|\t{' + '.join(['_'.join(x) for x in const.var_tags])}   \t{str(const.compare_type) + str(const.compare_value)}")
 
-	print("\n" * 5)
-
+	print("\n" * 3)
 	print("[[ Now generating constraints split by species & year ]]")
-	compileConstraintGroupToConstraints(varTagGroupsData, constrAllBySpeciesByYear)
+	constList = compileStandardConstraintGroup(varTagGroupsData, constrAllBySpeciesByYear)
+	for const in constList:
+		print(f"{const.name} \t|\t{' + '.join(['_'.join(x) for x in const.var_tags])}   \t{str(const.compare_type) + str(const.compare_value)}")
 
 	
 
@@ -89,62 +97,87 @@ def main():
 # Processing
 #
 
-def compileConstraintGroupToConstraints (varInfo: models.VarTagsInfo, constrGroup: models.ConstraintGroup):
-	constrDict = {}
+def compileStandardConstraintGroup (varInfo: models.VarTagsInfo, stdConGroup: models.StandardConstraintGroup) -> List[models.CompiledConstraint]:
+	conDict = {}
 
-	# First generate all the names
-	constrNames = []
-	constrNameTags = []
-	for splitByGroup in constrGroup.split_by_groups:
-		includedTags = constrGroup.included_tags[splitByGroup]
-		constrNameTags.append(includedTags)
-	
-	for nameTags in itertools.product(*constrNameTags):
-		constrNames.append("_".join([constrGroup.name] + list(nameTags)))
-	
-	if len(constrNames) == 0:
-		constrNames = [constrGroup.name]
+	#	
+	# Generate names of all constraints
+	conNames = []
+	conNameTags = []
 
-	for name in constrNames:
-		constrDict[name] = []
-	
-	# Then generate all the constraints
-	tagLists = []
+	# Iterating through varInfo.tag_order guarantees the order is correct
 	for tagGroup in varInfo.tag_order:
-		tagLists.append(constrGroup.included_tags[tagGroup])
+		if tagGroup in stdConGroup.split_by_groups:
+			conNameTags.append(stdConGroup.included_tags[tagGroup])
 	
-	# This is useful for sorting into the constraint dict
-	splitByIndicies = []
-	for splitByGroup in constrGroup.split_by_groups:
-		ind = varInfo.tag_order.index(splitByGroup) # Unsafe !!
-		splitByIndicies.append(ind)
-	splitByIndicies.sort()
+	for conTags in itertools.product(*conNameTags):
+		conNames.append("_".join([stdConGroup.name] + list(conTags)))
+	if len(conNames) == 0:
+		conNames = [stdConGroup.name]
+	
+	# The names are used as keys in the constraint dictionary, so we
+	# populate the dictionary with empty lists
+	for name in conNames:
+		conDict[name] = []
+	
+	print(conDict)
+	
 
-	for varTags in itertools.product(*tagLists):
+	#
+	# Generate the indicies that get split by
+	tagListsByGroup = [] # this is a 2D array
+	for tagGroup in varInfo.tag_order:
+		tagListsByGroup.append(stdConGroup.included_tags[tagGroup])
+	
+	# TODO: Refactor to avoid needing indToSplitBy
+	indToSplitBy = []
+	for splitByGroup in stdConGroup.split_by_groups:
+		ind = varInfo.tag_order.index(splitByGroup)
+		indToSplitBy.append(ind)
+	indToSplitBy.sort()
+
+
+	#
+	# Generate all potential variables and split into multiple constraints
+	for varTags in itertools.product(*tagListsByGroup):
 		varTags = list(varTags)
 		if not (varTags in varInfo.all_vars):
 			continue
 
-		varNameRaw = "_".join(varTags)
+		tagsToSplitBy = []
+		for ind in indToSplitBy:
+			tagsToSplitBy.append(varTags[ind])
+		conName = "_".join([stdConGroup.name] + tagsToSplitBy)
 
-		tagsInConstrName = []
-		for ind in splitByIndicies:
-			tagsInConstrName.append(varTags[ind]) # Unsafe !!
-		constrName = "_".join([constrGroup.name] + list(tagsInConstrName))
+		conDict[conName].append(varTags)
 
-		constrDict[constrName].append(varNameRaw)
+	# Check for potential empty constraints & convert to list
+	allKeys = list(conDict.keys())
+	compiledConList = []
 
-	# As a last pass, check for empty constraints
-	allKeys = list(constrDict.keys())
 	for key in allKeys:
-		if len(constrDict[key]) == 0:
-			constrDict.pop(key)
+		numVars = len(conDict[key])
+
+		if numVars == 0:
+			printInfo(f"Found empty constraint {key}")
+		else:
+			compiledConList.append(
+				models.CompiledConstraint(
+					name = key,
+					var_tags = conDict[key],
+					var_coeffs = [1] * numVars,
+					compare_type = models.ComparisonSign.EQ,
+					compare_value = 0
+				)
+			)
 	
-	print()
-	print()
-	for key in constrDict:
-		print(f"{key}: \t{' + '.join(constrDict[key])}")
-		
+	return compiledConList
+
+
+	
+
+
+
 
 
 
@@ -375,7 +408,7 @@ def getCSVFilepath (message: str) -> Path:
 
 def errorAndExit (errMessage: str):
 	print()
-	print('\t[[ Error ]]')
+	print('\t[[ XX Error ]]')
 	print(f'{errMessage}')
 	print()
 	print("Aborting.")
@@ -383,8 +416,11 @@ def errorAndExit (errMessage: str):
 
 
 def printWarning (warnMessage: str):
-	print(f'\t[[ Warning ]] : {warnMessage}')
+	print(f'\t[[ !! Warning ]] : {warnMessage}')
 
+
+def printInfo (infoMessage: str):
+	print(f'\t[[ ~~ Info ]] : {infoMessage}')
 
 
 
