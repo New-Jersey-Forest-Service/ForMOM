@@ -18,6 +18,9 @@ NJDEP
 #  - Run everything through an auto-formatter
 # [x] Better Feedback
 #  - Debug progress of queries to console
+# [ ] Actually get county counts
+#  - This would be helpful on a national scale but 
+#    I think it's a little too much effort right now
 
 import sqlite3
 import re
@@ -25,13 +28,30 @@ import sys
 import DBRebuild_StandID as dbStandID
 
 
-# User Specified Constants
+# State Specific Configuration
 DB_FILEPATH = './FIADB_NJ.db'
 DB_NAME = 'FIADB_NJ.db'
 INV_YEARS = [2015, 2016, 2017, 2018, 2019, 2020]
 
-# Programmer Specified Comments
+
+# FIA Specific Configuration - These are specified by the programmer
 DEFAULT_DB_REGEX = r'FS_FIADB_STATECD_\d{2,2}\.db'
+FVS_MAX_TREES = 3000
+TABLES_TO_KEEP = [
+	'COND', 
+	'COUNTY', 
+	'FVS_GROUPADDFILESANDKEYWORDS',
+	'FVS_PLOTINIT_PLOT',
+	'FVS_STANDINIT_PLOT',
+	'FVS_TREEINIT_PLOT',
+	'PLOT',
+	'POP_STRATUM',
+	'REF_FOREST_TYPE',
+	'REF_FOREST_TYPE_GROUP',
+	'REF_SPECIES',
+	'SEEDLING',
+	'TREE'
+]
 # Convert to a string for easier formatting
 INV_YEARS = [str(x) for x in INV_YEARS]
 
@@ -46,23 +66,27 @@ def main():
 
 	print()
 	print("Deleting tables")
-	delete_extra_tables(cur)
+	delete_extra_tables_and_check_for_all_expected_ones(cur)
+
+	# print()
+	# print("Creating tables with specific inventory years")
+	# create_inventory_year_tables(cur)
+
+	# print()
+	# print("Updating groupaddfilesandkeywords")
+	# update_groupaddfilesandkeywords(cur)
+
+	# print()
+	# print("Doing ID Replace")
+	# dbStandID.do_id_replace(cur)
+
+	# print()
+	# print("Running command block 2")
+	# run_script(cur, './commandblock2.sql')
 
 	print()
-	print("Creating tables with specific inventory years")
-	create_inventory_year_tables(cur)
-
-	print()
-	print("Updating groupaddfilesandkeywords")
-	update_groupaddfilesandkeywords(cur)
-
-	print()
-	print("Doing ID Replace")
-	dbStandID.do_id_replace(cur)
-
-	print()
-	print("Running command block 2")
-	run_script(cur, './commandblock2.sql')
+	print("Checking for large stands")
+	check_for_large_stands(cur)
 
 	print()
 	print(" [[ FINISHED ]] ")
@@ -83,40 +107,28 @@ def run_script(cur: sqlite3.Cursor, path: str) -> None:
 # Deleting Tables, Creating Tables, Editing groupaddfilesandkeywords
 #
 
-def delete_extra_tables(cur: sqlite3.Cursor) -> None:
+def delete_extra_tables_and_check_for_all_expected_ones(cur: sqlite3.Cursor) -> None:
 	'''
 		Deletes all tables except for a couple specified ones.
 		It will also terminate the program if a specified table is not found.
 	'''
-	TABLES_TO_KEEP = [
-		'COND', 
-		'COUNTY', 
-		'FVS_GROUPADDFILESANDKEYWORDS',
-		'FVS_PLOTINIT_PLOT',
-		'FVS_STANDINIT_PLOT',
-		'FVS_TREEINIT_PLOT',
-		'PLOT',
-		'POP_STRATUM',
-		'REF_FOREST_TYPE',
-		'REF_FOREST_TYPE_GROUP',
-		'REF_SPECIES',
-		'SEEDLING',
-		'TREE'
-	]
-
 	sql_gettables = "SELECT name FROM sqlite_master WHERE type='table'"
 	cur.execute(sql_gettables)
 	all_tables = [str(x[0]) for x in cur.fetchall()]
+	tables_not_found = [x for x in TABLES_TO_KEEP] # Creates copy by value
 
 	for table in all_tables:
 		if table in TABLES_TO_KEEP:
+			tables_not_found.remove(table)
 			print(f' > Keep: {table}')
 
 		else:
 			print(f' > Remove: {table}')
 			cur.execute(f"DROP TABLE {table}")
-
-
+	
+	if len(tables_not_found) > 0:
+		print(f" > [[ WARNING ]]")
+		print(f" > \tDid not find expected tables {','.join(tables_not_found)}")
 
 
 def create_inventory_year_tables(cur: sqlite3.Cursor) -> None:
@@ -140,7 +152,6 @@ def create_inventory_year_tables(cur: sqlite3.Cursor) -> None:
 
 def update_groupaddfilesandkeywords(cur: sqlite3.Cursor) -> None:
 	TABLE_NAME = 'FVS_GROUPADDFILESANDKEYWORDS'
-	DEFAULT_DBNAME = 'FS_FIADB_STATECD_34.db' # TODO: Pull this from the data (I think 34 is NJ's number)
 
 	# Rename All_FIA_Plots to All_FIA_ForestTypes
 	cur.execute(f'''
@@ -166,6 +177,35 @@ def update_groupaddfilesandkeywords(cur: sqlite3.Cursor) -> None:
 			UPDATE {TABLE_NAME}
 			SET FVSKEYWORDS = "{fvskeywords}" WHERE GROUPS = '{group}'
 			''')
+
+
+#
+# Step 6
+#
+# Checking for particularly large stands (> 3000)
+#
+
+def check_for_large_stands(cur: sqlite3.Cursor) -> None:
+	trees_in_stand = '''
+		SELECT STAND_ID, COUNT(*) AS AMNT 
+		FROM FVS_TREEINIT_PLOT 
+		GROUP BY STAND_ID'''
+	cur.execute(trees_in_stand)
+
+	large_standids = []
+	for row in cur:
+		standid = row[0]
+		numtrees = row[1]
+
+		if (numtrees >= FVS_MAX_TREES):
+			large_standids.append(standid)
+	
+	if len(large_standids) > 0:
+		print(f" > [[ Warning ]]")
+		print(f" > \tStand IDs {', '.join(large_standids)} have {FVS_MAX_TREES}+ entries in FVS_TREEINIT_PLOT.")
+		print(f" > \tConsider splitting up by county codes")
+
+
 
 
 def err_and_exit(err: str) -> None:
