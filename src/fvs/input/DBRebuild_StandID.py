@@ -13,13 +13,14 @@ Michael Gorbunov
 
 import sqlite3
 import sys
+from typing import List, Dict
 
 # TODO: Less magic numbers
 #   - [ ] Somehow explain or derive the 7
 # TODO: Less magic names
 #	- [ ] Use dataclases or attrs classes instead of dicts
-# TODO: Better integration
-#	- [ ] Rewrite the structs to use cur.executemany()
+# TODO: Better queries
+#	- [ ] Rewrite the queries to use cur.executemany()
 
 def parse_as_int_if_valid(float_str: str) -> int:
 	try:
@@ -29,8 +30,8 @@ def parse_as_int_if_valid(float_str: str) -> int:
 		return -1
 
 
-def extract_forest_types(cur: sqlite3.Cursor, tables: list, county_split_dict: dict):
-	# creates a map from STAND_CN (int) -> for_type (str)
+def extract_forest_types(cur: sqlite3.Cursor, tables: List[str], county_split_dict: Dict[str, Dict[str, List[int]]]):
+	# creates a map from for_type (str) -> list of STAND_CN (List[int])
 	stand_fortype_map = {}
 
 	fortypes_to_split = list(county_split_dict.keys())
@@ -52,8 +53,10 @@ def extract_forest_types(cur: sqlite3.Cursor, tables: list, county_split_dict: d
 				county = parse_as_int_if_valid(row[2])
 				for_type = county_split_id(for_type, county, str_groups, stand_cn, county_split_dict)
 
-			if not stand_cn in stand_fortype_map.keys():
-				stand_fortype_map[stand_cn] = for_type
+			if for_type not in stand_fortype_map.keys():
+				stand_fortype_map[for_type] = [stand_cn]
+			elif not stand_cn in stand_fortype_map[for_type]:
+				stand_fortype_map[for_type].append(stand_cn)
 	
 	return stand_fortype_map
 
@@ -73,21 +76,18 @@ def county_split_id (for_type: str, county: int, str_groups: str, stand_cn: str,
 
 
 
-def do_replacement(cur: sqlite3.Cursor, table_name:str, cn_to_fortype_dict: list) -> None:
+def do_replacement(cur: sqlite3.Cursor, table_name:str, cn_to_fortype_dict: Dict[str, List[int]]) -> None:
 	print(f" > Doing ID Replacement for {table_name}")
 
 	for ind, key in enumerate(list(cn_to_fortype_dict.keys())):
-		stand_cn = key
-		for_type = cn_to_fortype_dict[key]
+		for_type = key
+		stand_cn_list = [str(x) for x in cn_to_fortype_dict[key]]
 
 		query = f'''
 			UPDATE {table_name} SET STAND_ID = "{for_type}"
-			WHERE STAND_CN = {stand_cn}
+			WHERE STAND_CN IN ({", ".join(stand_cn_list)})
 		'''
 		cur.execute(query)
-
-		if (ind % 1000 == 0):
-			print(f" > Executed 1000 ID Replacements")
 
 
 def do_id_replace(cur: sqlite3.Cursor, county_split_dict: dict) -> None:
