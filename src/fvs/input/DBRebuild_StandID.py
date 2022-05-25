@@ -107,7 +107,7 @@ def do_id_replace(cur: sqlite3.Cursor, county_split_dict: dict) -> None:
 	do_replacement(cur, "FVS_STANDINIT_PLOT_INVYEARST", fortype_dict)
 	do_replacement(cur, "FVS_TREEINIT_PLOT_INVYEARST", fortype_dict)
 
-	print("Finished ID Replace")
+	print(" > Finished ID Replace")
 
 
 if __name__ == '__main__':
@@ -118,6 +118,7 @@ if __name__ == '__main__':
 	print("WARNING: This file only runs the ID replacement steps.")
 	print("\tIt is automatically run from the main file, so you")
 	print("\tdo not need to run this seperately.")
+	print("\tIt is meant to be run by developers of the program.")
 	print()
 
 	usr_input = str(input("Do you still wish to continue? (y/n)"))
@@ -130,7 +131,7 @@ if __name__ == '__main__':
 		print("Ok, continuing")
 
 
-	do_id_replace(cur)
+	do_id_replace(cur, {})
 
 	db_connection.commit()
 	db_connection.close()

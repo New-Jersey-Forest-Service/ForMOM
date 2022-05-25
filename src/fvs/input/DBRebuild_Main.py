@@ -11,16 +11,18 @@ NJDEP
 '''
 
 # TODO:
-# [ ] Handle Malformed DB
-#  - Check that all tables needed are found
-#  - Never index into elements without checking their length
+# [~] Handle Malformed DB
+#  - [x] Check that all tables needed are found
+#  - [ ] Never index into elements without checking their length
 # [ ] Cleaner SQL
 #  - Run everything through an auto-formatter
 # [x] Better Feedback
-#  - Debug progress of queries to console
+#  - [x] Debug progress of queries to console
+#  - [ ] Condense feedback for table deletion
 # [ ] Actually get county counts
 #  - This would be helpful on a national scale but 
 #    I think it's a little too much effort right now
+# [ ] 
 
 import sqlite3
 import re
@@ -124,18 +126,29 @@ def delete_extra_tables_and_check_for_all_expected_ones(cur: sqlite3.Cursor) -> 
 	all_tables = [str(x[0]) for x in cur.fetchall()]
 	tables_not_found = [x for x in TABLES_TO_KEEP] # Creates copy by value
 
-	for table in all_tables:
-		if table in TABLES_TO_KEEP:
-			tables_not_found.remove(table)
-			print(f' > Keep: {table}')
+	num_removed = 0
+	num_kept = 0
 
+	for ind, table in enumerate(all_tables):
+		if table in TABLES_TO_KEEP:
+			num_kept += 1
+			tables_not_found.remove(table)
 		else:
-			print(f' > Remove: {table}')
+			num_removed += 1
 			cur.execute(f"DROP TABLE {table}")
+		
+		if ind % 10 == 0:
+			print(f" > Processed 10 tables")
+
+	print(f" > Removed {num_removed} tables and kept {num_kept} tables")
 	
 	if len(tables_not_found) > 0:
 		print(f" > [[ WARNING ]]")
 		print(f" > \tDid not find expected tables {','.join(tables_not_found)}")
+	else:
+		print(f" > Found all expected tables and removed unnecessary ones")
+
+	print()
 
 
 def create_inventory_year_tables(cur: sqlite3.Cursor) -> None:
