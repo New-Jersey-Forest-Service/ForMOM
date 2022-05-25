@@ -146,8 +146,8 @@ def delete_extra_tables_and_check_for_all_expected_ones(cur: sqlite3.Cursor) -> 
 			num_removed += 1
 			cur.execute(f"DROP TABLE {table}")
 
-		if ind % 10 == 0:
-			print(f" > Processed 10 tables")
+		if ind % 10 == 0 and ind != 0:
+			print(" > Processed 10 tables")
 
 	print(f" > Removed {num_removed} tables and kept {num_kept} tables")
 	
