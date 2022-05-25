@@ -65,13 +65,15 @@ def main():
 	)
 
 	constrAllPLSQBySpecies = models.StandardConstraintGroup(
-		included_tags = {"species": ["167N", "167S", "409"], "year": ["2021", "2025", "2030"], "mng": ["PLSQ"]},
+		selected_tags = {"species": ["167N", "167S", "409"], "year": ["2021", "2025", "2030"], "mng": ["PLSQ"]},
+		selection_type = models.SelectionType.INCLUDE_SELECTED,
 		split_by_groups = ["species"],
 		name = "PLSQ_ALL"
 	)
 
 	constrAllBySpeciesByYear = models.StandardConstraintGroup(
-		included_tags = {"species": ["167N", "409"], "year": ["2021", "2025", "2030", "2050"], "mng": ["PLSQ", "PLWF", "RBWF", "STQO", "TB", "TBWF", "RxB"]},
+		selected_tags = {"species": ["167N", "409"], "year": ["2021", "2025", "2030", "2050"], "mng": ["PLSQ", "PLWF", "RBWF", "STQO", "TB", "TBWF", "RxB"]},
+		selection_type = models.SelectionType.INCLUDE_SELECTED,
 		split_by_groups = ["species", "year"],
 		name = "All"
 	)
@@ -108,7 +110,7 @@ def compileStandardConstraintGroup (varInfo: models.VarTagsInfo, stdConGroup: mo
 	# Iterating through varInfo.tag_order guarantees the order is correct
 	for tagGroup in varInfo.tag_order:
 		if tagGroup in stdConGroup.split_by_groups:
-			conNameTags.append(stdConGroup.included_tags[tagGroup])
+			conNameTags.append(stdConGroup.selected_tags[tagGroup])
 	
 	for conTags in itertools.product(*conNameTags):
 		conNames.append("_".join([stdConGroup.name] + list(conTags)))
@@ -127,7 +129,7 @@ def compileStandardConstraintGroup (varInfo: models.VarTagsInfo, stdConGroup: mo
 	# Generate the indicies that get split by
 	tagListsByGroup = [] # this is a 2D array
 	for tagGroup in varInfo.tag_order:
-		tagListsByGroup.append(stdConGroup.included_tags[tagGroup])
+		tagListsByGroup.append(stdConGroup.selected_tags[tagGroup])
 	
 	# TODO: Refactor to avoid needing indToSplitBy
 	indToSplitBy = []

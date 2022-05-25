@@ -9,7 +9,7 @@ NJDEP
 '''
 
 import attrs
-from enum import Enum, unique
+from enum import Enum, unique, auto
 from typing import List, Dict
 from attrs import define, frozen
 
@@ -32,6 +32,13 @@ class ComparisonSign(Enum):
 		else:
 			return "??"
 
+
+@unique
+class SelectionType(Enum):
+	EXLUDE_SELECTED = auto()
+	INCLUDE_SELECTED = auto()
+
+
 @frozen
 class VarTagsInfo:
 	tag_order: List[str]
@@ -39,7 +46,7 @@ class VarTagsInfo:
 	tag_groups: Dict[str, List[str]]
 
 
-@frozen
+@define
 class CompiledConstraint:
 	name: str
 	var_tags: List[List[str]]
@@ -47,8 +54,10 @@ class CompiledConstraint:
 	compare_type: ComparisonSign
 	compare_value: float
 
+
 @frozen
 class StandardConstraintGroup:
-	included_tags: Dict[str, List[str]]
+	selected_tags: Dict[str, List[str]]
+	selection_type: SelectionType
 	split_by_groups: List[str]
 	name: str
