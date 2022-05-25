@@ -131,7 +131,7 @@ def replace_ids_in_table(cur: sqlite3.Cursor, table_name:str, cn_to_fortype_dict
 		'''
 		cur.execute(query)
 
-	sys.stdout.write(f" > Finished ID Replacement for {table_name}")
+	print(f" > Finished ID Replacement for {table_name}")
 
 
 
