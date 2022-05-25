@@ -134,6 +134,6 @@ dmypy.json
 .idea
 
 # For the vim users
-.swp
+*.swp
 
-.db
+*.db
