@@ -18,11 +18,12 @@ NJDEP
 #  - Run everything through an auto-formatter
 # [x] Better Feedback
 #  - [x] Debug progress of queries to console
-#  - [ ] Condense feedback for table deletion
-# [ ] Actually get county counts
+#  - [x] Condense feedback for table deletion
+#  - [ ] Add those cool progress bars that pip install uses
+# [x] Actually get county counts
 #  - This would be helpful on a national scale but 
 #    I think it's a little too much effort right now
-# [ ] 
+# [ ] Ask about creating a new DB at the beginning
 
 import sqlite3
 import re
@@ -86,6 +87,14 @@ def main():
 	update_groupaddfilesandkeywords(cur)
 
 	print()
+	print("Generating County Counts")
+	county_count_dict = dbStandID.get_num_fortypes_by_county(
+		cur, 
+		'FVS_TREEINIT_PLOT_INVYEARST', 
+		COUNTY_SPLIT_DICT
+	)
+
+	print()
 	print("Doing ID Replace")
 	dbStandID.do_id_replace(cur, COUNTY_SPLIT_DICT)
 
@@ -95,7 +104,7 @@ def main():
 
 	print()
 	print("Checking for large stands")
-	check_for_large_stands(cur)
+	check_for_large_stands(cur, county_count_dict)
 
 	print()
 	print(" [[ FINISHED ]] ")
@@ -136,7 +145,7 @@ def delete_extra_tables_and_check_for_all_expected_ones(cur: sqlite3.Cursor) -> 
 		else:
 			num_removed += 1
 			cur.execute(f"DROP TABLE {table}")
-		
+
 		if ind % 10 == 0:
 			print(f" > Processed 10 tables")
 
@@ -205,7 +214,7 @@ def update_groupaddfilesandkeywords(cur: sqlite3.Cursor) -> None:
 # Checking for particularly large stands (> 3000)
 #
 
-def check_for_large_stands(cur: sqlite3.Cursor) -> None:
+def check_for_large_stands(cur: sqlite3.Cursor, county_count_dict: dict) -> None:
 	trees_in_stand = '''
 		SELECT STAND_ID, COUNT(*) AS AMNT 
 		FROM FVS_TREEINIT_PLOT 
@@ -224,6 +233,15 @@ def check_for_large_stands(cur: sqlite3.Cursor) -> None:
 		print(f" > [[ Warning ]]")
 		print(f" > \tStand IDs {', '.join(large_standids)} have {FVS_MAX_TREES}+ entries in FVS_TREEINIT_PLOT.")
 		print(f" > \tConsider splitting up by county codes")
+	
+	for for_type in large_standids:
+		county_codes = list(county_count_dict[for_type].keys())
+		county_codes.sort()
+		print(f" > [[ Info ]]")
+		print(f" > County distribution for {for_type}")
+
+		for county in county_codes:
+			print(" > %4d | %d" % (county, county_count_dict[for_type][county]))
 
 
 
