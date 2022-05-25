@@ -240,9 +240,12 @@ def check_for_large_stands(cur: sqlite3.Cursor, county_count_dict: dict) -> None
 		print(f" > [[ Info ]]")
 		print(f" > County distribution for {for_type}")
 
+		total = 0
 		for county in county_codes:
-			print(" > %4d | %d" % (county, county_count_dict[for_type][county]))
-
+			amnt = county_count_dict[for_type][county]
+			print(" > %4d | %d" % (county, amnt))
+			total += amnt
+		print(f" >  tot | {total}")
 
 
 

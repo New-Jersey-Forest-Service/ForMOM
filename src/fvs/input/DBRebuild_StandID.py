@@ -111,11 +111,12 @@ def county_split_id (for_type: str, county: int, str_groups: str, stand_cn: str,
 			return new_fortype
 	
 	# The for loop above is expected to return
-	print(" > [[ Warning ]]")
-	print(f" > \tFound {for_type} forest type outside of specified counties")
-	print(f" > \tGroups: {str_groups}")
-	print(f" > \tStand CN: {stand_cn}")
-	print(f" > \tCounty: {county}")
+	# TODO: Communicate this better
+	# print(" > [[ Warning ]]")
+	# print(f" > \tFound {for_type} forest type outside of specified counties")
+	# print(f" > \tGroups: {str_groups}")
+	# print(f" > \tStand CN: {stand_cn}")
+	# print(f" > \tCounty: {county}")
 	return for_type
 
 
@@ -171,7 +172,7 @@ def get_num_fortypes_by_county(cur: sqlite3.Cursor, table: str, county_split_dic
 				county_size_dict[for_type][county] = num_trees
 
 		if ind % 10 == 0 and ind != 0:
-			print(" > Counted counties for 10 tables")
+			print(" > Counted counties for 10 forest types")
 		
 
 	return county_size_dict
