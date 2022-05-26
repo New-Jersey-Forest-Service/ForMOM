@@ -11,6 +11,7 @@ import tkinter as tk
 import varname_dataclasses as models
 from typing import List
 from tkinter import ttk
+import math
 
 
 STANDARD_WIDTH_SML = 15
@@ -151,17 +152,35 @@ def main():
 			],
 			compare_type = models.ComparisonSign.EQ,
 			compare_value = 43.4
+		),
+
+		models.CompiledConstraint(
+			name='dummyName_2',
+			var_tags=[
+				['167S', '2021', 'SPB'],
+				['167N', '2025', 'PLWF'],
+				['409', '2030', 'PLWF'],
+				['167N', '2021', 'SPB'],
+				['167N', '2021', 'PLSQ'],
+				['167N', '2021', 'PLWF']
+			],
+			var_coeffs = [
+				1, 1, 1, 1.5, 1, 1
+			],
+			compare_type = models.ComparisonSign.LE,
+			compare_value = 3
 		)
 	]
 
 	frmConstPreview = tk.Frame(root)
-	frmConstPreview.grid(row=5, column=0, sticky="ns")
+	frmConstPreview.grid(row=5, column=0, sticky="nsew")
 	frmConstPreview.rowconfigure(1, weight=1)
+	frmConstPreview.columnconfigure(0, weight=1)
 
 	lblConstPreview = tk.Label(frmConstPreview, text="Preview Constraints")
 	txtConstPreview = tk.Text(frmConstPreview, height=6)
-	lblConstPreview.grid(row=0, column=0, sticky="wn")
-	txtConstPreview.grid(row=1, column=0, sticky="ns")
+	lblConstPreview.grid(row=0, column=0, sticky="wn", padx=10)
+	txtConstPreview.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 20))
 
 	sampleConstString = generate_sample_constraint_string(
 		sampleConstraints, 6, 25
@@ -179,7 +198,38 @@ def main():
 
 
 def generate_sample_constraint_string(constrList: List[models.CompiledConstraint], charHeight:int, charWidth: int) -> str:
-	return "Hello"
+	# TODO: Make this simpler
+	numConstrs = 5
+	constrs = constrList[:numConstrs]
+
+	finalStr = ''
+
+	for constr in constrs:
+		varStrList = []
+		for ind, varTags in enumerate(constr.var_tags):
+			# TODO: Use some kind of rendering class / methods??
+			coeff = constr.var_coeffs[ind]
+			varStr = "_".join(varTags)
+
+			if abs(coeff - 1.0) > 0.005:
+				varStr = str(round(coeff, 2)) + " " + varStr
+
+			varStrList.append(varStr)	
+		varsStr = " + ".join(varStrList)
+
+		rightHandStr = str(constr.compare_type) + " " + str(constr.compare_value)
+
+		totalLen = len(varStr) + len(rightHandStr)
+		if totalLen > charWidth:
+			charsToCut = totalLen - charWidth
+			varStr = varStr[: len(varStr) - charsToCut - 4]
+			varStr[-4:] = " ..."
+
+		finalStr += constr.name + ":" + "\n" 
+		finalStr += varsStr + " " + rightHandStr + "\n"
+		finalStr += "\n"
+
+	return finalStr
 
 
 def build_stage_1():
