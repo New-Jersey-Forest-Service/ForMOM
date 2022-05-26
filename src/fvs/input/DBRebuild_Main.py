@@ -24,6 +24,7 @@ NJDEP
 #  - This would be helpful on a national scale but 
 #    I think it's a little too much effort right now
 # [ ] Ask about creating a new DB at the beginning
+# [ ] Lint the passed county dict
 
 import sqlite3
 import re
