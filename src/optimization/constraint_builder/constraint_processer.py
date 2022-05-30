@@ -34,6 +34,9 @@ import re
 # [ ] Adjust architecture so all method for compiling constraints groups -> constraints
 #      live inside varname_dataclasses.py
 # [ ] Instead of returning lists of copmiled constraints, return an iterator or generator function
+# [ ] Have a way to be Exclusive or Inclusive with categories ??
+#    - We may want a constriant that for example applies to all but 2 tree species, and this would allow
+#      for generalizing the scripts for other obj inputs (other states ?)
 
 def main():
 	# Input

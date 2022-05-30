@@ -14,16 +14,157 @@ from tkinter import ttk
 import math
 
 
-STANDARD_WIDTH_SML = 15
-STANDARD_WIDTH_MED = 35
+WIDTH_SML = 8
+WIDTH_MED = 15
+WIDTH_BIG = 35
 CSV_FILES = [('CSV Files', '*.csv'), ('All Files', '*.*')]
 
 
 # TODO: Learn about tkinter variables (as opposed to globals / state object)
+#		 - Do they have support for undo / redos ?
+#		 - Honestly they might be a horrible idea
 # TODO: Use Label Frames
+# TODO: Use frames to diplay coonstraints
 # TODO: Remove colons ?
 
 def main():
+	build_stage_3()
+
+
+def build_stage_3():
+	root = tk.Tk()
+	root.title("Constraint Builder - Stage 3: Coefficients")
+	root.rowconfigure(2, weight=1)
+	root.columnconfigure([0, 1], weight=1)
+
+	# Header Text
+	lblHeader = tk.Label(root, text="Stage 3 - Coefficients", anchor="center")
+	lblHeader.grid(row=0, column=0, columnspan=2, padx=10, pady=(10, 0))
+
+
+	#
+	# Apply to All Options
+	frmApplyAll = tk.Frame(root, relief=tk.RAISED, borderwidth=2)
+	frmApplyAll.grid(row=1, column=0, padx=10, pady=10)
+
+	lblVarCoeff = tk.Label(frmApplyAll, text="Variable Coefficient")
+	entVarCoeff = tk.Entry(frmApplyAll, width=WIDTH_SML)
+	btnVarCoeff = tk.Button(frmApplyAll, text="Apply All")
+	lblVarCoeff.grid(row=0, column=0, sticky="e")
+	entVarCoeff.grid(row=0, column=1, sticky="w")
+	btnVarCoeff.grid(row=0, column=2, sticky="e")
+
+	lblOpSelector = tk.Label(frmApplyAll, text="Comparison Sign")
+	cbbOpSelector = ttk.Combobox(frmApplyAll, values=('>', '<', '='), width=WIDTH_SML)
+	cbbOpSelector['state'] = 'readonly'
+	btnOpSelector = tk.Button(frmApplyAll, text="Apply All")
+	lblOpSelector.grid(row=1, column=0, sticky="e")
+	cbbOpSelector.grid(row=1, column=1, sticky="w")
+	btnOpSelector.grid(row=1, column=2, sticky="e")
+
+	lblValue = tk.Label(frmApplyAll, text="Right-side Value")
+	entValue = tk.Entry(frmApplyAll, width=WIDTH_SML)
+	btnValue = tk.Button(frmApplyAll, text="Apply All")
+	lblValue.grid(row=2, column=0, sticky="e")
+	entValue.grid(row=2, column=1, sticky="w")
+	btnValue.grid(row=2, column=2, sticky="e")
+
+
+	#
+	# Fine Tune Options
+	frmFineTune = tk.Frame(root, relief=tk.RAISED, borderwidth=2)
+	frmFineTune.grid(row=1, column=1, padx=10, pady=10)
+
+	lblRightSide = tk.Label(frmFineTune, text="Right-Side Only")
+	btnRightSideExport = tk.Button(frmFineTune, text="Export Current")
+	btnRightSideImport = tk.Button(frmFineTune, text="Import")
+	lblRightSide.grid(row=0, column=0, sticky="e")
+	btnRightSideExport.grid(row=0, column=1, sticky="ew")
+	btnRightSideImport.grid(row=0, column=2, sticky="ew")
+
+	lblEverything = tk.Label(frmFineTune, text="Everything")
+	btnEverythingExport = tk.Button(frmFineTune, text="Export Current")
+	btnEverythingImport = tk.Button(frmFineTune, text="Import")
+	lblEverything.grid(row=1, column=0, sticky="e")
+	btnEverythingExport.grid(row=1, column=1, sticky="ew")
+	btnEverythingImport.grid(row=1, column=2, sticky="ew")
+
+
+	#
+	# Preview Constraints
+	sampleConstraints = [
+		models.CompiledConstraint(
+			name='dummyName',
+			var_tags=[
+				['167N', '2021', 'SPB'],
+				['167N', '2021', 'PLSQ'],
+				['167N', '2021', 'PLWF']
+			],
+			var_coeffs = [
+				1, 1, 1
+			],
+			compare_type = models.ComparisonSign.EQ,
+			compare_value = 43.4
+		),
+
+		models.CompiledConstraint(
+			name='dummyName_2',
+			var_tags=[
+				['167S', '2021', 'SPB'],
+				['167N', '2025', 'PLWF'],
+				['409', '2030', 'PLWF'],
+				['167N', '2021', 'SPB'],
+				['167N', '2021', 'PLSQ'],
+				['167N', '2021', 'PLWF']
+			],
+			var_coeffs = [
+				1, 1, 1, 1.5, 1, 1
+			],
+			compare_type = models.ComparisonSign.LE,
+			compare_value = 3
+		)
+	]
+
+	# TODO: Make this frame have a scroll bar
+	frmPreviewConstr = tk.Frame(root)
+	frmPreviewConstr.grid(row=3, column=0, columnspan=2, sticky="new")
+	frmPreviewConstr.columnconfigure(1, weight=1)
+
+	for row, constr in enumerate(sampleConstraints):
+
+		varStrList = []
+		for ind, varTags in enumerate(constr.var_tags):
+			# TODO: Use some kind of rendering class / methods??
+			coeff = constr.var_coeffs[ind]
+			varStr = "_".join(varTags)
+
+			if abs(coeff - 1.0) > 0.005:
+				varStr = str(round(coeff, 2)) + " " + varStr
+
+			varStrList.append(varStr)	
+		varsStr = " + ".join(varStrList)
+
+		lblName = tk.Label(frmPreviewConstr, text=constr.name)
+		lblCoeffs = tk.Message(frmPreviewConstr, text=varsStr, justify="left", aspect=10000)
+		lblCompare = tk.Label(frmPreviewConstr, text=str(constr.compare_type))
+		lblRightSide = tk.Label(frmPreviewConstr, text=str(constr.compare_value))
+
+		lblName.grid(row=row, column=0)
+		lblCoeffs.grid(row=row, column=1, sticky="ew", pady=(10, 0))
+		lblCompare.grid(row=row, column=2)
+		lblRightSide.grid(row=row, column=3)
+
+
+	#
+	# Confirmation Button
+	btnSaveConstr = tk.Button(root, text="Save Constraint")
+	btnSaveConstr.grid(row=4, column=1, sticky="e")
+
+
+	root.mainloop()
+
+
+def build_stage_2():
 	root = tk.Tk()
 	root.title("Constraint Builder - Stage 2: Variable Selection")
 	root.rowconfigure([3,5], weight=1)
@@ -39,7 +180,7 @@ def main():
 	frmGenConInfo.grid(row=1, column=0, padx=10, pady=10)
 
 	lblName = tk.Label(frmGenConInfo, text="Constraint Name:")
-	entName = tk.Entry(frmGenConInfo, width=STANDARD_WIDTH_MED)
+	entName = tk.Entry(frmGenConInfo, width=WIDTH_BIG)
 	lblName.grid(row=0, column=0, padx=5, pady=5, sticky="nse")
 	entName.grid(row=0, column=1, padx=5, pady=5, sticky="nsw")
 
@@ -50,7 +191,7 @@ def main():
 	cbbOpSelector.grid(row=1, column=1, padx=5, pady=5, sticky="nsw")
 	
 	lblDefaultValue = tk.Label(frmGenConInfo, text="Default Value:")
-	entDefaultValue = tk.Entry(frmGenConInfo, width=STANDARD_WIDTH_SML)
+	entDefaultValue = tk.Entry(frmGenConInfo, width=WIDTH_MED)
 	lblDefaultValue.grid(row=2, column=0, padx=5, pady=5, sticky="nse")
 	entDefaultValue.grid(row=2, column=1, padx=5, pady=5, sticky="nsw")
 
@@ -86,7 +227,7 @@ def main():
 		lblExcluded.grid(row=1, column=0, padx=10)
 
 		exListVar = tk.StringVar(value=varDict[tagGroup])
-		lsbExcluded = tk.Listbox(frmTagSel, listvariable=exListVar, width=STANDARD_WIDTH_SML)
+		lsbExcluded = tk.Listbox(frmTagSel, listvariable=exListVar, width=WIDTH_MED)
 		lsbExcluded['selectmode'] = 'extended'
 		lsbExcluded.grid(row=2, column=0, padx=10)
 
@@ -105,7 +246,7 @@ def main():
 		lblIncluded.grid(row=1, column=1, padx=10)
 
 		incListVar = tk.StringVar(value=[])
-		lsbIncluded = tk.Listbox(frmTagSel, listvariable=incListVar, width=STANDARD_WIDTH_SML)
+		lsbIncluded = tk.Listbox(frmTagSel, listvariable=incListVar, width=WIDTH_MED)
 		lsbIncluded['selectmode'] = 'extended'
 		lsbIncluded.grid(row=2, column=1, padx=10)
 
@@ -248,7 +389,7 @@ def build_stage_1():
 	frmFileParseSetup.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
 	btnObjFile = tk.Button(frmFileParseSetup, text="Objective .csv")
-	lblObjFile = tk.Label(frmFileParseSetup, text="No file selected", width=STANDARD_WIDTH_MED, anchor="w")
+	lblObjFile = tk.Label(frmFileParseSetup, text="No file selected", width=WIDTH_BIG, anchor="w")
 	btnObjFile.grid(row=0, column=0, sticky="nse", padx=5, pady=5)
 	lblObjFile.grid(row=0, column=1, sticky="nsw", padx=5, pady=5)
 
@@ -290,8 +431,8 @@ def build_stage_1():
 		entMemName = tk.Entry(frmNameGroups, width=15)
 
 		exampleMemsStr = ", ".join(exampleGroup)
-		if len(exampleMemsStr) > STANDARD_WIDTH_MED:
-			exampleMemsStr = exampleMemsStr[:STANDARD_WIDTH_MED - 4] + " ..."
+		if len(exampleMemsStr) > WIDTH_BIG:
+			exampleMemsStr = exampleMemsStr[:WIDTH_BIG - 4] + " ..."
 		lblExampleMems = tk.Label(frmNameGroups, text=exampleMemsStr, anchor="e")
 
 		entMemName.grid(row=ind+1, column=0, padx=5, pady=5, sticky="nse")
