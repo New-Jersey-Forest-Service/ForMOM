@@ -249,12 +249,14 @@ def lintVarNames (varNamesRaw, delim: str) -> str:
 	'''
 	VALID_DELIMITERS = "_-= "
 	# All group names must be exclusively alphanumeric (A-Z, a-z, 0-9)
-	GROUP_NAME_REGEX = "^[A-Za-z0-9]+$"
+	TAG_NAME_REGEX = "^[A-Za-z0-9]+$"
 
 
 	# [[ Check ]] At least one variable
 	if (varNamesRaw == None or len(varNamesRaw) == 0):
 		return "Empty or None list passed in"
+
+	firstVar = varNamesRaw[0]
 
 	
 	# [[ Check ]] Delimiter is valid
@@ -266,15 +268,19 @@ def lintVarNames (varNamesRaw, delim: str) -> str:
 		return f'Delimiter "{delim}" is invalid. It must be one of {",".join(VALID_DELIMITERS)}'
 
 
+	# [[ Check ]] Delimiter is inside of variable
+	if not delim in firstVar:
+		return f'Delimiter "{delim}" not found inside variable {firstVar}'
+
+
 	# [[ Check ]] All group names are valid
 	for var in varNamesRaw:
-		for group in splitRawVarIntoTags(var, delim):
-			if re.search(GROUP_NAME_REGEX, group) == None:
-				return f'Found invalid groupname "{group}" for variable "{var}". Groups must contain only letters and numbers'
+		for tag in splitRawVarIntoTags(var, delim):
+			if re.search(TAG_NAME_REGEX, tag) == None:
+				return f'Found invalid groupname "{tag}" for variable "{var}". Groups must contain only letters and numbers'
 
 
 	# [[ Check ]] All variables have the same number of groups
-	firstVar = varNamesRaw[0]
 	numGroups = getNumTagsInRawVar(firstVar, delim)
 
 	for var in varNamesRaw[1:]:
@@ -290,12 +296,17 @@ def lintTagGroupName (tagGroupName) -> str:
 	'''
 	GROUPNAME_MAX_LENGTH = 15
 	GROUPNAME_MIN_LENGTH = 3
+	GROUPNAME_REGEX = "^[A-Za-z0-9]+$"
 
 	# [[ Check ]] Size
 	if len(tagGroupName) < GROUPNAME_MIN_LENGTH or len(tagGroupName) > GROUPNAME_MAX_LENGTH:
-			return f'Groupname "{tagGroupName}" is incorrect length. ' + \
-				   f'It must be between {GROUPNAME_MIN_LENGTH} to {GROUPNAME_MAX_LENGTH} ' + \
-				   f'characters long'
+		return f'Groupname "{tagGroupName}" is incorrect length. ' + \
+			f'It must be between {GROUPNAME_MIN_LENGTH} to {GROUPNAME_MAX_LENGTH} ' + \
+			f'characters long'
+	
+	# [[ Check ]] Only alphanumeric names allowed
+	if re.search(GROUPNAME_REGEX, tagGroupName) == None:
+		return f'Invalid groupname "{tagGroupName}". Name must be alphanumeric, containing only A-Z, a-z, 0-9 and no spaces, dashes, etc'
 
 
 
@@ -336,6 +347,7 @@ def readAllObjVarnames (objCSVPath: Path) -> List[str]:
 
 GROUPNAME_MAX_LENGTH = 15
 
+# TODO: Split the linting function to be entirely seperate & not called from here ?
 def getTagGroupNames (tagGroupsList: List[List[str]]) -> List[str]:
 	'''
 		Takes the list of different group ids and asks the user
