@@ -37,6 +37,7 @@ import re
 # [ ] Have a way to be Exclusive or Inclusive with categories ??
 #    - We may want a constriant that for example applies to all but 2 tree species, and this would allow
 #      for generalizing the scripts for other obj inputs (other states ?)
+# [ ] Add type checks for important processing functions
 
 def main():
 	# Input
@@ -69,14 +70,12 @@ def main():
 
 	constrAllPLSQBySpecies = models.StandardConstraintGroup(
 		selected_tags = {"species": ["167N", "167S", "409"], "year": ["2021", "2025", "2030"], "mng": ["PLSQ"]},
-		selection_type = models.SelectionType.INCLUDE_SELECTED,
 		split_by_groups = ["species"],
 		name = "PLSQ_ALL"
 	)
 
 	constrAllBySpeciesByYear = models.StandardConstraintGroup(
 		selected_tags = {"species": ["167N", "409"], "year": ["2021", "2025", "2030", "2050"], "mng": ["PLSQ", "PLWF", "RBWF", "STQO", "TB", "TBWF", "RxB"]},
-		selection_type = models.SelectionType.INCLUDE_SELECTED,
 		split_by_groups = ["species", "year"],
 		name = "All"
 	)
@@ -125,7 +124,7 @@ def compileStandardConstraintGroup (varInfo: models.VarTagsInfo, stdConGroup: mo
 	for name in conNames:
 		conDict[name] = []
 	
-	print(conDict)
+	# print(conDict)
 	
 
 	#
@@ -179,7 +178,21 @@ def compileStandardConstraintGroup (varInfo: models.VarTagsInfo, stdConGroup: mo
 	return compiledConList
 
 
-	
+
+def makeVarTagsInfoObject (varNamesRaw: List[str], delim: str, tagGroupNames: List[str]) -> models.VarTagsInfo:
+	varnameTags = splitVarsToTags(varNamesRaw, delim)
+	tagGroupMembersList = makeTagGroupMembersList(varnameTags)
+
+	tagGroupsDict = {}
+	for ind, name in enumerate(tagGroupNames):
+		tagGroupsDict[name] = tagGroupMembersList[ind]
+
+	return models.VarTagsInfo(
+		tag_order = tagGroupNames,
+		all_vars = varnameTags,
+		tag_groups = tagGroupsDict
+	)
+
 
 
 
@@ -289,6 +302,7 @@ def lintVarNames (varNamesRaw, delim: str) -> str:
 			return f'Variable "{var}" has a different number of groups ({testNumGroups}) compare to "{firstVar}" ({numGroups})'
 
 
+# TODO: Have linting for names as an array to check for duplicates
 def lintTagGroupName (tagGroupName) -> str:
 	'''
 	Checks that the provided group name is valid, returning None if
