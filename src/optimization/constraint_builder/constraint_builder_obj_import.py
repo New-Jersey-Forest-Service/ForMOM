@@ -16,15 +16,7 @@ CSV_FILES = [('CSV Files', '*.csv'), ('All Files', '*.*')]
 
 
 
-@unique
-class OBJFileImportStage (Enum):
-	FILE_IMPORTING = auto()
-	TAG_NAMING = auto()
-	DONE = auto()
-
-
-objFileImportStage = OBJFileImportStage.FILE_IMPORTING
-
+# Model State
 inFilePathStr = ''
 inDelim = ''
 
@@ -34,8 +26,6 @@ inTagGroupNames = []
 
 namesErrMsg = ''
 
-
-# Model state (Non-GUI)
 varNamesRaw: List[str] = []
 
 
@@ -50,79 +40,98 @@ lblNameErrors = None
 arrEntSpecies: List[tk.Entry] = []
 
 
-def selectObjFile():
-	global inFilePathStr, varNamesRaw
 
-	filePath, success = selectFileAndUpdateLabel(lblObjFile, CSV_FILES)
-	if not success:
-		return
-	
-	inFilePathStr = filePath
+#
+# High Level GUI Calls
+#
 
-	varNamesRaw = proc.readAllObjVarnames(filePath)
-	lblLoadedSampleVar.config(text=varNamesRaw[0])
+def updateGUIToMatchState():
+	'''
+	This function updates the entire gui based on the current
+	state. It essentially replaces and all buttons come through here.
+	'''
 
-	processObjFileIfPossible()
+	btnVerifyNames['state'] = 'disable'
+	btnNextStage['state'] = 'disable'
+
+	# Stage 1 - Objective File Selection
+	objFileSelected = doObjFileSetup()		
+	btnVerifyNames['state'] = 'normal'
+
+	# Stage 2 - Filling in Names of Tag Groups
+	groupsNamed = doNamingCheck()
+	btnNextStage['state'] = 'normal'
 
 
-def selectDelimiter():
-	global inDelim
-
-	inDelim = cbbDelimSelector.get()
-
-	processObjFileIfPossible()
-
-
-def processObjFileIfPossible():
+def doObjFileSetup() -> bool:
+	'''
+	Returns true if the objective file has been selected and parsed
+	without error.
+	'''
 	global arrEntSpecies
+
 	for child in frmNameGroups.winfo_children():
 		child.destroy()
 	arrEntSpecies = []
-
-	btnVerifyNames['state'] = 'disable'
 
 	if inDelim == '' or inFilePathStr == '':
 		# Cannot process objFile - make frame say that
 		lblEmptyMessage = tk.Label(frmNameGroups, text="Select an objective file and delimiter")
 		lblEmptyMessage.grid(row=0, column=0)
-		return
+		return False
 
 	errMsg = proc.lintVarNames(varNamesRaw, inDelim)
 	if errMsg != None:
 		lblError = tk.Label(frmNameGroups, text=f"[[ XX Error ]]\n{errMsg}")
 		lblError.grid(row=0, column=0)
-		return
+		return False
 	
-	# No errors, lets process and print the bad boi
+	# No errors, lets process and fill out the frame
 	varnameTags = proc.splitVarsToTags(varNamesRaw, inDelim)
 	tagGroupMembersList = proc.makeTagGroupMembersList(varnameTags)
 
+	fillTagGroupNamingFrame(tagGroupMembersList, frmNameGroups)
 
-	lblNamesCol = tk.Label(frmNameGroups, text="Name", anchor="center")
-	lblExampleMemsCol = tk.Label(frmNameGroups, text="Example Members", anchor="center")
-	lblNamesCol.grid(row=0, column=0)
-	lblExampleMemsCol.grid(row=0, column=1)
-
-	for ind, exampleGroup in enumerate(tagGroupMembersList):
-		entMemName = tk.Entry(frmNameGroups, width=15)
-		arrEntSpecies.append(entMemName)
-
-		exampleMemsStr = ", ".join(exampleGroup)
-		if len(exampleMemsStr) > WIDTH_BIG:
-			exampleMemsStr = exampleMemsStr[:WIDTH_BIG - 4] + " ..."
-		lblExampleMems = tk.Label(frmNameGroups, text=exampleMemsStr, anchor="e")
-
-		entMemName.grid(row=ind+1, column=0, padx=5, pady=5, sticky="nse")
-		lblExampleMems.grid(row=ind+1, column=1, padx=5, pady=5, sticky="nsw")
-	
-	btnVerifyNames['state'] = 'normal'
-	
+	return True
 
 
-def processTaggroupNames():
-	global arrEntSpecies, lblNameErrors, btnNextStage
+def doNamingCheck() -> bool:
+	return True
 
-	btnNextStage['state'] = 'disable'
+
+#
+# Stage 1 Bindings
+
+def selectObjFile():
+	global inFilePathStr, varNamesRaw
+
+	filePath, success = selectFileAndUpdateLabel(lblObjFile, CSV_FILES)
+	if not success:
+		inFilePathStr = None
+	else:	
+		inFilePathStr = filePath
+		varNamesRaw = proc.readAllObjVarnames(filePath)
+		lblLoadedSampleVar.config(text=varNamesRaw[0])
+
+	updateGUIToMatchState()
+
+
+def selectDelimiter():
+	global inDelim
+	inDelim = cbbDelimSelector.get()
+
+	updateGUIToMatchState()
+
+
+
+#
+# Stage 2 Bindings
+
+def processTagGroupNames():
+	'''
+	Reads the names of the tag groups and lints them
+	'''
+	global arrEntSpecies, lblNameErrors
 
 	tagGroupNames = []
 	errMsg = None
@@ -134,13 +143,20 @@ def processTaggroupNames():
 			break
 	
 	if errMsg:
-		lblNameErrors['text'] = f'[[ XX Error ]] {errMsg}'
-		return
+		lblNameErrors['text'] = f'[[ XX Error ]]\n{errMsg}'
+	else:
+		lblNameErrors['text'] = f'[[ ~~ Sucess ]]\ngroup names are vaild'
 
-	lblNameErrors['text'] = f'[[ ~~ Sucess ]] group names are vaild'
-	btnNextStage['state'] = 'normal'
+	updateGUIToMatchState()
 
 
+
+
+
+
+#
+# GUI Update Commands
+#
 
 def selectFileAndUpdateLabel(lbl, fileTypes) -> Union[str, bool]:
 	'''
@@ -155,48 +171,60 @@ def selectFileAndUpdateLabel(lbl, fileTypes) -> Union[str, bool]:
 		filetypes=fileTypes,
 		defaultextension=fileTypes
 		)
+	
+	isInvalidFile = \
+		   objFileStr == None \
+		or len(objFileStr) == 0 \
+		or type(objFileStr) != str \
+		or objFileStr.strip() == ''
 
-	if isInvalidFile(objFileStr):
+	if isInvalidFile:
 		lbl.config(text="No file selected")
 		return '', False
 
-	lbl.config(text=shrinkPathString(objFileStr))
+	lbl.config(text=truncateString(objFileStr))
 	return str(objFileStr), True
 
 
-def isInvalidFile(dialogOutput) -> bool:
-	# For whatever reason, filedialog.askname() can return multiple different things ???
-	return dialogOutput == None  \
-		or len(dialogOutput) == 0  \
-		or dialogOutput.strip() == ""
-
-
-def shrinkPathString(pathstr: str) -> str:
-	pathstr = str(pathstr)
-	if len(pathstr) <= WIDTH_BIG:
-		return pathstr
+def truncateString(givenStr: str) -> str:
+	givenStr = str(givenStr)
+	if len(givenStr) <= WIDTH_BIG:
+		return givenStr
 	else:
-		return '...' + pathstr[3 - WIDTH_BIG:]
+		return '...' + givenStr[3 - WIDTH_BIG:]
+
+
+def fillTagGroupNamingFrame(tagGroupMemberLists: List[List[str]], frm: tk.Frame) -> None:
+	lblNamesCol = tk.Label(frm, text="Name", anchor="center")
+	lblExampleMemsCol = tk.Label(frm, text="Example Members", anchor="center")
+	lblNamesCol.grid(row=0, column=0)
+	lblExampleMemsCol.grid(row=0, column=1)
+
+	for ind, exampleGroup in enumerate(tagGroupMemberLists):
+		entMemName = tk.Entry(frm, width=15)
+		arrEntSpecies.append(entMemName)
+
+		exampleMemsStr = ", ".join(exampleGroup)
+		if len(exampleMemsStr) > WIDTH_BIG:
+			exampleMemsStr = exampleMemsStr[:WIDTH_BIG - 4] + " ..."
+		lblExampleMems = tk.Label(frm, text=exampleMemsStr, anchor="e")
+
+		entMemName.grid(row=ind+1, column=0, padx=5, pady=5, sticky="nse")
+		lblExampleMems.grid(row=ind+1, column=1, padx=5, pady=5, sticky="nsw")
 
 
 
 
-def build_stage_1():
+
+
+#
+# GUI Building Commands
+#
+
+def buildFileImport(root: tk.Tk) -> tk.Frame:
 	global lblObjFile, lblLoadedSampleVar, cbbDelimSelector, frmNameGroups, btnNextStage, btnVerifyNames, lblNameErrors
 
-	root = tk.Tk()
-	root.title("Constraint Builder - Stage 1: Setup Variables")
-	root.rowconfigure([1, 2], weight=1)
-	root.columnconfigure(0, weight=1)
-
-	# Header Text
-	lblHeader = tk.Label(root, text="Stage 1 - Variable Setup", anchor="center")
-	lblHeader.grid(row=0, column=0, padx=10, pady=(10, 0))
-
-	#
-	# Top half - selecting & parsing the obj file
 	frmFileParseSetup = tk.Frame(root, relief=tk.RAISED, bd=2)
-	frmFileParseSetup.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
 	btnObjFile = tk.Button(frmFileParseSetup, text="Objective .csv", command=selectObjFile)
 	lblObjFile = tk.Label(frmFileParseSetup, text="No file selected", width=WIDTH_BIG, anchor="w")
@@ -219,10 +247,13 @@ def build_stage_1():
 
 	cbbDelimSelector.bind("<<ComboboxSelected>>", lambda evnt: selectDelimiter())
 
-	#
-	# Bottom half - naming tag groups
+	return frmFileParseSetup
+
+
+def buildTagGroupFrame(root: tk.Tk) -> tk.Frame:
+	global lblObjFile, lblLoadedSampleVar, cbbDelimSelector, frmNameGroups, btnNextStage, btnVerifyNames, lblNameErrors
+
 	frmNameAndVerify = tk.Frame(root, relief=tk.SUNKEN, bd=2)
-	frmNameAndVerify.grid(row=2, column=0, padx=10, pady=(0, 10), sticky="nsew")
 	frmNameAndVerify.columnconfigure(0, weight=1)
 
 	frmNameGroups = tk.Frame(frmNameAndVerify)
@@ -230,25 +261,40 @@ def build_stage_1():
 	frmNameGroups.columnconfigure([0, 1], weight=1)
 
 	# The list of tag groups & text entries is handled by a function automatically
-	btnVerifyNames = tk.Button(frmNameAndVerify, text="Verify Group Names", command=processTaggroupNames)
+	btnVerifyNames = tk.Button(frmNameAndVerify, text="Verify Group Names", command=processTagGroupNames)
 	lblNameErrors = tk.Label(frmNameAndVerify, text="...", anchor="center")
 	btnVerifyNames.grid(row=2, column=0, padx=5, pady=5)
 	lblNameErrors.grid(row=3, column=0, padx=5, pady=5, sticky="ew")
 
-	#
-	# Next Step Button
+	return frmNameAndVerify
+
+
+def buildObjectiveFileImport(root: tk.Tk):
+	global lblObjFile, lblLoadedSampleVar, cbbDelimSelector, frmNameGroups, btnNextStage, btnVerifyNames, lblNameErrors
+
+	root.title("Constraint Builder - Stage 1: Setup Variables")
+	root.rowconfigure([1, 2], weight=1)
+	root.columnconfigure(0, weight=1)
+
+	lblHeader = tk.Label(root, text="Stage 1 - Variable Setup", anchor="center")
+	lblHeader.grid(row=0, column=0, padx=10, pady=(10, 0))
+
+	frmFileImport = buildFileImport(root)
+	frmFileImport.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+
+	frmNameAndVerify = buildTagGroupFrame(root)
+	frmNameAndVerify.grid(row=2, column=0, padx=10, pady=(0, 10), sticky="nsew")
+
 	btnNextStage = tk.Button(root, text="Continue >", anchor="center")
 	btnNextStage.grid(row=3, column=0, padx=10, pady=(0, 10), sticky="e")
 
-	processObjFileIfPossible()
-	root.mainloop()
-
-
-	pass
+	updateGUIToMatchState()
 
 
 
 
 
 if __name__ == '__main__':
-	build_stage_1()
+	root = tk.Tk()
+	buildObjectiveFileImport(root)
+	root.mainloop()
