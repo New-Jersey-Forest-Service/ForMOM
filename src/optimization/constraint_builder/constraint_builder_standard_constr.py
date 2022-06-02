@@ -30,6 +30,12 @@ excVarDict: Dict[str, tk.StringVar] = None
 
 txtConstPreview: tk.Text = None
 
+entName: tk.Entry = None
+cbbOpSelector: ttk.Combobox = None
+entDefaultValue: tk.Entry = None
+
+splitVarDict: Dict[str, tk.StringVar] = None
+
 
 # Exposed State
 varTagsInfo = None
@@ -40,6 +46,63 @@ constrAllBySpeciesByYear = None
 #
 # Update Calls
 #
+
+def updateGeneralConstrInfo():
+	global constrAllBySpeciesByYear, varTagsInfo
+
+	# Name is always just a string cast
+	# TODO: Lint
+	constrAllBySpeciesByYear.name = str(entName.get())
+
+	# Selector needs to be checked
+	selector = cbbOpSelector.get()
+	compType = None
+
+	if selector == '=':
+		compType = models.ComparisonSign.EQ
+	elif selector == '<=':
+		compType = models.ComparisonSign.LE
+	elif selector == '>=':
+		compType = models.ComparisonSign.GE
+	else:
+		print(f"[[ !! Warning ]] Found illegal comparison selector option: {selector}")
+
+	if compType:
+		constrAllBySpeciesByYear.default_compare = compType
+	
+	# Value needs to be checked
+	value = entDefaultValue.get()
+	convertedValue = None
+
+	try:
+		convertedValue = float(value.strip())
+	except:
+		pass	
+	
+	if convertedValue:
+		constrAllBySpeciesByYear.default_value = convertedValue
+	
+	redrawForUpdate(varTagsInfo, constrAllBySpeciesByYear)
+
+
+def updateSplitByGroups():
+	global constrAllBySpeciesByYear, varTagsInfo
+
+	allGroups = varTagsInfo.tag_order
+	splitBys = []
+
+	for group in allGroups:
+		status = splitVarDict[group].get()
+
+		if status == '1':
+			splitBys.append(group)	
+		elif status != '0':
+			print(f"[[ !! Warning ]] Illegal state of checkbox string var found: {status}")
+
+	constrAllBySpeciesByYear.split_by_groups = splitBys
+
+	redrawForUpdate(varTagsInfo, constrAllBySpeciesByYear)
+
 
 def updateAddToIncTags(tagGroup: str):
 	global constrAllBySpeciesByYear, varTagsInfo
@@ -54,7 +117,7 @@ def updateAddToIncTags(tagGroup: str):
 	for item in selectedItems:
 		constrAllBySpeciesByYear.selected_tags[tagGroup].append(item)
 
-	redrawAll(varTagsInfo, constrAllBySpeciesByYear)
+	redrawForUpdate(varTagsInfo, constrAllBySpeciesByYear)
 
 
 def updateTakeFromIncTags(tagGroup: str):
@@ -72,7 +135,7 @@ def updateTakeFromIncTags(tagGroup: str):
 
 	# TODO: reset selection (and for the other update method)
 	
-	redrawAll(varTagsInfo, constrAllBySpeciesByYear)
+	redrawForUpdate(varTagsInfo, constrAllBySpeciesByYear)
 
 
 
@@ -83,12 +146,44 @@ def updateTakeFromIncTags(tagGroup: str):
 # Redraw Calls
 #
 
-def redrawAll(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup):
+def redrawAll(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
+	redrawStandardInfo(constr)
+	redrawSplitByGroups(constr)
+
+	# These are the ones in redrawForUpdate
 	redrawIncExcLists(varTags, constr)
 	redrawPreviewConstraints(varTags, constr)
 
 
-def redrawPreviewConstraints(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup):
+def redrawForUpdate(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
+	redrawIncExcLists(varTags, constr)
+	redrawPreviewConstraints(varTags, constr)
+
+
+def redrawStandardInfo(constr: models.StandardConstraintGroup) -> None:
+	'''
+		Redraws the constraint name, comparison, and default operator in the top settings pane
+	'''
+	entName.delete(0, tk.END)
+	entName.insert(0, constr.name)
+
+	cbbOpSelector.set(str(constr.default_compare))
+
+	entDefaultValue.delete(0, tk.END)
+	entDefaultValue.insert(0, constr.default_value)
+
+
+def redrawSplitByGroups(constr: models.StandardConstraintGroup) -> None:
+	'''
+		Redraws the split by group check buttons
+	'''
+	splitbyGroups = constr.split_by_groups
+
+	for group in splitbyGroups:
+		splitVarDict[group].set(1)
+
+
+def redrawPreviewConstraints(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
 	global txtConstPreview
 
 	allConstrs = proc.compileStandardConstraintGroup(varTags, constr)
@@ -128,7 +223,7 @@ def generate_sample_constraint_string(constrList: List[models.CompiledConstraint
 	return finalStr
 
 
-def redrawIncExcLists(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup):
+def redrawIncExcLists(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
 	includedTags = constr.selected_tags
 	excludedTags = copy.deepcopy(varTags.tag_groups)
 
@@ -157,11 +252,8 @@ def redrawIncExcLists(varTags: models.VarTagsInfo, constr: models.StandardConstr
 
 def buildConstraintBuildingGUI(root: tk.Tk):
 	global varTagsInfo, constrAllBySpeciesByYear
-	global txtConstPreview
 
-
-	#
-	# Sample Data Used
+	# Sample Data Used (for development)
 	rawNames = proc.readAllObjVarnames(
 		'/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/constraint_builder/sample_data/minimodel_obj.csv'
 	)
@@ -173,7 +265,9 @@ def buildConstraintBuildingGUI(root: tk.Tk):
 			"year": ["2021", "2050"], 
 			"management": ["PLSQ", "PLWF"]},
 		split_by_groups = ["species", "year"],
-		name = "All"
+		name = "All",
+		default_compare = models.ComparisonSign.LE,
+		default_value = 6.9
 	)
 
 
@@ -207,27 +301,42 @@ def buildConstraintBuildingGUI(root: tk.Tk):
 
 
 	redrawAll(varTagsInfo, constrAllBySpeciesByYear)
+	print("\n\n")
+	updateGeneralConstrInfo()
 
 
 
 def buildGeneralConstraintFrame(root: tk.Tk) -> tk.Frame:
+	global entName, cbbOpSelector, entDefaultValue
+
 	frmGenConInfo = tk.Frame(root, relief=tk.RAISED, borderwidth=2)
 
+	varName = tk.StringVar()
 	lblName = tk.Label(frmGenConInfo, text="Constraint Name:")
-	entName = tk.Entry(frmGenConInfo, width=WIDTH_BIG)
+	entName = tk.Entry(frmGenConInfo, width=WIDTH_BIG, textvariable=varName)
 	lblName.grid(row=0, column=0, padx=5, pady=5, sticky="nse")
 	entName.grid(row=0, column=1, padx=5, pady=5, sticky="nsw")
 
+	varName.trace("w", lambda name, index, mode, sv=varName: updateGeneralConstrInfo())
+
 	lblOpType = tk.Label(frmGenConInfo, text="Default Operator Type:")
-	cbbOpSelector = ttk.Combobox(frmGenConInfo, values=('>', '<', '='))
+	# TODO: Pull operator types from global config
+	cbbOpSelector = ttk.Combobox(frmGenConInfo, values=('>=', '<=', '='))
 	cbbOpSelector['state'] = 'readonly'
 	lblOpType.grid(row=1, column=0, padx=5, pady=5, sticky="nse")
 	cbbOpSelector.grid(row=1, column=1, padx=5, pady=5, sticky="nsw")
-	
+
+	cbbOpSelector.bind("<<ComboboxSelected>>", lambda evnt: updateGeneralConstrInfo())
+
+	# cbbDelimSelector.bind("<<ComboboxSelected>>", lambda evnt: selectDelimiter())
+
+	varDefaultValue = tk.StringVar()
 	lblDefaultValue = tk.Label(frmGenConInfo, text="Default Value:")
-	entDefaultValue = tk.Entry(frmGenConInfo, width=WIDTH_MED)
+	entDefaultValue = tk.Entry(frmGenConInfo, width=WIDTH_MED, textvariable=varDefaultValue)
 	lblDefaultValue.grid(row=2, column=0, padx=5, pady=5, sticky="nse")
 	entDefaultValue.grid(row=2, column=1, padx=5, pady=5, sticky="nsw")
+
+	varDefaultValue.trace("w", lambda name, index, mode, sv=varDefaultValue: updateGeneralConstrInfo())
 
 	return frmGenConInfo
 
@@ -319,6 +428,10 @@ def buildVarSelectingFrame(root: tk.Tk, varTagsInfo: models.VarTagsInfo) -> tk.F
 
 
 def buildSplitByFrame(root, varTagsInfo: models.VarTagsInfo) -> tk.Frame:
+	global splitVarDict
+
+	splitVarDict = {}
+
 	frmSplitBy = tk.Frame(root, relief=tk.RAISED, borderwidth=2)
 	frmSplitBy.rowconfigure(0, weight=1)
 
@@ -329,8 +442,12 @@ def buildSplitByFrame(root, varTagsInfo: models.VarTagsInfo) -> tk.Frame:
 	frmSplitByBoxes.grid(row=0, column=1)
 
 	for ind, varGroup in enumerate(varTagsInfo.tag_order):
-		ckbGroupSplit = tk.Checkbutton(frmSplitByBoxes, text=varGroup)
+		varCkb = tk.StringVar(value='0')
+		ckbGroupSplit = tk.Checkbutton(frmSplitByBoxes, text=varGroup, variable=varCkb)
 		ckbGroupSplit.grid(row=0, column=ind, padx=5)
+
+		varCkb.trace("w", lambda name, index, mode, sv=varCkb: updateSplitByGroups())
+		splitVarDict[varGroup] = varCkb
 
 	return frmSplitBy
 

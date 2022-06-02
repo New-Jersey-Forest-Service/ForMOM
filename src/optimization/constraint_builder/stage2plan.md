@@ -14,12 +14,12 @@ Funcs to make:
  - [x] Redraw LSBs
  - Updating constraint from LSBs:
    - [x] Update inc / exc groups in constraint
-   - TODO [ ] Update selection with all button
+   - TODO [ ] Have select all button
 
 Exposed Components:
- - [ ] ConstrName, OpType, DefaultValue
+ - [x] ConstrName, OpType, DefaultValue
  - [x] Include & Exclude StingVars per tag group
- - [ ] Checkbox per Tag Group
+ - [x] Checkbox per Tag Group
  - [x] Text Entry for sample constraint
 
 include lsbs:
