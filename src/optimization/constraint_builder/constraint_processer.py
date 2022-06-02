@@ -170,8 +170,8 @@ def compileStandardConstraintGroup (varInfo: models.VarTagsInfo, stdConGroup: mo
 					name = key,
 					var_tags = conDict[key],
 					var_coeffs = [1] * numVars,
-					compare_type = models.ComparisonSign.EQ,
-					compare_value = 0
+					compare_type = stdConGroup.default_compare,
+					compare_value = stdConGroup.default_value
 				)
 			)
 	

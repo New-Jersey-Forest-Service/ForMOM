@@ -31,12 +31,14 @@ class ComparisonSign(Enum):
 			return "= "
 		else:
 			return "??"
+	
 
 
-@unique
-class SelectionType(Enum):
-	EXLUDE_SELECTED = auto()
-	INCLUDE_SELECTED = auto()
+
+# @unique
+# class SelectionType(Enum):
+# 	EXLUDE_SELECTED = auto()
+# 	INCLUDE_SELECTED = auto()
 
 
 @frozen
@@ -55,9 +57,10 @@ class CompiledConstraint:
 	compare_value: float
 
 
-@frozen
+@define
 class StandardConstraintGroup:
 	selected_tags: Dict[str, List[str]]
-	selection_type: SelectionType
 	split_by_groups: List[str]
 	name: str
+	default_compare: ComparisonSign = ComparisonSign.EQ
+	default_value: float = 0
