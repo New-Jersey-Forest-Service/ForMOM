@@ -13,31 +13,28 @@ Michael Gorbunov
 
 import sqlite3
 import sys
+from typing import List, Dict
 
-# TODO: Validate 
-#   - [ ] Check table names for table_name
-#   - [ ] Check that for_type_ind does indeed have "ForType="
-#   - [ ] Check that stand_cn uniquely maps to a forest type
-#   - [ ] Check that all stand_cns are covered (esp with TREEINIT)
 # TODO: Less magic numbers
 #   - [ ] Somehow explain or derive the 7
 # TODO: Less magic names
 #	- [ ] Use dataclases or attrs classes instead of dicts
-# TODO: Better integration
-#	- [ ] Rewrite the structs to use cur.executemany()
+# TODO: Better queries
+#	- [ ] Rewrite the queries to use cur.executemany()
 
-
-def is_valid_float(float_str: str) -> bool:
+def parse_as_int_if_valid(float_str: str) -> int:
 	try:
 		float(float_str)
-		return True
+		return int(float(float_str))
 	except:
-		return False
+		return -1
 
 
-def extract_forest_types(cur: sqlite3.Cursor, tables: list):
-	# creates a map from STAND_CN (int) -> for_type (str)
+def create_dict_fortype_of_standcn(cur: sqlite3.Cursor, tables: List[str], county_split_dict: Dict[str, Dict[str, List[int]]]):
+	# creates a map from for_type (str) -> list of STAND_CN (List[int])
 	stand_fortype_map = {}
+
+	fortypes_to_split = list(county_split_dict.keys())
 
 	for table_name in tables:
 		query = f'SELECT GROUPS, STAND_CN, COUNTY FROM {table_name}'
@@ -51,67 +48,154 @@ def extract_forest_types(cur: sqlite3.Cursor, tables: list):
 			# This is making a lot of assumptions about the db :(
 			for_type = str(str_groups[FOR_TYPE_IND]).split("=")[1]
 
-			# Do the 167 Split
-			if (for_type == '167'):
-				county = row[2]
-				if (is_valid_float(county)):
-					county = int(float(county))
-				else:
-					county = -1
+			# Do the county split
+			if for_type in fortypes_to_split:
+				county = parse_as_int_if_valid(row[2])
+				for_type = county_split_id(for_type, county, str_groups, stand_cn, county_split_dict)
 
-				# if county in (5, 23, 25, 29) => 167 N
-				# if county in (1, 7, 11, 15, 19) => 167 S
-
-				if (county in (23, 25, 29, 1)):
-					for_type = '167N'
-				elif (county in (5, 7, 15, 11, 9)):
-					for_type = '167S'
-				else:
-					print(" > [[ Warning ]]")
-					print(" > \tFound 167 forest type outside of specified counties")
-					print(f" > \tGroups: {str_groups}")
-					print(f" > \tStand CN: {stand_cn}")
-					print(f" > \tCounty: {county}")
-
-			if not stand_cn in stand_fortype_map.keys():
-				stand_fortype_map[stand_cn] = for_type
+			if for_type not in stand_fortype_map.keys():
+				stand_fortype_map[for_type] = [stand_cn]
+			elif not stand_cn in stand_fortype_map[for_type]:
+				stand_fortype_map[for_type].append(stand_cn)
 	
 	return stand_fortype_map
 
 
-def do_replacement(cur: sqlite3.Cursor, table_name:str, cn_to_fortype_dict: list) -> None:
-	print(f" > Doing ID Replacement for {table_name}")
+def create_dict_fortype_of_standcn_by_county(cur: sqlite3.Cursor, tables: List[str], county_split_dict: Dict[str, Dict[str, List[int]]]):
+	'''
+	Generates a map associating forest types with counties with stand_cn
+	{	
+		'167N': {
+			1: [4324543, 54234, 243243, ...],
+			13: [54353, 35435, 5345345, ...,
+			  ...
+		},
+		'167S': { ... },
+			...
+	}
+	'''
+	stand_fortype_by_county = {}
 
+	fortypes_to_split = list(county_split_dict.keys())
+
+	for table_name in tables:
+		query = f'SELECT GROUPS, STAND_CN, COUNTY FROM {table_name}'
+		cur.execute(query)
+
+		for row in cur:
+			stand_cn = int(row[1])
+
+			str_groups = str(row[0]).split(" ")
+			FOR_TYPE_IND = 7
+			# This is making a lot of assumptions about the db :(
+			for_type = str(str_groups[FOR_TYPE_IND]).split("=")[1]
+
+			# Do the county split
+			county = parse_as_int_if_valid(row[2])
+			if for_type in fortypes_to_split:
+				for_type = county_split_id(for_type, county, str_groups, stand_cn, county_split_dict)
+
+			if for_type not in stand_fortype_by_county.keys():
+				stand_fortype_by_county[for_type] = {}
+			if not county in stand_fortype_by_county[for_type].keys():
+				stand_fortype_by_county[for_type][county] = []
+			if not stand_cn in stand_fortype_by_county[for_type][county]:
+				stand_fortype_by_county[for_type][county].append(stand_cn)
+	
+	return stand_fortype_by_county
+
+
+def county_split_id (for_type: str, county: int, str_groups: str, stand_cn: str, county_split_dict: dict) -> str:
+	for new_fortype in county_split_dict[for_type].keys():
+		if county in county_split_dict[for_type][new_fortype]:
+			return new_fortype
+	
+	# The for loop above is expected to return
+	# TODO: Communicate this better
+	# print(" > [[ Warning ]]")
+	# print(f" > \tFound {for_type} forest type outside of specified counties")
+	# print(f" > \tGroups: {str_groups}")
+	# print(f" > \tStand CN: {stand_cn}")
+	# print(f" > \tCounty: {county}")
+	return for_type
+
+
+
+def replace_ids_in_table(cur: sqlite3.Cursor, table_name:str, cn_to_fortype_dict: Dict[str, List[int]]) -> None:
 	for ind, key in enumerate(list(cn_to_fortype_dict.keys())):
-		stand_cn = key
-		for_type = cn_to_fortype_dict[key]
+		for_type = key
+		stand_cn_list = [str(x) for x in cn_to_fortype_dict[key]]
 
 		query = f'''
 			UPDATE {table_name} SET STAND_ID = "{for_type}"
-			WHERE STAND_CN = {stand_cn}
+			WHERE STAND_CN IN ({", ".join(stand_cn_list)})
 		'''
 		cur.execute(query)
 
-		if (ind % 1000 == 0):
-			print(f" > Executed 1000 ID Replacements")
+	print(f" > Finished ID Replacement for {table_name}")
 
 
-def do_id_replace(cur: sqlite3.Cursor) -> None:
+
+def get_num_fortypes_by_county(cur: sqlite3.Cursor, table: str, county_split_dict: dict) -> Dict[str, Dict[int, int]]:
+	'''
+	Returns a breakdown of how many entries exist for each forest type,
+	by county.
+	{
+		'167N': { 1: 432, 2: 54, ... },
+		'167S': { ... }
+		...
+	}
+	'''
+	county_size_dict = {}
+	fortype_by_county_dict = create_dict_fortype_of_standcn_by_county(
+		cur,
+		['FVS_STANDINIT_PLOT', 'FVS_PLOTINIT_PLOT'],
+		county_split_dict
+	)
+
+	for ind, for_type in enumerate(list(fortype_by_county_dict.keys())):
+		county_size_dict[for_type] = {}
+
+		for county in list(fortype_by_county_dict[for_type].keys()):
+			stand_cn_list = [str(x) for x in fortype_by_county_dict[for_type][county]]
+
+			query = f'''
+				SELECT COUNT(*) AS AMNT
+				FROM {table}
+				WHERE STAND_CN IN ({", ".join(stand_cn_list)})
+			'''
+			cur.execute(query)
+			num_trees = 0
+			for row in cur:
+				num_trees = parse_as_int_if_valid(row[0])
+			if num_trees != 0:
+				county_size_dict[for_type][county] = num_trees
+
+		if ind % 10 == 0 and ind != 0:
+			print(" > Counted counties for 10 forest types")
+		
+
+	return county_size_dict
+
+
+def do_id_replace(cur: sqlite3.Cursor, county_split_dict: dict) -> None:
 	# Actual processing
-	fortype_dict = extract_forest_types(cur, 
-	   ["FVS_STANDINIT_PLOT",
-		"FVS_PLOTINIT_PLOT"])
+	fortype_dict = create_dict_fortype_of_standcn(
+		cur, 
+		["FVS_STANDINIT_PLOT", "FVS_PLOTINIT_PLOT"],
+		county_split_dict
+	)
 
 	# Now do replacements
-	do_replacement(cur, "FVS_PLOTINIT_PLOT", fortype_dict)
-	do_replacement(cur, "FVS_STANDINIT_PLOT", fortype_dict)
-	do_replacement(cur, "FVS_TREEINIT_PLOT", fortype_dict)
+	replace_ids_in_table(cur, "FVS_PLOTINIT_PLOT", fortype_dict)
+	replace_ids_in_table(cur, "FVS_STANDINIT_PLOT", fortype_dict)
+	replace_ids_in_table(cur, "FVS_TREEINIT_PLOT", fortype_dict)
 
-	do_replacement(cur, "FVS_PLOTINIT_PLOT_20152019T", fortype_dict)
-	do_replacement(cur, "FVS_STANDINIT_PLOT_20152019T", fortype_dict)
-	do_replacement(cur, "FVS_TREEINIT_PLOT_20152019T", fortype_dict)
+	replace_ids_in_table(cur, "FVS_PLOTINIT_PLOT_INVYEARST", fortype_dict)
+	replace_ids_in_table(cur, "FVS_STANDINIT_PLOT_INVYEARST", fortype_dict)
+	replace_ids_in_table(cur, "FVS_TREEINIT_PLOT_INVYEARST", fortype_dict)
 
-	print("Finished ID Replace")
+	print(" > Finished ID Replace")
 
 
 if __name__ == '__main__':
@@ -122,6 +206,7 @@ if __name__ == '__main__':
 	print("WARNING: This file only runs the ID replacement steps.")
 	print("\tIt is automatically run from the main file, so you")
 	print("\tdo not need to run this seperately.")
+	print("\tIt is meant to be run by developers of the program.")
 	print()
 
 	usr_input = str(input("Do you still wish to continue? (y/n)"))
@@ -134,7 +219,7 @@ if __name__ == '__main__':
 		print("Ok, continuing")
 
 
-	do_id_replace(cur)
+	do_id_replace(cur, {})
 
 	db_connection.commit()
 	db_connection.close()
