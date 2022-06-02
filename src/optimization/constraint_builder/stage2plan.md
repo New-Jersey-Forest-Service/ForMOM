@@ -10,7 +10,7 @@ Updates (bindings):
  - SplitBy => UpdateConstraint + Update Preview
 
 Funcs to make:
- - [ ] Redraw Preview
+ - [x] Redraw Preview
  - [x] Redraw LSBs
  - Updating constraint from LSBs:
    - [x] Update inc / exc groups in constraint

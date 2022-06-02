@@ -32,7 +32,7 @@ txtConstPreview: tk.Text = None
 
 
 # Exposed State
-varTagInfo = None
+varTagsInfo = None
 constrAllBySpeciesByYear = None
 
 
@@ -42,7 +42,7 @@ constrAllBySpeciesByYear = None
 #
 
 def updateAddToIncTags(tagGroup: str):
-	global constrAllBySpeciesByYear, varTagInfo
+	global constrAllBySpeciesByYear, varTagsInfo
 
 	lsb = incLsbDict[tagGroup]
 
@@ -54,12 +54,11 @@ def updateAddToIncTags(tagGroup: str):
 	for item in selectedItems:
 		constrAllBySpeciesByYear.selected_tags[tagGroup].append(item)
 
-	redrawIncExcLists(varTagInfo, constrAllBySpeciesByYear)
-	redrawPreviewConstraints(varTagInfo, constrAllBySpeciesByYear)
+	redrawAll(varTagsInfo, constrAllBySpeciesByYear)
 
 
 def updateTakeFromIncTags(tagGroup: str):
-	global constrAllBySpeciesByYear, varTagInfo
+	global constrAllBySpeciesByYear, varTagsInfo
 
 	lsb = excLsbDict[tagGroup]
 
@@ -73,8 +72,7 @@ def updateTakeFromIncTags(tagGroup: str):
 
 	# TODO: reset selection (and for the other update method)
 	
-	redrawIncExcLists(varTagInfo, constrAllBySpeciesByYear)
-	redrawPreviewConstraints(varTagInfo, constrAllBySpeciesByYear)
+	redrawAll(varTagsInfo, constrAllBySpeciesByYear)
 
 
 
@@ -84,6 +82,11 @@ def updateTakeFromIncTags(tagGroup: str):
 #
 # Redraw Calls
 #
+
+def redrawAll(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup):
+	redrawIncExcLists(varTags, constr)
+	redrawPreviewConstraints(varTags, constr)
+
 
 def redrawPreviewConstraints(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup):
 	global txtConstPreview
@@ -153,30 +156,16 @@ def redrawIncExcLists(varTags: models.VarTagsInfo, constr: models.StandardConstr
 #
 
 def buildConstraintBuildingGUI(root: tk.Tk):
-	global varTagInfo, constrAllBySpeciesByYear
+	global varTagsInfo, constrAllBySpeciesByYear
 	global txtConstPreview
 
-	root.title("Constraint Builder - Stage 2: Standard Constraint Building")
-	root.rowconfigure([3,5], weight=1)
-	root.columnconfigure(0, weight=1)
-
-	# Header Text
-	lblHeader = tk.Label(root, text="Stage 2 - Standard Constraint Building", anchor="center")
-	lblHeader.grid(row=0, column=0, padx=10, pady=(10, 0))
 
 	#
-	# General Constraint Info
-	frmGenConInfo = buildGeneralConstraintFrame()
-	frmGenConInfo.grid(row=1, column=0, padx=10, pady=10)
-
-	#
-	# Variable Selecting
-
+	# Sample Data Used
 	rawNames = proc.readAllObjVarnames(
 		'/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/constraint_builder/sample_data/minimodel_obj.csv'
 	)
-	varTagInfo = proc.makeVarTagsInfoObject(rawNames, '_', ['species', 'year', 'management'])
-
+	varTagsInfo = proc.makeVarTagsInfoObject(rawNames, '_', ['species', 'year', 'management'])
 
 	constrAllBySpeciesByYear = models.StandardConstraintGroup(
 		selected_tags = {
@@ -187,90 +176,42 @@ def buildConstraintBuildingGUI(root: tk.Tk):
 		name = "All"
 	)
 
-	frmVariableSelecting = buildVarSelectingFrame(varTagInfo.tag_order)
+
+
+	root.title("Constraint Builder - Stage 2: Standard Constraint Building")
+	root.rowconfigure([3,5], weight=1)
+	root.columnconfigure(0, weight=1)
+
+	lblHeader = tk.Label(root, text="Stage 2 - Standard Constraint Building", anchor="center")
+	lblHeader.grid(row=0, column=0, padx=10, pady=(10, 0))
+
+	# General Constraint Info
+	frmGenConInfo = buildGeneralConstraintFrame(root)
+	frmGenConInfo.grid(row=1, column=0, padx=10, pady=10)
+
+	# Variable Selecting
+	frmVariableSelecting = buildVarSelectingFrame(root, varTagsInfo)
 	frmVariableSelecting.grid(row=2, column=0, padx=10, pady=(5, 10))
 
-	print(incVarDict)
-
-
-	#
-	# Frame for the split by selection
-	frmSplitBy = tk.Frame(root, relief=tk.RAISED, borderwidth=2)
-	frmSplitBy.rowconfigure(0, weight=1)
+	# Split by Groups
+	frmSplitBy = buildSplitByFrame(root, varTagsInfo)
 	frmSplitBy.grid(row=4, column=0, padx=10, pady=(5, 10))
 
-	lblSplitBy = tk.Label(frmSplitBy, text="Split by")
-	lblSplitBy.grid(row=0, column=0)
-	frmSplitByBoxes = tk.Frame(frmSplitBy)
-	frmSplitByBoxes.rowconfigure(0, weight=1)
-	frmSplitByBoxes.grid(row=0, column=1)
-
-	for ind, varGroup in enumerate(varTagInfo.tag_order):
-		ckbGroupSplit = tk.Checkbutton(frmSplitByBoxes, text=varGroup)
-		ckbGroupSplit.grid(row=0, column=ind, padx=5)
-
-
-	#
-	# Preview Constraints
-	# sampleConstraints = [
-	# 	models.CompiledConstraint(
-	# 		name='dummyName',
-	# 		var_tags=[
-	# 			['167N', '2021', 'SPB'],
-	# 			['167N', '2021', 'PLSQ'],
-	# 			['167N', '2021', 'PLWF']
-	# 		],
-	# 		var_coeffs = [
-	# 			1, 1, 1
-	# 		],
-	# 		compare_type = models.ComparisonSign.EQ,
-	# 		compare_value = 43.4
-	# 	),
-
-	# 	models.CompiledConstraint(
-	# 		name='dummyName_2',
-	# 		var_tags=[
-	# 			['167S', '2021', 'SPB'],
-	# 			['167N', '2025', 'PLWF'],
-	# 			['409', '2030', 'PLWF'],
-	# 			['167N', '2021', 'SPB'],
-	# 			['167N', '2021', 'PLSQ'],
-	# 			['167N', '2021', 'PLWF']
-	# 		],
-	# 		var_coeffs = [
-	# 			1, 1, 1, 1.5, 1, 1
-	# 		],
-	# 		compare_type = models.ComparisonSign.LE,
-	# 		compare_value = 3
-	# 	)
-	# ]
-
-	frmConstPreview = tk.Frame(root)
+	# Constraint Previews
+	frmConstPreview = buildConstrPreviewFrame(root)
 	frmConstPreview.grid(row=5, column=0, sticky="nsew")
-	frmConstPreview.rowconfigure(1, weight=1)
-	frmConstPreview.columnconfigure(0, weight=1)
 
-	lblConstPreview = tk.Label(frmConstPreview, text="Preview Constraints")
-	txtConstPreview = tk.Text(frmConstPreview, height=6)
-	lblConstPreview.grid(row=0, column=0, sticky="wn", padx=10)
-	txtConstPreview.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 20))
-
-
-
-	redrawIncExcLists(varTagInfo, constrAllBySpeciesByYear)
-	redrawPreviewConstraints(varTagInfo, constrAllBySpeciesByYear)
-
-
-	#
 	# Next Step Button
 	btnNextStep = tk.Button(root, text="Fine Tune >", anchor="center")
 	btnNextStep.grid(row=6, column=0, padx=10, pady=10, sticky="e")
 
 
+	redrawAll(varTagsInfo, constrAllBySpeciesByYear)
 
-def buildGeneralConstraintFrame() -> tk.Frame:
+
+
+def buildGeneralConstraintFrame(root: tk.Tk) -> tk.Frame:
 	frmGenConInfo = tk.Frame(root, relief=tk.RAISED, borderwidth=2)
-	frmGenConInfo.grid(row=1, column=0, padx=10, pady=10)
 
 	lblName = tk.Label(frmGenConInfo, text="Constraint Name:")
 	entName = tk.Entry(frmGenConInfo, width=WIDTH_BIG)
@@ -291,8 +232,7 @@ def buildGeneralConstraintFrame() -> tk.Frame:
 	return frmGenConInfo
 
 
-# TODO: Build this also based on a Standard Constraint Group
-def buildVarSelectingFrame(tagGroupsList: List[str]) -> tk.Frame:
+def buildVarSelectingFrame(root: tk.Tk, varTagsInfo: models.VarTagsInfo) -> tk.Frame:
 	global incVarDict, excVarDict, incLsbDict, excLsbDict
 	TAG_GROUPS_PER_ROW = 3
 
@@ -302,9 +242,10 @@ def buildVarSelectingFrame(tagGroupsList: List[str]) -> tk.Frame:
 	incLsbDict = {}
 	excLsbDict = {}
 
+	tagGroupsList = varTagsInfo.tag_order
+
 	frmVariableSelecting = tk.Frame(root, relief=tk.RAISED, borderwidth=2)
 	frmVariableSelecting.rowconfigure([0, 1, 2, 3, 4, 5], weight=1) # TODO: If more than 5 rows
-	frmVariableSelecting.grid(row=2, column=0, padx=10, pady=(5, 10))
 
 	for ind, tagGroup in enumerate(tagGroupsList):
 		frmTagSel = tk.Frame(frmVariableSelecting)
@@ -376,6 +317,37 @@ def buildVarSelectingFrame(tagGroupsList: List[str]) -> tk.Frame:
 
 	return frmVariableSelecting
 
+
+def buildSplitByFrame(root, varTagsInfo: models.VarTagsInfo) -> tk.Frame:
+	frmSplitBy = tk.Frame(root, relief=tk.RAISED, borderwidth=2)
+	frmSplitBy.rowconfigure(0, weight=1)
+
+	lblSplitBy = tk.Label(frmSplitBy, text="Split by")
+	lblSplitBy.grid(row=0, column=0)
+	frmSplitByBoxes = tk.Frame(frmSplitBy)
+	frmSplitByBoxes.rowconfigure(0, weight=1)
+	frmSplitByBoxes.grid(row=0, column=1)
+
+	for ind, varGroup in enumerate(varTagsInfo.tag_order):
+		ckbGroupSplit = tk.Checkbutton(frmSplitByBoxes, text=varGroup)
+		ckbGroupSplit.grid(row=0, column=ind, padx=5)
+
+	return frmSplitBy
+
+
+def buildConstrPreviewFrame(root) -> tk.Frame:
+	global txtConstPreview
+
+	frmConstPreview = tk.Frame(root)
+	frmConstPreview.rowconfigure(1, weight=1)
+	frmConstPreview.columnconfigure(0, weight=1)
+
+	lblConstPreview = tk.Label(frmConstPreview, text="Preview Constraints")
+	txtConstPreview = tk.Text(frmConstPreview, height=6)
+	lblConstPreview.grid(row=0, column=0, sticky="wn", padx=10)
+	txtConstPreview.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 20))
+
+	return frmConstPreview
 
 
 
