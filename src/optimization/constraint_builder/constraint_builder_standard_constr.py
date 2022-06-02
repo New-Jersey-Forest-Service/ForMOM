@@ -7,6 +7,7 @@ from enum import Enum, unique, auto
 from typing import List, Union, Dict
 from tkinter import ttk, filedialog
 import math
+import csv
 
 
 WIDTH_SML = 8
@@ -47,6 +48,57 @@ constrAllBySpeciesByYear = None
 # Update Calls
 #
 
+def updateExportToCSV(overwrite = False):
+	global constrAllBySpeciesByYear, varTagsInfo
+
+	allConstrs = proc.compileStandardConstraintGroup(varTagsInfo, constrAllBySpeciesByYear)
+
+	allVarNamesSorted = copy.deepcopy(varTagsInfo.all_vars)
+	allVarNamesSorted.sort(key=lambda tags: "_".join(tags))
+	allVarnamesRaw = ["_".join(x) for x in allVarNamesSorted]
+
+	outputFile = '/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/constraint_builder/sample_data/constrs.csv'
+
+	# TODO: Move this into the processing file (or maybe some kind of input output file)
+	# TODO: Bro this is so ugly I cannot do deep work if I'm not in silence wow
+	# TODO: Maybe use dictionary structure instead of parallel lists ??
+	writingMode = 'w' if overwrite else 'a'
+
+	with open(outputFile, mode=writingMode) as constrCsv:
+		writer = csv.writer(constrCsv, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+		if overwrite:
+			firstRow = ['const_name'] + allVarnamesRaw + ['operator', 'rtSide']
+			writer.writerow(firstRow)
+		
+		_updateWriteConstrs(writer, allVarNamesSorted, allConstrs)
+
+
+def _updateWriteConstrs(writer: csv.writer, allVarNamesSorted: List[List[str]], allConstrs: List[models.CompiledConstraint]):
+	COMPSIGN_TO_STR = {
+		models.ComparisonSign.GE: 'ge',
+		models.ComparisonSign.LE: 'le',
+		models.ComparisonSign.EQ: 'eq'
+	}
+	
+	rowLen = len(allVarNamesSorted) + 3
+
+	for constr in allConstrs:
+		nextRow = [''] * rowLen
+		nextRow[0] = constr.name
+		nextRow[-1] = constr.compare_value
+		nextRow[-2] = COMPSIGN_TO_STR[constr.compare_type]
+		
+		for ind, var in enumerate(allVarNamesSorted):
+			coef = 0
+			if var in constr.var_tags:
+				varInd = constr.var_tags.index(var)
+				coef = constr.var_coeffs[varInd]
+			nextRow[ind + 1] = coef
+		
+		writer.writerow(nextRow)
+
+
 def updateGeneralConstrInfo():
 	global constrAllBySpeciesByYear, varTagsInfo
 
@@ -65,7 +117,7 @@ def updateGeneralConstrInfo():
 	elif selector == '>=':
 		compType = models.ComparisonSign.GE
 	else:
-		print(f"[[ !! Warning ]] Found illegal comparison selector option: {selector}")
+		print(f'[[ !! Warning ]] Found illegal comparison selector option: "{selector}"')
 
 	if compType:
 		constrAllBySpeciesByYear.default_compare = compType
@@ -79,7 +131,7 @@ def updateGeneralConstrInfo():
 	except:
 		pass	
 	
-	if convertedValue:
+	if convertedValue != None:
 		constrAllBySpeciesByYear.default_value = convertedValue
 	
 	redrawForUpdate(varTagsInfo, constrAllBySpeciesByYear)
@@ -296,14 +348,21 @@ def buildConstraintBuildingGUI(root: tk.Tk):
 	frmConstPreview.grid(row=5, column=0, sticky="nsew")
 
 	# Next Step Button
-	btnNextStep = tk.Button(root, text="Fine Tune >", anchor="center")
-	btnNextStep.grid(row=6, column=0, padx=10, pady=10, sticky="e")
+	frmExportOptions = tk.Frame(root)
+	frmExportOptions.grid(row=6, column=0, sticky="new")
+	frmExportOptions.rowconfigure(0, weight=1)
+	frmExportOptions.columnconfigure(0, weight=1)
+
+	btnNextStep = tk.Button(frmExportOptions, text="Overwrite CSV >", anchor="center", command=lambda: updateExportToCSV(True))
+	btnNextStep.grid(row=0, column=0, padx=10, pady=10, sticky="e")
+
+	btnAlternative = tk.Button(frmExportOptions, text="Append to CSV >", anchor="center", command=lambda: updateExportToCSV(False))
+	btnAlternative.grid(row=0, column=1, padx=10, pady=10, sticky="e")
 
 
 	redrawAll(varTagsInfo, constrAllBySpeciesByYear)
 	print("\n\n")
 	updateGeneralConstrInfo()
-
 
 
 def buildGeneralConstraintFrame(root: tk.Tk) -> tk.Frame:
