@@ -74,6 +74,7 @@ def updateExportToCSV(overwrite = False):
 		_updateWriteConstrs(writer, allVarNamesSorted, allConstrs)
 
 
+# TODO: Move this to some file i/o module
 def _updateWriteConstrs(writer: csv.writer, allVarNamesSorted: List[List[str]], allConstrs: List[models.CompiledConstraint]):
 	COMPSIGN_TO_STR = {
 		models.ComparisonSign.GE: 'ge',
@@ -110,6 +111,7 @@ def updateGeneralConstrInfo():
 	selector = cbbOpSelector.get()
 	compType = None
 
+	# TODO: Move this conversion to the comparison sign class
 	if selector == '=':
 		compType = models.ComparisonSign.EQ
 	elif selector == '<=':
@@ -386,8 +388,6 @@ def buildGeneralConstraintFrame(root: tk.Tk) -> tk.Frame:
 	cbbOpSelector.grid(row=1, column=1, padx=5, pady=5, sticky="nsw")
 
 	cbbOpSelector.bind("<<ComboboxSelected>>", lambda evnt: updateGeneralConstrInfo())
-
-	# cbbDelimSelector.bind("<<ComboboxSelected>>", lambda evnt: selectDelimiter())
 
 	varDefaultValue = tk.StringVar()
 	lblDefaultValue = tk.Label(frmGenConInfo, text="Default Value:")
