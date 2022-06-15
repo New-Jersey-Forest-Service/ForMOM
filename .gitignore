@@ -139,4 +139,4 @@ dmypy.json
 # For the vim users
 .swp
 
-.db
+*.db
