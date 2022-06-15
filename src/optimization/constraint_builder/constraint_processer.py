@@ -254,7 +254,7 @@ def splitRawVarIntoTags (varnameRaw, delim: str) -> List[str]:
 # Linting
 #
 
-def lintVarNames (varNamesRaw, delim: str) -> str:
+def lintVarNames (varNamesRaw: List[str], delim: str) -> str:
 	'''
 	Goes through the list of variable names and checks that they're nice
 	 - returns None if there are no erors
@@ -303,25 +303,44 @@ def lintVarNames (varNamesRaw, delim: str) -> str:
 
 
 # TODO: Have linting for names as an array to check for duplicates
-def lintTagGroupName (tagGroupName) -> str:
+def lintTagGroupName (tagGroupName: str) -> str:
 	'''
 	Checks that the provided group name is valid, returning None if
 	there are no errors or the actual error message if there is one
 	'''
 	GROUPNAME_MAX_LENGTH = 15
 	GROUPNAME_MIN_LENGTH = 3
-	GROUPNAME_REGEX = "^[A-Za-z0-9]+$"
+	GROUPNAME_REGEX = "^[A-Za-z0-9_-]+$"
 
 	# [[ Check ]] Size
-	if len(tagGroupName) < GROUPNAME_MIN_LENGTH or len(tagGroupName) > GROUPNAME_MAX_LENGTH:
-		return f'Groupname "{tagGroupName}" is incorrect length. ' + \
-			f'It must be between {GROUPNAME_MIN_LENGTH} to {GROUPNAME_MAX_LENGTH} ' + \
-			f'characters long'
+	if len(tagGroupName) < GROUPNAME_MIN_LENGTH:
+		return f'Groupname "{tagGroupName}" too short. Must be at least {GROUPNAME_MIN_LENGTH} characters'
+	elif len(tagGroupName) > GROUPNAME_MAX_LENGTH:
+		return f'Groupname "{tagGroupName}" is too long. Name is {len(tagGroupName)} characters long, but max is {GROUPNAME_MIN_LENGTH}'
 	
 	# [[ Check ]] Only alphanumeric names allowed
 	if re.search(GROUPNAME_REGEX, tagGroupName) == None:
-		return f'Invalid groupname "{tagGroupName}". Name must be alphanumeric, containing only A-Z, a-z, 0-9 and no spaces, dashes, etc'
+		# Lol this is so inefficient but its kinda funny
+		for c in tagGroupName:
+			if re.search(GROUPNAME_REGEX, str(c)) == None:
+				return f'Invalid groupname "{tagGroupName}". Illegal character "{c}"'
 
+
+def lintMultipleTagGroupNames (listTagGroupName: List[str]) -> str:
+	# [[ Check ]] All variable named
+	for ind, name in enumerate(listTagGroupName):
+		if name == None or name == '':
+			return f'Not all groups are named'
+	
+	# [[ Check ]] Individually fine
+	for name in listTagGroupName:
+		err = lintTagGroupName(name)
+		if err:
+			return err
+
+	# [[ Check ]] Duplicate names
+	if len(set(listTagGroupName)) != len(listTagGroupName):
+		return f'Found duplicate names'
 
 
 
@@ -347,7 +366,6 @@ def readAllObjVarnames (objCSVPath: Path) -> List[str]:
 			allVarnames.append(row[0])
 	
 	return allVarnames
-
 
 
 
