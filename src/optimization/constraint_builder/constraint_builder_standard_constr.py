@@ -19,9 +19,6 @@ CSV_FILES = [('CSV Files', '*.csv'), ('All Files', '*.*')]
 # TODO: Make this read from a VarTagsInfo
 # TODO: Make this output a StandardConstraintGroup
 
-# TODO: Go eat a second dinner after finishing this file
-
-
 # Exposed GUI elements
 incLsbDict: Dict[str, tk.Listbox] = None
 excLsbDict: Dict[str, tk.Listbox] = None
@@ -235,6 +232,7 @@ def redrawSplitByGroups(constr: models.StandardConstraintGroup) -> None:
 
 	for group in splitbyGroups:
 		splitVarDict[group].set(1)
+	# TODO: Also set the splitbys outside the group to 0
 
 
 def redrawPreviewConstraints(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
