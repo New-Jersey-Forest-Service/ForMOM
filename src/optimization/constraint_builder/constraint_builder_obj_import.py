@@ -10,7 +10,7 @@ from enum import Enum, unique, auto
 from typing import List
 from tkinter import ttk, filedialog
 import math
-
+import constraint_builder_project_overview
 
 
 WIDTH_SML = 8
@@ -19,35 +19,36 @@ WIDTH_BIG = 35
 CSV_FILES = [('CSV Files', '*.csv'), ('All Files', '*.*')]
 
 
-# Exposed gui elements / data
-lblObjFile: tk.Label = None
-lblLoadedSampleVar: tk.Label = None
-cbbDelimSelector: ttk.Combobox = None
+# Exposed gui elements
+_lblObjFile: tk.Label = None
+_lblLoadedSampleVar: tk.Label = None
+_cbbDelimSelector: ttk.Combobox = None
 
-frmNameGroups: tk.Frame = None
-lblVerifyNames: tk.Label = None
+_frmNameGroups: tk.Frame = None
+_lblVerifyNames: tk.Label = None
 
-nameEntVarList: List[tk.StringVar] = None
+_nameEntVarList: List[tk.StringVar] = None
 
-btnNextStage: tk.Button = None
+_btnNextStage: tk.Button = None
 
 
 #
-# Exposed State
-objSampleVar: str = None
-errWithObjFile: str = None
-errWithNamesList: str = None
+# Data State
+_objSampleVar: str = None
+_errWithObjFile: str = None
+_errWithNamesList: str = None
 
 # user input
-objFileStr: str = None
-groupnameList: List[str] = None
-delimiter: str = None
+_objFileStr: str = None
+_groupnameList: List[str] = None
+_delimiter: str = None
 
 # useful processed values
-varNamesRaw: List[str] = None
-tagLists: List[List[str]] = None
-# varTagsInfo = None
+_varNamesRaw: List[str] = None
+_tagLists: List[List[str]] = None
 
+_passedRoot: tk.Tk = None
+_passedGlobalState: models.GlobalState = None
 
 
 
@@ -60,20 +61,20 @@ def updateNewObjFile() -> None:
 	'''
 		Select objective csv with a chooser
 	'''
-	global objFileStr
+	global _objFileStr
 
-	prevStr = objFileStr
+	prevStr = _objFileStr
 
-	objFileStr = filedialog.askopenfilename(
-		filetypes=CSV_FILES,
-		defaultextension=CSV_FILES
-		)
+	_objFileStr = filedialog.askopenfilename(
+            filetypes=CSV_FILES,
+            defaultextension=CSV_FILES
+        )
 
-	if _isValidFile(objFileStr):
-		objFileStr = str(objFileStr)
+	if _isValidFile(_objFileStr):
+		_objFileStr = str(_objFileStr)
 	else:
-		objFileStr = prevStr
-	
+		_objFileStr = prevStr
+
 	processParseFile()
 	multiRedrawFileUpdate()
 
@@ -84,9 +85,9 @@ def _isValidFile(dialogOutput) -> bool:
 
 
 def updateNewDelim() -> None:
-	global delimiter, cbbDelimSelector
+	global _delimiter, _cbbDelimSelector
 
-	delimiter = cbbDelimSelector.get()
+	_delimiter = _cbbDelimSelector.get()
 
 	processParseFile()
 	multiRedrawFileUpdate()
@@ -96,14 +97,12 @@ def updateGroupName() -> None:
 	'''
 		Reads the groupname string variables
 	'''
-	global nameEntVarList, groupnameList, errWithNamesList
+	global _nameEntVarList, _groupnameList, _errWithNamesList
 
-	groupnameList = [x.get() for x in nameEntVarList]
-	errWithNamesList = proc.lintMultipleTagGroupNames(groupnameList)
+	_groupnameList = [x.get() for x in _nameEntVarList]
+	_errWithNamesList = proc.lintMultipleTagGroupNames(_groupnameList)
 
 	multiRedrawNameUpdate()
-
-
 
 
 #
@@ -111,37 +110,49 @@ def updateGroupName() -> None:
 #
 
 def processParseFile() -> None:
-	global varNamesRaw, objSampleVar, errWithObjFile, tagLists
+	global _varNamesRaw, _objSampleVar, _errWithObjFile, _tagLists
 
-	varNamesRaw = None
-	objSampleVar = None
-	errWithObjFile = None
-	tagLists = None
+	_varNamesRaw = None
+	_objSampleVar = None
+	_errWithObjFile = None
+	_tagLists = None
 
-	if objFileStr == None:
+	if _objFileStr == None:
 		return
 	# TODO: Lint file name (in processing module)
-	varNamesRaw = proc.readAllObjVarnames(Path(objFileStr))
-	objSampleVar = varNamesRaw[0]
+	_varNamesRaw = proc.readAllObjVarnames(Path(_objFileStr))
+	_objSampleVar = _varNamesRaw[0]
 
-	if delimiter == None:
+	if _delimiter == None:
 		return
-	errWithObjFile = proc.lintVarNames(varNamesRaw, delimiter)
+	_errWithObjFile = proc.lintVarNames(_varNamesRaw, _delimiter)
 
-	if errWithObjFile:
+	if _errWithObjFile:
 		return
-	tagLists = proc.makeTagGroupMembersList(
-		proc.splitVarsToTags(varNamesRaw, delimiter)
+	_tagLists = proc.makeTagGroupMembersList(
+		proc.splitVarsToTags(_varNamesRaw, _delimiter)
 	)
-	
 
 
 
+#
+# Transition Calls
+#
 
+def transitionToOverview() -> None:
+	global _passedRoot, _passedGlobalState
 
+	# Write Data
+	_passedGlobalState.varTags = \
+		proc.makeVarTagsInfoObject(_varNamesRaw, _delimiter, _groupnameList)
+	_passedGlobalState.constrGroupList = []
 
+	# Clear Root
+	for child in _passedRoot.winfo_children():
+		child.destroy()
 
-
+	# Transition
+	constraint_builder_project_overview.buildProjectOverviewGUI(_passedRoot, _passedGlobalState)
 
 
 #
@@ -149,20 +160,20 @@ def processParseFile() -> None:
 #
 
 def multiRedrawFileUpdate() -> None:
-	global objFileStr, objSampleVar, tagLists, groupnameList
+	global _objFileStr, _objSampleVar, _tagLists, _groupnameList
 
-	# Exclusively for file update	
-	redrawFilestr(objFileStr)
-	redrawSamplevar(objSampleVar)
-	redrawNamingFrame(tagLists)
+	# Exclusively for file update
+	redrawFilestr(_objFileStr)
+	redrawSamplevar(_objSampleVar)
+	redrawNamingFrame(_tagLists)
 
-	redrawNamingStatus(groupnameList)
+	redrawNamingStatus(_groupnameList)
 
 
 def multiRedrawNameUpdate() -> None:
-	global groupnameList
+	global _groupnameList
 
-	redrawNamingStatus(groupnameList)
+	redrawNamingStatus(_groupnameList)
 
 
 def redrawFilestr(objFileStr: str) -> None:
@@ -177,8 +188,8 @@ def redrawFilestr(objFileStr: str) -> None:
 		prevStr = objFileStr
 		if len(prevStr) > WIDTH_BIG:
 			prevStr = "... " + prevStr[4-WIDTH_BIG:]
-	
-	lblObjFile['text'] = prevStr
+
+	_lblObjFile['text'] = prevStr
 
 
 def redrawSamplevar(objSampleVar: str) -> None:
@@ -186,83 +197,78 @@ def redrawSamplevar(objSampleVar: str) -> None:
 		Updates the label for the sample variable	
 	'''
 	prevStr = objSampleVar if objSampleVar != None else "Select a file"
-	lblLoadedSampleVar['text'] = prevStr
+	_lblLoadedSampleVar['text'] = prevStr
 
 
 def redrawNamingFrame(tagLists: List[List[str]]) -> None:
 	'''
 		Rebuilds the frame for naming tag groups
 	'''
-	global frmNameGroups, nameEntVarList
+	global _frmNameGroups, _nameEntVarList
 
-	if nameEntVarList == None:
-		nameEntVarList = []
+	if _nameEntVarList == None:
+		_nameEntVarList = []
 
-	for child in frmNameGroups.winfo_children():
+	for child in _frmNameGroups.winfo_children():
 		child.destroy()
 
-	if errWithObjFile:
-		lblMessage = tk.Label(frmNameGroups, text=errWithObjFile, anchor="center")
+	if _errWithObjFile:
+		lblMessage = tk.Label(_frmNameGroups, text=_errWithObjFile, anchor="center")
 		lblMessage.grid(row=0, column=0, columnspan=2, sticky="nsew")
 	elif tagLists == None:
-		lblMessage = tk.Label(frmNameGroups, text="Select a file", anchor="center")
+		lblMessage = tk.Label(_frmNameGroups, text="Select a file", anchor="center")
 		lblMessage.grid(row=0, column=0, columnspan=2, sticky="nsew")
 	else:
-		if len(nameEntVarList) > len(tagLists):
-			nameEntVarList = nameEntVarList[:len(tagLists)]
-		nameEntVarList = nameEntVarList + [None] * (len(tagLists) - len(nameEntVarList))
+		if len(_nameEntVarList) > len(tagLists):
+			_nameEntVarList = _nameEntVarList[:len(tagLists)]
+		_nameEntVarList = _nameEntVarList + \
+			[None] * (len(tagLists) - len(_nameEntVarList))
 
 		for ind, exampleMems in enumerate(tagLists):
-			strVarGroupname = nameEntVarList[ind]
+			strVarGroupname = _nameEntVarList[ind]
 			if strVarGroupname == None:
 				strVarGroupname = tk.StringVar()
-				strVarGroupname.trace("w", lambda name, index, mode, sv=strVarGroupname: updateGroupName())
-				nameEntVarList[ind] = strVarGroupname
+				strVarGroupname.trace("w", lambda name, index, mode,
+				                      sv=strVarGroupname: updateGroupName())
+				_nameEntVarList[ind] = strVarGroupname
 
-			entMemName = tk.Entry(frmNameGroups, width=15, textvariable=strVarGroupname)
+			entMemName = tk.Entry(_frmNameGroups, width=15, textvariable=strVarGroupname)
 
 			exampleMemsStr = ", ".join(exampleMems)
 			if len(exampleMemsStr) > WIDTH_BIG:
 				exampleMemsStr = exampleMemsStr[:WIDTH_BIG - 4] + " ..."
-			lblExampleMems = tk.Label(frmNameGroups, text=exampleMemsStr, anchor="e")
+			lblExampleMems = tk.Label(_frmNameGroups, text=exampleMemsStr, anchor="e")
 
 			entMemName.grid(row=ind+1, column=0, padx=5, pady=5, sticky="nse")
 			lblExampleMems.grid(row=ind+1, column=1, padx=5, pady=5, sticky="nsw")
 
 
 def redrawNamingStatus(inputNames: List[str]) -> None:
-	global lblVerifyNames, errWithNamesList, errWithObjFile
+	global _lblVerifyNames, _errWithNamesList, _errWithObjFile
 
-	if inputNames == None or errWithObjFile != None:
-		lblVerifyNames['text'] = ''
-		btnNextStage['state'] = 'disabled'
-	elif errWithNamesList == None:
-		lblVerifyNames['text'] = 'All tag group names valid'
-		btnNextStage['state'] = 'normal'
+	if inputNames == None or _errWithObjFile != None:
+		_lblVerifyNames['text'] = ''
+		_btnNextStage['state'] = 'disabled'
+	elif _errWithNamesList == None:
+		_lblVerifyNames['text'] = 'All tag group names valid'
+		_btnNextStage['state'] = 'normal'
 	else:
-		lblVerifyNames['text'] = "[[ Error ]]\n" + errWithNamesList
-		btnNextStage['state'] = 'disabled'
-	
-
-
-
-
-
+		_lblVerifyNames['text'] = "[[ Error ]]\n" + _errWithNamesList
+		_btnNextStage['state'] = 'disabled'
 
 
 #
 # Main GUI Construction
 #
 
-def buildObjImport(root: tk.Tk):
-	global btnNextStage
-	# Example data
-	exampleGroupMembersStrs = [
-		['167N', '167S', '409', '104'],
-		['2021', '2025', '2030', '2050', '2075', '2100', '212314'],
-		['SPB', 'NoMng', 'WFNM']
-	]
+def buildObjImport(root: tk.Tk, globalState: models.GlobalState):
+	global _btnNextStage, _passedRoot, _passedGlobalState
 
+	# Reading in references
+	_passedRoot = root
+	_passedGlobalState = globalState
+
+	# GUI Building
 	root.title("Constraint Builder - Stage 1: Setup Variables")
 	root.rowconfigure([1, 2], weight=1)
 	root.columnconfigure(0, weight=1)
@@ -275,76 +281,73 @@ def buildObjImport(root: tk.Tk):
 	frmFileParseSetup.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
 	# Tag gruop naming
-	frmNameAndVerify = buildGroupNaming(root, exampleGroupMembersStrs)
+	frmNameAndVerify = buildGroupNaming(root)
 	frmNameAndVerify.grid(row=2, column=0, padx=10, pady=(0, 10), sticky="nsew")
 
 	# Next Step Button
-	btnNextStage = tk.Button(root, text="Continue >", anchor="center")
-	btnNextStage.grid(row=3, column=0, padx=10, pady=(0, 10), sticky="e")
+	_btnNextStage = tk.Button(root, text="Continue >", anchor="center", command=transitionToOverview)
+	_btnNextStage.grid(row=3, column=0, padx=10, pady=(0, 10), sticky="e")
 
 	multiRedrawFileUpdate()
 
 
 def buildFileParseFrame(root: tk.Tk) -> tk.Frame:
-	global lblObjFile, lblLoadedSampleVar, cbbDelimSelector
+	global _lblObjFile, _lblLoadedSampleVar, _cbbDelimSelector
 
 	frmFileParseSetup = tk.Frame(root, relief=tk.RAISED, bd=2)
 
-	btnObjFile = tk.Button(frmFileParseSetup, text="Objective .csv", command=updateNewObjFile)
-	lblObjFile = tk.Label(frmFileParseSetup, text="No file selected", width=WIDTH_BIG, anchor="w")
+	btnObjFile = tk.Button(
+		frmFileParseSetup, text="Objective .csv", command=updateNewObjFile)
+	_lblObjFile = tk.Label(
+		frmFileParseSetup, text="No file selected", width=WIDTH_BIG, anchor="w")
 	btnObjFile.grid(row=0, column=0, sticky="nse", padx=5, pady=5)
-	lblObjFile.grid(row=0, column=1, sticky="nsw", padx=5, pady=5)
+	_lblObjFile.grid(row=0, column=1, sticky="nsw", padx=5, pady=5)
 
 	lblSampleVar = tk.Label(frmFileParseSetup, text="Sample Variable:")
 	# TODO: Italics
-	lblLoadedSampleVar = tk.Label(frmFileParseSetup, text="Load file for variable")
+	_lblLoadedSampleVar = tk.Label(
+		frmFileParseSetup, text="Load file for variable")
 	lblSampleVar.grid(row=1, column=0, sticky="nse", padx=5, pady=5)
-	lblLoadedSampleVar.grid(row=1, column=1, sticky="nsw", padx=5, pady=5)
+	_lblLoadedSampleVar.grid(row=1, column=1, sticky="nsw", padx=5, pady=5)
 
 	lblDelim = tk.Label(frmFileParseSetup, text="Delimiter:")
 	# TODO: Pull delimiters from program config
-	cbbDelimSelector = ttk.Combobox(frmFileParseSetup, values=('_', '-', '='))
-	cbbDelimSelector['state'] = 'readonly'
+	_cbbDelimSelector = ttk.Combobox(frmFileParseSetup, values=('_', '-', '='))
+	_cbbDelimSelector['state'] = 'readonly'
 	lblDelim.grid(row=2, column=0, sticky="nse", padx=5, pady=5)
-	cbbDelimSelector.grid(row=2, column=1, sticky="nsw", padx=5, pady=5)
+	_cbbDelimSelector.grid(row=2, column=1, sticky="nsw", padx=5, pady=5)
 
-	cbbDelimSelector.bind("<<ComboboxSelected>>", lambda evnt: updateNewDelim())
+	_cbbDelimSelector.bind("<<ComboboxSelected>>", lambda evnt: updateNewDelim())
 
 	return frmFileParseSetup
 
 
-def buildGroupNaming(root: tk.Tk, exampleTagsList: List[List[str]]) -> tk.Frame:
-	global frmNameGroups, lblVerifyNames
+def buildGroupNaming(root: tk.Tk) -> tk.Frame:
+	global _frmNameGroups, _lblVerifyNames
 
 	frmNameAndVerify = tk.Frame(root, relief=tk.SUNKEN, bd=2)
 	frmNameAndVerify.grid(row=2, column=0, padx=10, pady=(0, 10), sticky="nsew")
 	frmNameAndVerify.columnconfigure(0, weight=1)
 
 	# frmNameGroups is populated by the redraw methods
-	frmNameGroups = tk.Frame(frmNameAndVerify)
-	frmNameGroups.grid(row=0, column=0, columnspan=2, pady=10)
-	frmNameGroups.columnconfigure([0, 1], weight=1)
+	_frmNameGroups = tk.Frame(frmNameAndVerify)
+	_frmNameGroups.grid(row=0, column=0, columnspan=2, pady=10)
+	_frmNameGroups.columnconfigure([0, 1], weight=1)
 
-	lblNamesCol = tk.Label(frmNameGroups, text="Name", anchor="center")
-	lblExampleMemsCol = tk.Label(frmNameGroups, text="Example Members", anchor="center")
+	lblNamesCol = tk.Label(_frmNameGroups, text="Name", anchor="center")
+	lblExampleMemsCol = tk.Label(
+		_frmNameGroups, text="Example Members", anchor="center")
 	lblNamesCol.grid(row=0, column=0)
 	lblExampleMemsCol.grid(row=0, column=1)
 
-	lblVerifyNames = tk.Label(frmNameAndVerify, text="Fill in group names", anchor="center")
-	lblVerifyNames.grid(row=2, column=0, padx=4, pady=5)
+	_lblVerifyNames = tk.Label(
+		frmNameAndVerify, text="Fill in group names", anchor="center")
+	_lblVerifyNames.grid(row=2, column=0, padx=4, pady=5)
 
 	return frmNameAndVerify
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
 	root = tk.Tk()
 	buildObjImport(root)
 	root.mainloop()
-
-

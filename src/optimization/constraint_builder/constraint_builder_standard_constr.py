@@ -1,5 +1,6 @@
 
 import tkinter as tk
+import constraint_builder_project_overview
 import varname_dataclasses as models
 import constraint_processer as proc
 import copy
@@ -20,92 +21,43 @@ CSV_FILES = [('CSV Files', '*.csv'), ('All Files', '*.*')]
 # TODO: Make this output a StandardConstraintGroup
 
 # Exposed GUI elements
-incLsbDict: Dict[str, tk.Listbox] = None
-excLsbDict: Dict[str, tk.Listbox] = None
+_incLsbDict: Dict[str, tk.Listbox] = None
+_excLsbDict: Dict[str, tk.Listbox] = None
 
-incVarDict: Dict[str, tk.StringVar] = None
-excVarDict: Dict[str, tk.StringVar] = None
+_incVarDict: Dict[str, tk.StringVar] = None
+_excVarDict: Dict[str, tk.StringVar] = None
 
-txtConstPreview: tk.Text = None
+_txtConstPreview: tk.Text = None
 
-entName: tk.Entry = None
-cbbOpSelector: ttk.Combobox = None
-entDefaultValue: tk.Entry = None
+_entName: tk.Entry = None
+_cbbOpSelector: ttk.Combobox = None
+_entDefaultValue: tk.Entry = None
 
-splitVarDict: Dict[str, tk.StringVar] = None
+_splitVarDict: Dict[str, tk.StringVar] = None
 
 
-# Exposed State
-varTagsInfo = None
-constrAllBySpeciesByYear = None
+# State Variables
+_varTagsInfo = None
+_constrGroup = None
 
+_passedGlobalState: models.GlobalState = None
+_passedRoot: tk.Tk = None
+_passedConstrInd: int = 0
 
 
 #
 # Update Calls
 #
 
-def updateExportToCSV(overwrite = False):
-	global constrAllBySpeciesByYear, varTagsInfo
-
-	allConstrs = proc.compileStandardConstraintGroup(varTagsInfo, constrAllBySpeciesByYear)
-
-	allVarNamesSorted = copy.deepcopy(varTagsInfo.all_vars)
-	allVarNamesSorted.sort(key=lambda tags: "_".join(tags))
-	allVarnamesRaw = ["_".join(x) for x in allVarNamesSorted]
-
-	outputFile = '/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/constraint_builder/sample_data/constrs.csv'
-
-	# TODO: Move this into the processing file (or maybe some kind of input output file)
-	# TODO: Bro this is so ugly I cannot do deep work if I'm not in silence wow
-	# TODO: Maybe use dictionary structure instead of parallel lists ??
-	writingMode = 'w' if overwrite else 'a'
-
-	with open(outputFile, mode=writingMode) as constrCsv:
-		writer = csv.writer(constrCsv, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-
-		if overwrite:
-			firstRow = ['const_name'] + allVarnamesRaw + ['operator', 'rtSide']
-			writer.writerow(firstRow)
-		
-		_updateWriteConstrs(writer, allVarNamesSorted, allConstrs)
-
-
-# TODO: Move this to some file i/o module
-def _updateWriteConstrs(writer: csv.writer, allVarNamesSorted: List[List[str]], allConstrs: List[models.CompiledConstraint]):
-	COMPSIGN_TO_STR = {
-		models.ComparisonSign.GE: 'ge',
-		models.ComparisonSign.LE: 'le',
-		models.ComparisonSign.EQ: 'eq'
-	}
-	
-	rowLen = len(allVarNamesSorted) + 3
-
-	for constr in allConstrs:
-		nextRow = [''] * rowLen
-		nextRow[0] = constr.name
-		nextRow[-1] = constr.compare_value
-		nextRow[-2] = COMPSIGN_TO_STR[constr.compare_type]
-		
-		for ind, var in enumerate(allVarNamesSorted):
-			coef = 0
-			if var in constr.var_tags:
-				varInd = constr.var_tags.index(var)
-				coef = constr.var_coeffs[varInd]
-			nextRow[ind + 1] = coef
-		
-		writer.writerow(nextRow)
-
-
 def updateGeneralConstrInfo():
-	global constrAllBySpeciesByYear, varTagsInfo
+	global _constrGroup, _varTagsInfo
 
 	# Name is always just a string cast
 	# TODO: Lint
-	constrAllBySpeciesByYear.name = str(entName.get())
+	_constrGroup.name = str(_entName.get())
 
 	# Selector needs to be checked
-	selector = cbbOpSelector.get()
+	selector = _cbbOpSelector.get().strip()
 	compType = None
 
 	# TODO: Move this conversion to the comparison sign class
@@ -119,10 +71,10 @@ def updateGeneralConstrInfo():
 		print(f'[[ !! Warning ]] Found illegal comparison selector option: "{selector}"')
 
 	if compType:
-		constrAllBySpeciesByYear.default_compare = compType
+		_constrGroup.default_compare = compType
 	
 	# Value needs to be checked
-	value = entDefaultValue.get()
+	value = _entDefaultValue.get()
 	convertedValue = None
 
 	try:
@@ -131,34 +83,34 @@ def updateGeneralConstrInfo():
 		pass	
 	
 	if convertedValue != None:
-		constrAllBySpeciesByYear.default_value = convertedValue
+		_constrGroup.default_value = convertedValue
 	
-	redrawForUpdate(varTagsInfo, constrAllBySpeciesByYear)
+	redrawForUpdate(_varTagsInfo, _constrGroup)
 
 
 def updateSplitByGroups():
-	global constrAllBySpeciesByYear, varTagsInfo
+	global _constrGroup, _varTagsInfo
 
-	allGroups = varTagsInfo.tag_order
+	allGroups = _varTagsInfo.tag_order
 	splitBys = []
 
 	for group in allGroups:
-		status = splitVarDict[group].get()
+		status = _splitVarDict[group].get()
 
 		if status == '1':
 			splitBys.append(group)	
 		elif status != '0':
 			print(f"[[ !! Warning ]] Illegal state of checkbox string var found: {status}")
 
-	constrAllBySpeciesByYear.split_by_groups = splitBys
+	_constrGroup.split_by_groups = splitBys
 
-	redrawForUpdate(varTagsInfo, constrAllBySpeciesByYear)
+	redrawForUpdate(_varTagsInfo, _constrGroup)
 
 
 def updateAddToIncTags(tagGroup: str):
-	global constrAllBySpeciesByYear, varTagsInfo
+	global _constrGroup, _varTagsInfo
 
-	lsb = incLsbDict[tagGroup]
+	lsb = _incLsbDict[tagGroup]
 
 	selectedItems = []
 	selectedInds = lsb.curselection()
@@ -166,15 +118,15 @@ def updateAddToIncTags(tagGroup: str):
 		selectedItems.append(lsb.get(ind))
 
 	for item in selectedItems:
-		constrAllBySpeciesByYear.selected_tags[tagGroup].append(item)
+		_constrGroup.selected_tags[tagGroup].append(item)
 
-	redrawForUpdate(varTagsInfo, constrAllBySpeciesByYear)
+	redrawForUpdate(_varTagsInfo, _constrGroup)
 
 
 def updateTakeFromIncTags(tagGroup: str):
-	global constrAllBySpeciesByYear, varTagsInfo
+	global _constrGroup, _varTagsInfo
 
-	lsb = excLsbDict[tagGroup]
+	lsb = _excLsbDict[tagGroup]
 
 	selectedItems = []
 	selectedInds = lsb.curselection()
@@ -182,11 +134,34 @@ def updateTakeFromIncTags(tagGroup: str):
 		selectedItems.append(lsb.get(ind))
 
 	for item in selectedItems:
-		constrAllBySpeciesByYear.selected_tags[tagGroup].remove(item)
+		_constrGroup.selected_tags[tagGroup].remove(item)
 
 	# TODO: reset selection (and for the other update method)
 	
-	redrawForUpdate(varTagsInfo, constrAllBySpeciesByYear)
+	redrawForUpdate(_varTagsInfo, _constrGroup)
+
+
+
+
+
+
+
+#
+# Transition Calls
+#
+
+def transitionToOverview() -> None:
+	global _constrGroup, _passedConstrInd, _passedRoot, _passedGlobalState
+
+	# Update State
+	_passedGlobalState.constrGroupList[_passedConstrInd] = _constrGroup
+
+	# Reset root
+	for child in _passedRoot.winfo_children():
+		child.destroy()
+
+	# Transition
+	constraint_builder_project_overview.buildProjectOverviewGUI(_passedRoot, _passedGlobalState)
 
 
 
@@ -215,13 +190,13 @@ def redrawStandardInfo(constr: models.StandardConstraintGroup) -> None:
 	'''
 		Redraws the constraint name, comparison, and default operator in the top settings pane
 	'''
-	entName.delete(0, tk.END)
-	entName.insert(0, constr.name)
+	_entName.delete(0, tk.END)
+	_entName.insert(0, constr.name)
 
-	cbbOpSelector.set(str(constr.default_compare))
+	_cbbOpSelector.set(str(constr.default_compare))
 
-	entDefaultValue.delete(0, tk.END)
-	entDefaultValue.insert(0, constr.default_value)
+	_entDefaultValue.delete(0, tk.END)
+	_entDefaultValue.insert(0, constr.default_value)
 
 
 def redrawSplitByGroups(constr: models.StandardConstraintGroup) -> None:
@@ -231,18 +206,18 @@ def redrawSplitByGroups(constr: models.StandardConstraintGroup) -> None:
 	splitbyGroups = constr.split_by_groups
 
 	for group in splitbyGroups:
-		splitVarDict[group].set(1)
+		_splitVarDict[group].set(1)
 	# TODO: Also set the splitbys outside the group to 0
 
 
 def redrawPreviewConstraints(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
-	global txtConstPreview
+	global _txtConstPreview
 
 	allConstrs = proc.compileStandardConstraintGroup(varTags, constr)
 	constrStr = generate_sample_constraint_string(allConstrs, -1, -1)
 
-	txtConstPreview.delete("1.0", tk.END)
-	txtConstPreview.insert("1.0", constrStr)
+	_txtConstPreview.delete("1.0", tk.END)
+	_txtConstPreview.insert("1.0", constrStr)
 
 
 # TODO: Actually use charHeight & charWidth ?
@@ -285,8 +260,8 @@ def redrawIncExcLists(varTags: models.VarTagsInfo, constr: models.StandardConstr
 				excludedTags[tagGroup].remove(tag)
 
 	for tagGroup in includedTags:
-		incVar = incVarDict[tagGroup]
-		excVar = excVarDict[tagGroup]
+		incVar = _incVarDict[tagGroup]
+		excVar = _excVarDict[tagGroup]
 
 		incVar.set(includedTags[tagGroup])
 		excVar.set(excludedTags[tagGroup])
@@ -302,25 +277,15 @@ def redrawIncExcLists(varTags: models.VarTagsInfo, constr: models.StandardConstr
 # Main GUI Construction
 #
 
-def buildConstraintBuildingGUI(root: tk.Tk):
-	global varTagsInfo, constrAllBySpeciesByYear
+def buildConstraintBuildingGUI(root: tk.Tk, globalState: models.GlobalState, constrInd: int):
+	global _varTagsInfo, _constrGroup, _passedRoot, _passedGlobalState, _passedConstrInd
 
-	# Sample Data Used (for development)
-	rawNames = proc.readAllObjVarnames(
-		'/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/constraint_builder/sample_data/minimodel_obj.csv'
-	)
-	varTagsInfo = proc.makeVarTagsInfoObject(rawNames, '_', ['species', 'year', 'management'])
+	_varTagsInfo = globalState.varTags
+	_constrGroup = globalState.constrGroupList[constrInd]
 
-	constrAllBySpeciesByYear = models.StandardConstraintGroup(
-		selected_tags = {
-			"species": ["167N", "409"], 
-			"year": ["2021", "2050"], 
-			"management": ["PLSQ", "PLWF"]},
-		split_by_groups = ["species", "year"],
-		name = "All",
-		default_compare = models.ComparisonSign.LE,
-		default_value = 6.9
-	)
+	_passedRoot = root
+	_passedGlobalState = globalState
+	_passedConstrInd = constrInd
 
 
 
@@ -336,11 +301,11 @@ def buildConstraintBuildingGUI(root: tk.Tk):
 	frmGenConInfo.grid(row=1, column=0, padx=10, pady=10)
 
 	# Variable Selecting
-	frmVariableSelecting = buildVarSelectingFrame(root, varTagsInfo)
+	frmVariableSelecting = buildVarSelectingFrame(root, _varTagsInfo)
 	frmVariableSelecting.grid(row=2, column=0, padx=10, pady=(5, 10))
 
 	# Split by Groups
-	frmSplitBy = buildSplitByFrame(root, varTagsInfo)
+	frmSplitBy = buildSplitByFrame(root, _varTagsInfo)
 	frmSplitBy.grid(row=4, column=0, padx=10, pady=(5, 10))
 
 	# Constraint Previews
@@ -353,45 +318,42 @@ def buildConstraintBuildingGUI(root: tk.Tk):
 	frmExportOptions.rowconfigure(0, weight=1)
 	frmExportOptions.columnconfigure(0, weight=1)
 
-	btnNextStep = tk.Button(frmExportOptions, text="Overwrite CSV >", anchor="center", command=lambda: updateExportToCSV(True))
-	btnNextStep.grid(row=0, column=0, padx=10, pady=10, sticky="e")
-
-	btnAlternative = tk.Button(frmExportOptions, text="Append to CSV >", anchor="center", command=lambda: updateExportToCSV(False))
-	btnAlternative.grid(row=0, column=1, padx=10, pady=10, sticky="e")
+	btnNextStep = tk.Button(frmExportOptions, text="< Back to Overview", anchor="center", command=transitionToOverview)
+	btnNextStep.grid(row=0, column=0, padx=10, pady=10, sticky="w")
 
 
-	redrawAll(varTagsInfo, constrAllBySpeciesByYear)
-	print("\n\n")
+	print("\n === Now at Standard Constraint Overview === \n")
+	redrawAll(_varTagsInfo, _constrGroup)
 	updateGeneralConstrInfo()
 
 
 def buildGeneralConstraintFrame(root: tk.Tk) -> tk.Frame:
-	global entName, cbbOpSelector, entDefaultValue
+	global _entName, _cbbOpSelector, _entDefaultValue
 
 	frmGenConInfo = tk.Frame(root, relief=tk.RAISED, borderwidth=2)
 
 	varName = tk.StringVar()
 	lblName = tk.Label(frmGenConInfo, text="Constraint Name:")
-	entName = tk.Entry(frmGenConInfo, width=WIDTH_BIG, textvariable=varName)
+	_entName = tk.Entry(frmGenConInfo, width=WIDTH_BIG, textvariable=varName)
 	lblName.grid(row=0, column=0, padx=5, pady=5, sticky="nse")
-	entName.grid(row=0, column=1, padx=5, pady=5, sticky="nsw")
+	_entName.grid(row=0, column=1, padx=5, pady=5, sticky="nsw")
 
 	varName.trace("w", lambda name, index, mode, sv=varName: updateGeneralConstrInfo())
 
 	lblOpType = tk.Label(frmGenConInfo, text="Default Operator Type:")
 	# TODO: Pull operator types from global config
-	cbbOpSelector = ttk.Combobox(frmGenConInfo, values=('>=', '<=', '='))
-	cbbOpSelector['state'] = 'readonly'
+	_cbbOpSelector = ttk.Combobox(frmGenConInfo, values=('>=', '<=', '='))
+	_cbbOpSelector['state'] = 'readonly'
 	lblOpType.grid(row=1, column=0, padx=5, pady=5, sticky="nse")
-	cbbOpSelector.grid(row=1, column=1, padx=5, pady=5, sticky="nsw")
+	_cbbOpSelector.grid(row=1, column=1, padx=5, pady=5, sticky="nsw")
 
-	cbbOpSelector.bind("<<ComboboxSelected>>", lambda evnt: updateGeneralConstrInfo())
+	_cbbOpSelector.bind("<<ComboboxSelected>>", lambda evnt: updateGeneralConstrInfo())
 
 	varDefaultValue = tk.StringVar()
 	lblDefaultValue = tk.Label(frmGenConInfo, text="Default Value:")
-	entDefaultValue = tk.Entry(frmGenConInfo, width=WIDTH_MED, textvariable=varDefaultValue)
+	_entDefaultValue = tk.Entry(frmGenConInfo, width=WIDTH_MED, textvariable=varDefaultValue)
 	lblDefaultValue.grid(row=2, column=0, padx=5, pady=5, sticky="nse")
-	entDefaultValue.grid(row=2, column=1, padx=5, pady=5, sticky="nsw")
+	_entDefaultValue.grid(row=2, column=1, padx=5, pady=5, sticky="nsw")
 
 	varDefaultValue.trace("w", lambda name, index, mode, sv=varDefaultValue: updateGeneralConstrInfo())
 
@@ -399,14 +361,14 @@ def buildGeneralConstraintFrame(root: tk.Tk) -> tk.Frame:
 
 
 def buildVarSelectingFrame(root: tk.Tk, varTagsInfo: models.VarTagsInfo) -> tk.Frame:
-	global incVarDict, excVarDict, incLsbDict, excLsbDict
+	global _incVarDict, _excVarDict, _incLsbDict, _excLsbDict
 	TAG_GROUPS_PER_ROW = 3
 
-	incVarDict = {}
-	excVarDict = {}
+	_incVarDict = {}
+	_excVarDict = {}
 
-	incLsbDict = {}
-	excLsbDict = {}
+	_incLsbDict = {}
+	_excLsbDict = {}
 
 	tagGroupsList = varTagsInfo.tag_order
 
@@ -474,20 +436,20 @@ def buildVarSelectingFrame(root: tk.Tk, varTagsInfo: models.VarTagsInfo) -> tk.F
 
 		# Adding to global refernces
 		# TODO: Figure out why these are backwards ??
-		incLsbDict[tagGroup] = lsbExcluded
-		excLsbDict[tagGroup] = lsbIncluded
+		_incLsbDict[tagGroup] = lsbExcluded
+		_excLsbDict[tagGroup] = lsbIncluded
 
 		# TODO: Figure out why these are backwards ??
-		incVarDict[tagGroup] = incListVar
-		excVarDict[tagGroup] = exListVar
+		_incVarDict[tagGroup] = incListVar
+		_excVarDict[tagGroup] = exListVar
 
 	return frmVariableSelecting
 
 
 def buildSplitByFrame(root, varTagsInfo: models.VarTagsInfo) -> tk.Frame:
-	global splitVarDict
+	global _splitVarDict
 
-	splitVarDict = {}
+	_splitVarDict = {}
 
 	frmSplitBy = tk.Frame(root, relief=tk.RAISED, borderwidth=2)
 	frmSplitBy.rowconfigure(0, weight=1)
@@ -504,22 +466,22 @@ def buildSplitByFrame(root, varTagsInfo: models.VarTagsInfo) -> tk.Frame:
 		ckbGroupSplit.grid(row=0, column=ind, padx=5)
 
 		varCkb.trace("w", lambda name, index, mode, sv=varCkb: updateSplitByGroups())
-		splitVarDict[varGroup] = varCkb
+		_splitVarDict[varGroup] = varCkb
 
 	return frmSplitBy
 
 
 def buildConstrPreviewFrame(root) -> tk.Frame:
-	global txtConstPreview
+	global _txtConstPreview
 
 	frmConstPreview = tk.Frame(root)
 	frmConstPreview.rowconfigure(1, weight=1)
 	frmConstPreview.columnconfigure(0, weight=1)
 
 	lblConstPreview = tk.Label(frmConstPreview, text="Preview Constraints")
-	txtConstPreview = tk.Text(frmConstPreview, height=6)
+	_txtConstPreview = tk.Text(frmConstPreview, height=6)
 	lblConstPreview.grid(row=0, column=0, sticky="wn", padx=10)
-	txtConstPreview.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 20))
+	_txtConstPreview.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 20))
 
 	return frmConstPreview
 
@@ -528,5 +490,5 @@ def buildConstrPreviewFrame(root) -> tk.Frame:
 
 if __name__ == '__main__':
 	root = tk.Tk()
-	buildConstraintBuildingGUI(root)
+	# buildConstraintBuildingGUI(root)
 	root.mainloop()

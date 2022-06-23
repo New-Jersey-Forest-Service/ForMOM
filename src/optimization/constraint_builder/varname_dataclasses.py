@@ -14,6 +14,11 @@ from typing import List, Dict
 from attrs import define, frozen
 
 
+
+
+
+#
+# Program State Dataclasses
 class ComparisonSign(Enum):
 	GREATER_THAN = 0
 	GE = 0
@@ -64,3 +69,26 @@ class StandardConstraintGroup:
 	name: str
 	default_compare: ComparisonSign = ComparisonSign.EQ
 	default_value: float = 0
+
+	@staticmethod
+	def createEmptyConstraint(varInfo: VarTagsInfo):
+		selected_dict = {}
+		for tagGroup in varInfo.tag_order:
+			selected_dict[tagGroup] = []
+
+		return StandardConstraintGroup(
+			selected_tags=selected_dict,
+			split_by_groups=[],
+			name="unnamed constraint group",
+			default_compare=ComparisonSign.EQUAL,
+			default_value=0.0
+		)
+
+
+@define
+class GlobalState():
+	varTags: VarTagsInfo
+	constrGroupList: List[StandardConstraintGroup]
+
+
+

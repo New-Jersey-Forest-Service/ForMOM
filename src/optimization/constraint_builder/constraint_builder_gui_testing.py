@@ -31,6 +31,7 @@ def main():
 	build_stage_3()
 
 
+# TODO: Figure out what to do with this step
 def build_stage_3():
 	root = tk.Tk()
 	root.title("Constraint Builder - Stage 3: Coefficients")
