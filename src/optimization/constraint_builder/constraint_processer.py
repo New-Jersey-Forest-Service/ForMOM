@@ -321,7 +321,7 @@ def lintTagGroupName (tagGroupName: str) -> str:
 	if len(tagGroupName) < GROUPNAME_MIN_LENGTH:
 		return f'Groupname "{tagGroupName}" too short. Must be at least {GROUPNAME_MIN_LENGTH} characters'
 	elif len(tagGroupName) > GROUPNAME_MAX_LENGTH:
-		return f'Groupname "{tagGroupName}" is too long. Name is {len(tagGroupName)} characters long, but max is {GROUPNAME_MIN_LENGTH}'
+		return f'Groupname "{tagGroupName}" is too long. Name is {len(tagGroupName)} characters long, but max is {GROUPNAME_MAX_LENGTH}'
 	
 	# [[ Check ]] Only alphanumeric names allowed
 	if re.search(GROUPNAME_REGEX, tagGroupName) == None:
