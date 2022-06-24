@@ -10,15 +10,30 @@ Project Overview <\-> Constraint Builder
 
 
 So
- - [ ] Build Main Screen
- - [ ] Figure out file exporting & saving (look at pickle)
- - [ ] Create Transitions
-   * [ ] Start with Overview -> Constraint Builder
+ - [x] Build Main Screen
+ - [x] Figure out file exporting & saving (json conversion of projectState)
+   * [ ] Think about still putting everything into a zip
+ - [x] Create Transitions
+   * [x] Start with Overview -> Constraint Builder
+ - [ ] Add difference between name of constraint and constraint prefix
+ - [ ] Lint constraint names (& in a group)
+
+ - [ ] Refactoring 1.0
+	* [ ] Pull styling constants out (width, csv files, etc)
+	* [ ] GUI files with more standard names & functions
+	* [ ] Get inequality checks from the inequality class (instead of switch statement with strs EW)
+ - [ ] Better Looks
+    * [ ] ttk
+
+ - [ ] Future Functions
+    * [ ] Automatic running
+	* [ ] Better exporting options
+	* [ ] To Dat conversion
 
 
 
 
-## Obj Import Screen
+## [x] Obj Import Screen
 The idea:
  - Select an objective file
 	 - Lint that it's actually a file
@@ -56,7 +71,7 @@ Exposed components:
 
 
 
-## Standard Constraint Builder Screen
+## [x] Standard Constraint Builder Screen
 The idea:
 
 State:
@@ -99,7 +114,7 @@ exclude lsbs:
 
 
 
-## Project Overview Screen
+## [x] Project Overview Screen
 The idea:
 
 State:
@@ -115,7 +130,6 @@ Updates (bindings):
 
 Exposed GUI:
  - constr group list frame
- - 
 
 
 

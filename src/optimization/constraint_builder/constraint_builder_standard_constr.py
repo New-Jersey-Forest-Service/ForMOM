@@ -40,7 +40,7 @@ _splitVarDict: Dict[str, tk.StringVar] = None
 _varTagsInfo = None
 _constrGroup = None
 
-_passedGlobalState: models.GlobalState = None
+_passedProjectState: models.ProjectState = None
 _passedRoot: tk.Tk = None
 _passedConstrInd: int = 0
 
@@ -151,17 +151,17 @@ def updateTakeFromIncTags(tagGroup: str):
 #
 
 def transitionToOverview() -> None:
-	global _constrGroup, _passedConstrInd, _passedRoot, _passedGlobalState
+	global _constrGroup, _passedConstrInd, _passedRoot, _passedProjectState
 
 	# Update State
-	_passedGlobalState.constrGroupList[_passedConstrInd] = _constrGroup
+	_passedProjectState.constrGroupList[_passedConstrInd] = _constrGroup
 
 	# Reset root
 	for child in _passedRoot.winfo_children():
 		child.destroy()
 
 	# Transition
-	constraint_builder_project_overview.buildProjectOverviewGUI(_passedRoot, _passedGlobalState)
+	constraint_builder_project_overview.buildProjectOverviewGUI(_passedRoot, _passedProjectState)
 
 
 
@@ -214,7 +214,11 @@ def redrawPreviewConstraints(varTags: models.VarTagsInfo, constr: models.Standar
 	global _txtConstPreview
 
 	allConstrs = proc.compileStandardConstraintGroup(varTags, constr)
-	constrStr = generate_sample_constraint_string(allConstrs, -1, -1)
+
+	if len(allConstrs) > 0:
+		constrStr = generate_sample_constraint_string(allConstrs, -1, -1)
+	else:
+		constrStr = "No Constraint Exist"
 
 	_txtConstPreview.delete("1.0", tk.END)
 	_txtConstPreview.insert("1.0", constrStr)
@@ -277,14 +281,14 @@ def redrawIncExcLists(varTags: models.VarTagsInfo, constr: models.StandardConstr
 # Main GUI Construction
 #
 
-def buildConstraintBuildingGUI(root: tk.Tk, globalState: models.GlobalState, constrInd: int):
-	global _varTagsInfo, _constrGroup, _passedRoot, _passedGlobalState, _passedConstrInd
+def buildConstraintBuildingGUI(root: tk.Tk, projectState: models.ProjectState, constrInd: int):
+	global _varTagsInfo, _constrGroup, _passedRoot, _passedProjectState, _passedConstrInd
 
-	_varTagsInfo = globalState.varTags
-	_constrGroup = globalState.constrGroupList[constrInd]
+	_varTagsInfo = projectState.varTags
+	_constrGroup = projectState.constrGroupList[constrInd]
 
 	_passedRoot = root
-	_passedGlobalState = globalState
+	_passedProjectState = projectState
 	_passedConstrInd = constrInd
 
 
@@ -490,5 +494,6 @@ def buildConstrPreviewFrame(root) -> tk.Frame:
 
 if __name__ == '__main__':
 	root = tk.Tk()
-	# buildConstraintBuildingGUI(root)
+	projectState = models.ProjectState()
+	buildConstraintBuildingGUI(root, 0)
 	root.mainloop()

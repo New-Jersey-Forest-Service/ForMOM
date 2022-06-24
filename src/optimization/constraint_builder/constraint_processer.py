@@ -58,15 +58,7 @@ def main():
 	tagGroupNames = getTagGroupNames(tagGroupMembersList)
 
 	# Processing
-	tagGroupsDict = {}
-	for ind, name in enumerate(tagGroupNames):
-		tagGroupsDict[name] = tagGroupMembersList[ind]
-
-	varTagGroupsData = models.VarTagsInfo(
-		tag_order = tagGroupNames,
-		all_vars = varnameTags,
-		tag_groups = tagGroupsDict
-	)
+	varTagGroupsData = makeVarTagsInfoObject(varNamesRaw, delim, tagGroupNames)
 
 	constrAllPLSQBySpecies = models.StandardConstraintGroup(
 		selected_tags = {"species": ["167N", "167S", "409"], "year": ["2021", "2025", "2030"], "mng": ["PLSQ"]},
@@ -180,6 +172,9 @@ def compileStandardConstraintGroup (varInfo: models.VarTagsInfo, stdConGroup: mo
 
 
 def makeVarTagsInfoObject (varNamesRaw: List[str], delim: str, tagGroupNames: List[str]) -> models.VarTagsInfo:
+	'''
+		DOES NOT LINT. Make sure to call the linting functions before passing into this
+	'''
 	varnameTags = splitVarsToTags(varNamesRaw, delim)
 	tagGroupMembersList = makeTagGroupMembersList(varnameTags)
 
@@ -193,6 +188,16 @@ def makeVarTagsInfoObject (varNamesRaw: List[str], delim: str, tagGroupNames: Li
 		tag_groups = tagGroupsDict
 	)
 
+
+def makeVarTagsInfoObjectFromFile (filestr: str, delim: str, tagGroups: List[str]) -> models.VarTagsInfo:
+	'''
+		DOES NOT LINT. It will silently return None
+	'''
+	if filestr == None or not Path(filestr).is_file():
+		return None
+
+	varNamesRaw = readAllObjVarnames(Path(filestr))
+	return makeVarTagsInfoObject(varNamesRaw, delim, tagGroups)
 
 
 

@@ -48,7 +48,7 @@ _varNamesRaw: List[str] = None
 _tagLists: List[List[str]] = None
 
 _passedRoot: tk.Tk = None
-_passedGlobalState: models.GlobalState = None
+_passedProjectState: models.ProjectState = None
 
 
 
@@ -140,19 +140,20 @@ def processParseFile() -> None:
 #
 
 def transitionToOverview() -> None:
-	global _passedRoot, _passedGlobalState
+	global _passedRoot, _passedProjectState
 
 	# Write Data
-	_passedGlobalState.varTags = \
+	_passedProjectState.delim = _delimiter
+	_passedProjectState.varTags = \
 		proc.makeVarTagsInfoObject(_varNamesRaw, _delimiter, _groupnameList)
-	_passedGlobalState.constrGroupList = []
+	_passedProjectState.constrGroupList = []
 
 	# Clear Root
 	for child in _passedRoot.winfo_children():
 		child.destroy()
 
 	# Transition
-	constraint_builder_project_overview.buildProjectOverviewGUI(_passedRoot, _passedGlobalState)
+	constraint_builder_project_overview.buildProjectOverviewGUI(_passedRoot, _passedProjectState)
 
 
 #
@@ -261,12 +262,12 @@ def redrawNamingStatus(inputNames: List[str]) -> None:
 # Main GUI Construction
 #
 
-def buildObjImport(root: tk.Tk, globalState: models.GlobalState):
-	global _btnNextStage, _passedRoot, _passedGlobalState
+def buildObjImport(root: tk.Tk, projectState: models.ProjectState):
+	global _btnNextStage, _passedRoot, _passedProjectState
 
 	# Reading in references
 	_passedRoot = root
-	_passedGlobalState = globalState
+	_passedProjectState = projectState
 
 	# GUI Building
 	root.title("Constraint Builder - Stage 1: Setup Variables")

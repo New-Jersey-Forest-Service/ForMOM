@@ -2,6 +2,7 @@
 Constraint Builder Constraints Overview Screen
 '''
 
+import json
 from pathlib import Path
 import tkinter as tk
 import constraint_builder_standard_constr
@@ -18,6 +19,7 @@ WIDTH_SML = 8
 WIDTH_MED = 15
 WIDTH_BIG = 35
 CSV_FILES = [('CSV Files', '*.csv'), ('All Files', '*.*')]
+PROJ_FILES = [('Project Files', '*.cproj'), ('All Files', '*.*')]
 
 
 # Exposed GUI Elements
@@ -27,7 +29,7 @@ _frmConstrsDisplay: tk.Frame = None
 # State Variables
 _constrGroupList: List[models.StandardConstraintGroup] = None
 
-_passedGlobalState: models.GlobalState = None
+_passedProjectState: models.ProjectState = None
 _passedRoot: tk.Tk = None
 
 
@@ -59,18 +61,34 @@ def updateNewConstrGroup () -> None:
 	global _constrGroupList
 
 	print(f"Adding a new constraint")
-	_constrGroupList.append(models.StandardConstraintGroup.createEmptyConstraint(_passedGlobalState.varTags))
+	_constrGroupList.append(models.StandardConstraintGroup.createEmptyConstraint(_passedProjectState.varTags))
 
 	redrawConstrListFrame(_constrGroupList)
 
 
 def updateSaveProject () -> None:
 	print("Saving project file")
-	pass
+
+	outputFilepathStr = filedialog.asksaveasfilename(
+		filetypes=PROJ_FILES,
+		defaultextension=PROJ_FILES
+		)
+
+	if isInvalidFile(outputFilepathStr):
+		return
+
+	projectDataStr = models.toOutputStr(_passedProjectState, models.ProjectState)
+	with open(outputFilepathStr, 'w') as outFile:
+		outFile.write(projectDataStr)
+
+
+def isInvalidFile(dialogOutput) -> bool:
+    # For whatever reason, filedialog.askname() can return multiple different things ???
+    return dialogOutput == None or len(dialogOutput) == 0 or dialogOutput.strip() == ""
 
 
 def updateExportCSV () -> None:
-	print("Exporting to csv")
+	print("Exporting to CSV not yet implemented :/")
 	pass
 
 
@@ -87,15 +105,15 @@ def updateExportCSV () -> None:
 #
 
 def transitionToEditing (constrInd: int) -> None:
-	global _constrGroupList, _passedGlobalState, _passedRoot
+	global _constrGroupList, _passedProjectState, _passedRoot
 	print(f"Editing {_constrGroupList[constrInd].name}")
 
-	_passedGlobalState.constrGroupList = _constrGroupList
+	_passedProjectState.constrGroupList = _constrGroupList
 
 	for child in _passedRoot.winfo_children():
 		child.destroy()
 
-	constraint_builder_standard_constr.buildConstraintBuildingGUI(_passedRoot, _passedGlobalState, constrInd)
+	constraint_builder_standard_constr.buildConstraintBuildingGUI(_passedRoot, _passedProjectState, constrInd)
 
 
 
@@ -151,12 +169,12 @@ def redrawConstrListFrame (constrGroupList: List[models.StandardConstraintGroup]
 # Main GUI Construction
 #
 
-def buildProjectOverviewGUI(root: tk.Tk, globalState: models.GlobalState) -> None:
-	global _constrGroupList, _passedRoot, _passedGlobalState
+def buildProjectOverviewGUI(root: tk.Tk, projectState: models.ProjectState) -> None:
+	global _constrGroupList, _passedRoot, _passedProjectState
 
-	_passedGlobalState = globalState
+	_passedProjectState = projectState
 	_passedRoot = root
-	_constrGroupList = globalState.constrGroupList
+	_constrGroupList = projectState.constrGroupList
 
 	root.title("Constraint Builder - Stage 3: Constraints Overview")
 	root.rowconfigure(1, weight=1)
@@ -219,25 +237,50 @@ def buildExportButtonsFrame(root: tk.Tk) -> tk.Frame:
 
 
 if __name__ == '__main__':
-	# TODO: To remove future polymorphism, add a general constriantinfo class
-	_constrGroupList: List[models.StandardConstraintGroup] = [
+	varTagsInfo = proc.makeVarTagsInfoObjectFromFile(
+		# './sample_data/minimodel_obj.csv', 
+		'/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/constraint_builder/sample_data/minimodel_obj.csv',
+		'_', 
+		['for_type', 'year', 'mng']
+		)
+
+	# TODO: To remove future polymorphism, add a general constriantinfo class ?
+	constrGroupList: List[models.StandardConstraintGroup] = [
 		models.StandardConstraintGroup(
-			selected_tags=dict(),
-			split_by_groups=list(),
+			selected_tags={'for_type': ['167N', '167S', '409'], 'year': ["2021", "2025", "2030", "2050"], 'mng': ['RBWF', 'PLSQ', 'TB']},
+			split_by_groups=['for_type'],
 			name="MaxAcresBySpecies",
 			default_compare=models.ComparisonSign.EQ,
 			default_value=0
 		),
-		models.StandardConstraintGroup(
-			selected_tags=dict(),
-			split_by_groups=list(),
-			name="SPBForcing",
-			default_compare=models.ComparisonSign.EQ,
-			default_value=0
-		)
+		models.StandardConstraintGroup.createEmptyConstraint(varTagsInfo)
 	]
 
+	projState = models.ProjectState('_', varTagsInfo, constrGroupList)
+
 	root = tk.Tk()
-	buildProjectOverviewGUI(root)
+	buildProjectOverviewGUI(root, projState)
 	root.mainloop()
+
+
+
+
+'''
+	Treet others how you want to be treeted
+
+			  v .   ._, |_  .,
+		   `-._\/  .  \ /	|/_
+			   \\  _\, y | \//
+		 _\_.___\\, \\/ -.\||
+		   `7-,--.`._||  / / ,
+		   /'	 `-. `./ / |/_.'
+					 |	|//
+					 |_	/
+					 |-   |
+					 |   =|
+					 |	|
+--------------------/ ,  . \--------._
+  jg
+'''
+
 
