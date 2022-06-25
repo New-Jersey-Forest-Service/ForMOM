@@ -15,15 +15,19 @@ So
    * [ ] Think about still putting everything into a zip
  - [x] Create Transitions
    * [x] Start with Overview -> Constraint Builder
+ - [x] CSV File Output
  - [ ] Add difference between name of constraint and constraint prefix
- - [ ] Lint constraint names (& in a group)
+ - [ ] Add option for default coefficient in constraints
+ - [ ] Lint constraint names (no spaces probably)
 
  - [ ] Refactoring 1.0
 	* [ ] Pull styling constants out (width, csv files, etc)
 	* [ ] GUI files with more standard names & functions
 	* [ ] Get inequality checks from the inequality class (instead of switch statement with strs EW)
+	* [ ] File IO File
+	* [ ] Hella renaming
  - [ ] Better Looks
-    * [ ] ttk
+    * [ ] ttk ?
 
  - [ ] Future Functions
     * [ ] Automatic running

@@ -2,6 +2,8 @@
 Constraint Builder Constraints Overview Screen
 '''
 
+import copy
+import csv
 import json
 from pathlib import Path
 import tkinter as tk
@@ -88,8 +90,49 @@ def isInvalidFile(dialogOutput) -> bool:
 
 
 def updateExportCSV () -> None:
-	print("Exporting to CSV not yet implemented :/")
-	pass
+	print("Exporting to csv")
+
+	outputFilepathStr = filedialog.asksaveasfilename(
+		filetypes=CSV_FILES,
+		defaultextension=CSV_FILES
+		)
+
+	if isInvalidFile(outputFilepathStr):
+		return
+
+	with open(outputFilepathStr, 'w') as outFile:
+		writer = csv.writer(outFile, delimiter=',', quotechar='"')
+		
+		# Write top row - all variables names
+		delim = _passedProjectState.delim
+		allVarNamesSorted = copy.deepcopy(_passedProjectState.varTags.all_vars)
+		allVarNamesSorted.sort(key=lambda tags: delim.join(tags))
+		allVarNamesRaw = [delim.join(x) for x in allVarNamesSorted]
+
+		writer.writerow(['const_name'] + allVarNamesRaw + ['operator', 'rtSide'])
+
+		# Write each constraint
+		rowLen = len(allVarNamesSorted) + 3
+
+		for constGroup in _passedProjectState.constrGroupList:
+			individConstrs = proc.compileStandardConstraintGroup(_passedProjectState.varTags, constGroup)
+
+			for constr in individConstrs:
+				nextRow = [''] * rowLen
+				nextRow[0] = constr.name
+				nextRow[-1] = constr.compare_value
+				nextRow[-2] = constr.compare_type.name.lower()
+
+				for ind, var in enumerate(allVarNamesSorted):
+					coef = 0
+					if var in constr.var_tags:
+						varInd = constr.var_tags.index(var)
+						coef = constr.var_coeffs[varInd]
+					nextRow[ind+1] = coef
+				
+				writer.writerow(nextRow)
+	
+	print(":D File Written")
 
 
 
