@@ -52,7 +52,7 @@ _passedRoot: tk.Tk = None
 def updateDeleteConstrGroup (constrInd: int) -> None:
 	global _constrGroupList
 	# Do updating
-	print(f"Deleteting {_constrGroupList[constrInd].name}")
+	print(f"Deleteting {_constrGroupList[constrInd].constr_prefix}")
 
 	_constrGroupList.pop(constrInd)
 
@@ -149,7 +149,7 @@ def updateExportCSV () -> None:
 
 def transitionToEditing (constrInd: int) -> None:
 	global _constrGroupList, _passedProjectState, _passedRoot
-	print(f"Editing {_constrGroupList[constrInd].name}")
+	print(f"Editing {_constrGroupList[constrInd].constr_prefix}")
 
 	_passedProjectState.constrGroupList = _constrGroupList
 
@@ -186,7 +186,7 @@ def redrawConstrListFrame (constrGroupList: List[models.StandardConstraintGroup]
 		frmConstr.grid(row=ind, column=0, sticky="ew", pady=(0, 10))
 		frmConstr.columnconfigure(1, weight=1)
 		
-		lblName = tk.Label(frmConstr, text=constrGroup.name)
+		lblName = tk.Label(frmConstr, text=constrGroup.constr_prefix)
 		lblName.grid(row=0, column=0, sticky="w")
 
 		btnDelete = tk.Button(frmConstr, text="Delete", command=lambda ind=ind: updateDeleteConstrGroup(ind))
@@ -292,9 +292,9 @@ if __name__ == '__main__':
 		models.StandardConstraintGroup(
 			selected_tags={'for_type': ['167N', '167S', '409'], 'year': ["2021", "2025", "2030", "2050"], 'mng': ['RBWF', 'PLSQ', 'TB']},
 			split_by_groups=['for_type'],
-			name="MaxAcresBySpecies",
+			constr_prefix="MaxAcresBySpecies",
 			default_compare=models.ComparisonSign.EQ,
-			default_value=0
+			default_rightside=0
 		),
 		models.StandardConstraintGroup.createEmptyConstraint(varTagsInfo)
 	]

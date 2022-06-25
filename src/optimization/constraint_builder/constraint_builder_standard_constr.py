@@ -29,16 +29,21 @@ _excVarDict: Dict[str, tk.StringVar] = None
 
 _txtConstPreview: tk.Text = None
 
-_entName: tk.Entry = None
+_entPrefix: tk.Entry = None
 _cbbOpSelector: ttk.Combobox = None
-_entDefaultValue: tk.Entry = None
+_entDefaultRtside: tk.Entry = None
+_entDefaultCoef: tk.Entry = None
+
+_btnBackToOverview: tk.Button = None
 
 _splitVarDict: Dict[str, tk.StringVar] = None
 
 
 # State Variables
 _varTagsInfo = None
-_constrGroup = None
+_constrGroup: models.StandardConstraintGroup = None
+
+_errWithGeneralInfo: str = None
 
 _passedProjectState: models.ProjectState = None
 _passedRoot: tk.Tk = None
@@ -50,11 +55,18 @@ _passedConstrInd: int = 0
 #
 
 def updateGeneralConstrInfo():
-	global _constrGroup, _varTagsInfo
+	global _constrGroup, _varTagsInfo, _errWithGeneralInfo
+
+	_errWithGeneralInfo = None
 
 	# Name is always just a string cast
 	# TODO: Lint
-	_constrGroup.name = str(_entName.get())
+	prefix = str(_entPrefix.get())
+	prefixErr = proc.lintConstrGroupName(prefix)
+	if prefixErr:
+		_errWithGeneralInfo = prefixErr
+	else:
+		_constrGroup.constr_prefix = prefix
 
 	# Selector needs to be checked
 	selector = _cbbOpSelector.get().strip()
@@ -73,18 +85,22 @@ def updateGeneralConstrInfo():
 	if compType:
 		_constrGroup.default_compare = compType
 	
-	# Value needs to be checked
-	value = _entDefaultValue.get()
-	convertedValue = None
-
+	# Right side value
 	try:
-		convertedValue = float(value.strip())
+		rightSide = _entDefaultRtside.get().strip()
+		convertedValue = float(rightSide)
+		_constrGroup.default_rightside = convertedValue
 	except:
-		pass	
-	
-	if convertedValue != None:
-		_constrGroup.default_value = convertedValue
-	
+		_errWithGeneralInfo = "Invalid right-hand side"
+
+	# Default coefficient
+	try:
+		coeff = _entDefaultCoef.get().strip()
+		attemptConvert = float(coeff)
+		_constrGroup.default_coef = attemptConvert
+	except:
+		_errWithGeneralInfo = "Invalid coefficient"
+
 	redrawForUpdate(_varTagsInfo, _constrGroup)
 
 
@@ -172,31 +188,33 @@ def transitionToOverview() -> None:
 # Redraw Calls
 #
 
-def redrawAll(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
+def redrawForSetup(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
 	redrawStandardInfo(constr)
 	redrawSplitByGroups(constr)
 
-	# These are the ones in redrawForUpdate
-	redrawIncExcLists(varTags, constr)
-	redrawPreviewConstraints(varTags, constr)
+	redrawForUpdate(varTags, constr)
 
 
 def redrawForUpdate(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
 	redrawIncExcLists(varTags, constr)
 	redrawPreviewConstraints(varTags, constr)
+	redrawExitButton()
 
 
 def redrawStandardInfo(constr: models.StandardConstraintGroup) -> None:
 	'''
 		Redraws the constraint name, comparison, and default operator in the top settings pane
 	'''
-	_entName.delete(0, tk.END)
-	_entName.insert(0, constr.name)
+	_entPrefix.delete(0, tk.END)
+	_entPrefix.insert(0, constr.constr_prefix)
 
 	_cbbOpSelector.set(str(constr.default_compare))
 
-	_entDefaultValue.delete(0, tk.END)
-	_entDefaultValue.insert(0, constr.default_value)
+	_entDefaultRtside.delete(0, tk.END)
+	_entDefaultRtside.insert(0, constr.default_rightside)
+
+	_entDefaultCoef.delete(0, tk.END)
+	_entDefaultCoef.insert(0, constr.default_coef)
 
 
 def redrawSplitByGroups(constr: models.StandardConstraintGroup) -> None:
@@ -213,12 +231,17 @@ def redrawSplitByGroups(constr: models.StandardConstraintGroup) -> None:
 def redrawPreviewConstraints(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
 	global _txtConstPreview
 
-	allConstrs = proc.compileStandardConstraintGroup(varTags, constr)
+	constrStr = None
 
-	if len(allConstrs) > 0:
-		constrStr = generate_sample_constraint_string(allConstrs, -1, -1)
+	if _errWithGeneralInfo:
+		constrStr = _errWithGeneralInfo
 	else:
-		constrStr = "No Constraint Exist"
+		allConstrs = proc.compileStandardConstraintGroup(varTags, constr)
+
+		if len(allConstrs) > 0:
+			constrStr = generate_sample_constraint_string(allConstrs, -1, -1)
+		else:
+			constrStr = "No Constraints Exist"
 
 	_txtConstPreview.delete("1.0", tk.END)
 	_txtConstPreview.insert("1.0", constrStr)
@@ -226,7 +249,6 @@ def redrawPreviewConstraints(varTags: models.VarTagsInfo, constr: models.Standar
 
 # TODO: Actually use charHeight & charWidth ?
 def generate_sample_constraint_string(constrList: List[models.CompiledConstraint], charHeight:int, charWidth: int) -> str:
-	# TODO: Make this simpler
 	NUM_CONSTRS = 5
 	constrs = constrList[:NUM_CONSTRS]
 
@@ -239,8 +261,12 @@ def generate_sample_constraint_string(constrList: List[models.CompiledConstraint
 			coeff = constr.var_coeffs[ind]
 			varStr = "_".join(varTags)
 
-			if abs(coeff - 1.0) > 0.005:
-				varStr = str(round(coeff, 2)) + "*" + varStr
+			if coeff == 1:
+				pass
+			elif coeff == int(coeff):
+				varStr = str(int(coeff)) + "*" + varStr
+			else:
+				varStr = str(coeff) + "*" + varStr
 
 			varStrList.append(varStr)	
 		varsStr = " + ".join(varStrList)
@@ -271,6 +297,13 @@ def redrawIncExcLists(varTags: models.VarTagsInfo, constr: models.StandardConstr
 		excVar.set(excludedTags[tagGroup])
 
 
+def redrawExitButton() -> None:
+	global _btnBackToOverview
+
+	if _errWithGeneralInfo:
+		_btnBackToOverview['state'] = 'disabled'
+	else:
+		_btnBackToOverview['state'] = 'normal'
 
 
 
@@ -282,7 +315,7 @@ def redrawIncExcLists(varTags: models.VarTagsInfo, constr: models.StandardConstr
 #
 
 def buildConstraintBuildingGUI(root: tk.Tk, projectState: models.ProjectState, constrInd: int):
-	global _varTagsInfo, _constrGroup, _passedRoot, _passedProjectState, _passedConstrInd
+	global _varTagsInfo, _constrGroup, _passedRoot, _passedProjectState, _passedConstrInd, _btnBackToOverview
 
 	_varTagsInfo = projectState.varTags
 	_constrGroup = projectState.constrGroupList[constrInd]
@@ -322,25 +355,25 @@ def buildConstraintBuildingGUI(root: tk.Tk, projectState: models.ProjectState, c
 	frmExportOptions.rowconfigure(0, weight=1)
 	frmExportOptions.columnconfigure(0, weight=1)
 
-	btnNextStep = tk.Button(frmExportOptions, text="< Back to Overview", anchor="center", command=transitionToOverview)
-	btnNextStep.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+	_btnBackToOverview = tk.Button(frmExportOptions, text="< Back to Overview", anchor="center", command=transitionToOverview)
+	_btnBackToOverview.grid(row=0, column=0, padx=10, pady=10, sticky="w")
 
 
 	print("\n === Now at Standard Constraint Overview === \n")
-	redrawAll(_varTagsInfo, _constrGroup)
+	redrawForSetup(_varTagsInfo, _constrGroup)
 	updateGeneralConstrInfo()
 
 
 def buildGeneralConstraintFrame(root: tk.Tk) -> tk.Frame:
-	global _entName, _cbbOpSelector, _entDefaultValue
+	global _entPrefix, _cbbOpSelector, _entDefaultRtside, _entDefaultCoef
 
 	frmGenConInfo = tk.Frame(root, relief=tk.RAISED, borderwidth=2)
 
 	varName = tk.StringVar()
-	lblName = tk.Label(frmGenConInfo, text="Constraint Name:")
-	_entName = tk.Entry(frmGenConInfo, width=WIDTH_BIG, textvariable=varName)
+	lblName = tk.Label(frmGenConInfo, text="Constraint Prefix:")
+	_entPrefix = tk.Entry(frmGenConInfo, width=WIDTH_BIG, textvariable=varName)
 	lblName.grid(row=0, column=0, padx=5, pady=5, sticky="nse")
-	_entName.grid(row=0, column=1, padx=5, pady=5, sticky="nsw")
+	_entPrefix.grid(row=0, column=1, padx=5, pady=5, sticky="nsw")
 
 	varName.trace("w", lambda name, index, mode, sv=varName: updateGeneralConstrInfo())
 
@@ -353,13 +386,21 @@ def buildGeneralConstraintFrame(root: tk.Tk) -> tk.Frame:
 
 	_cbbOpSelector.bind("<<ComboboxSelected>>", lambda evnt: updateGeneralConstrInfo())
 
-	varDefaultValue = tk.StringVar()
-	lblDefaultValue = tk.Label(frmGenConInfo, text="Default Value:")
-	_entDefaultValue = tk.Entry(frmGenConInfo, width=WIDTH_MED, textvariable=varDefaultValue)
-	lblDefaultValue.grid(row=2, column=0, padx=5, pady=5, sticky="nse")
-	_entDefaultValue.grid(row=2, column=1, padx=5, pady=5, sticky="nsw")
+	varDefaultRtside = tk.StringVar()
+	lblDefaultRtside = tk.Label(frmGenConInfo, text="Default Right-Side:")
+	_entDefaultRtside = tk.Entry(frmGenConInfo, width=WIDTH_MED, textvariable=varDefaultRtside)
+	lblDefaultRtside.grid(row=2, column=0, padx=5, pady=5, sticky="nse")
+	_entDefaultRtside.grid(row=2, column=1, padx=5, pady=5, sticky="nsw")
 
-	varDefaultValue.trace("w", lambda name, index, mode, sv=varDefaultValue: updateGeneralConstrInfo())
+	varDefaultRtside.trace("w", lambda name, index, mode, sv=varDefaultRtside: updateGeneralConstrInfo())
+
+	varDefaultCoef = tk.StringVar()
+	lblDefaultCoef = tk.Label(frmGenConInfo, text="Default Coefficient:")
+	_entDefaultCoef = tk.Entry(frmGenConInfo, width=WIDTH_MED, textvariable=varDefaultCoef)
+	lblDefaultCoef.grid(row=3, column=0, padx=5, pady=5, sticky="nse")
+	_entDefaultCoef.grid(row=3, column=1, padx=5, pady=5, sticky="nsw")
+
+	varDefaultCoef.trace("w", lambda name, index, mode, sv=varDefaultCoef: updateGeneralConstrInfo())
 
 	return frmGenConInfo
 
@@ -493,7 +534,27 @@ def buildConstrPreviewFrame(root) -> tk.Frame:
 
 
 if __name__ == '__main__':
+	varTagsInfo = proc.makeVarTagsInfoObjectFromFile(
+		# './sample_data/minimodel_obj.csv', 
+		'/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/constraint_builder/sample_data/minimodel_obj.csv',
+		'_', 
+		['for_type', 'year', 'mng']
+		)
+
+	# TODO: To remove future polymorphism, add a general constriantinfo class ?
+	constrGroupList: List[models.StandardConstraintGroup] = [
+		models.StandardConstraintGroup(
+			selected_tags={'for_type': ['167N', '167S', '409'], 'year': ["2021", "2025", "2030", "2050"], 'mng': ['RBWF', 'PLSQ', 'TB']},
+			split_by_groups=['for_type'],
+			constr_prefix="MaxAcresBySpecies",
+			default_compare=models.ComparisonSign.EQ,
+			default_rightside=0
+		),
+		models.StandardConstraintGroup.createEmptyConstraint(varTagsInfo)
+	]
+
+	projState = models.ProjectState('_', varTagsInfo, constrGroupList)
+
 	root = tk.Tk()
-	projectState = models.ProjectState()
-	buildConstraintBuildingGUI(root, 0)
+	buildConstraintBuildingGUI(root, projState, 0)
 	root.mainloop()

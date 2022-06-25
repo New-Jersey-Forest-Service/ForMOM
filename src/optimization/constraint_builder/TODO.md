@@ -16,9 +16,13 @@ So
  - [x] Create Transitions
    * [x] Start with Overview -> Constraint Builder
  - [x] CSV File Output
- - [ ] Add difference between name of constraint and constraint prefix
- - [ ] Add option for default coefficient in constraints
- - [ ] Lint constraint names (no spaces probably)
+ - [ ] Better standard cosntraint
+   * [!] ~~Add difference between name of constraint and constraint prefix~~
+   * [x] Add option for default coefficient in constraints
+   * [~] Lint constraint names (no spaces probably) 
+	=> Still doesn't check for duplicates overall
+   * [x] Don't allow exiting with invalid constraint state
+	=> It does allow exiting when no constraints exist which may be an issue :/
 
  - [ ] Refactoring 1.0
 	* [ ] Pull styling constants out (width, csv files, etc)
@@ -26,6 +30,9 @@ So
 	* [ ] Get inequality checks from the inequality class (instead of switch statement with strs EW)
 	* [ ] File IO File
 	* [ ] Hella renaming
+ - [ ] Test
+	* [ ] Auto detecting bad input files
+	* [ ] Ground truths for string conversions
  - [ ] Better Looks
     * [ ] ttk ?
 

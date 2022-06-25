@@ -63,13 +63,13 @@ def main():
 	constrAllPLSQBySpecies = models.StandardConstraintGroup(
 		selected_tags = {"species": ["167N", "167S", "409"], "year": ["2021", "2025", "2030"], "mng": ["PLSQ"]},
 		split_by_groups = ["species"],
-		name = "PLSQ_ALL"
+		constr_prefix = "PLSQ_ALL"
 	)
 
 	constrAllBySpeciesByYear = models.StandardConstraintGroup(
 		selected_tags = {"species": ["167N", "409"], "year": ["2021", "2025", "2030", "2050"], "mng": ["PLSQ", "PLWF", "RBWF", "STQO", "TB", "TBWF", "RxB"]},
 		split_by_groups = ["species", "year"],
-		name = "All"
+		constr_prefix = "All"
 	)
 
 	print("\n" * 3)
@@ -107,9 +107,9 @@ def compileStandardConstraintGroup (varInfo: models.VarTagsInfo, stdConGroup: mo
 			conNameTags.append(stdConGroup.selected_tags[tagGroup])
 	
 	for conTags in itertools.product(*conNameTags):
-		conNames.append("_".join([stdConGroup.name] + list(conTags)))
+		conNames.append("_".join([stdConGroup.constr_prefix] + list(conTags)))
 	if len(conNames) == 0:
-		conNames = [stdConGroup.name]
+		conNames = [stdConGroup.constr_prefix]
 	
 	# The names are used as keys in the constraint dictionary, so we
 	# populate the dictionary with empty lists
@@ -143,7 +143,7 @@ def compileStandardConstraintGroup (varInfo: models.VarTagsInfo, stdConGroup: mo
 		tagsToSplitBy = []
 		for ind in indToSplitBy:
 			tagsToSplitBy.append(varTags[ind])
-		conName = "_".join([stdConGroup.name] + tagsToSplitBy)
+		conName = "_".join([stdConGroup.constr_prefix] + tagsToSplitBy)
 
 		conDict[conName].append(varTags)
 
@@ -161,9 +161,9 @@ def compileStandardConstraintGroup (varInfo: models.VarTagsInfo, stdConGroup: mo
 				models.CompiledConstraint(
 					name = key,
 					var_tags = conDict[key],
-					var_coeffs = [1] * numVars,
+					var_coeffs = [stdConGroup.default_coef] * numVars,
 					compare_type = stdConGroup.default_compare,
-					compare_value = stdConGroup.default_value
+					compare_value = stdConGroup.default_rightside
 				)
 			)
 	
@@ -307,45 +307,87 @@ def lintVarNames (varNamesRaw: List[str], delim: str) -> str:
 			return f'Variable "{var}" has a different number of groups ({testNumGroups}) compare to "{firstVar}" ({numGroups})'
 
 
-# TODO: Have linting for names as an array to check for duplicates
-def lintTagGroupName (tagGroupName: str) -> str:
+def lintTagGroupName (tagName: str) -> str:
 	'''
 	Checks that the provided group name is valid, returning None if
 	there are no errors or the actual error message if there is one
 	'''
-	GROUPNAME_MAX_LENGTH = 15
-	GROUPNAME_MIN_LENGTH = 3
-	GROUPNAME_REGEX = "^[A-Za-z0-9_-]+$"
+	TAGNAME_MAX_LENGTH = 15
+	TAGNAME_MIN_LENGTH = 3
+	TAGNAME_REGEX = "^[A-Za-z0-9_-]+$"
 
 	# [[ Check ]] Size
-	if len(tagGroupName) < GROUPNAME_MIN_LENGTH:
-		return f'Groupname "{tagGroupName}" too short. Must be at least {GROUPNAME_MIN_LENGTH} characters'
-	elif len(tagGroupName) > GROUPNAME_MAX_LENGTH:
-		return f'Groupname "{tagGroupName}" is too long. Name is {len(tagGroupName)} characters long, but max is {GROUPNAME_MAX_LENGTH}'
+	if len(tagName) < TAGNAME_MIN_LENGTH:
+		return f'Groupname "{tagName}" too short. Must be at least {TAGNAME_MIN_LENGTH} characters'
+	elif len(tagName) > TAGNAME_MAX_LENGTH:
+		return f'Groupname "{tagName}" is too long. Name is {len(tagName)} characters long, but max is {TAGNAME_MAX_LENGTH}'
 	
 	# [[ Check ]] Only alphanumeric names allowed
-	if re.search(GROUPNAME_REGEX, tagGroupName) == None:
+	if re.search(TAGNAME_REGEX, tagName) == None:
 		# Lol this is so inefficient but its kinda funny
-		for c in tagGroupName:
-			if re.search(GROUPNAME_REGEX, str(c)) == None:
-				return f'Invalid groupname "{tagGroupName}". Illegal character "{c}"'
+		for c in tagName:
+			if re.search(TAGNAME_REGEX, str(c)) == None:
+				return f'Invalid groupname "{tagName}". Illegal character "{c}"'
 
 
-def lintMultipleTagGroupNames (listTagGroupName: List[str]) -> str:
+def lintMultipleTagGroupNames (listTagNames: List[str]) -> str:
 	# [[ Check ]] All variable named
-	for ind, name in enumerate(listTagGroupName):
+	for ind, name in enumerate(listTagNames):
 		if name == None or name == '':
 			return f'Not all groups are named'
 	
 	# [[ Check ]] Individually fine
-	for name in listTagGroupName:
+	for name in listTagNames:
 		err = lintTagGroupName(name)
 		if err:
 			return err
 
 	# [[ Check ]] Duplicate names
-	if len(set(listTagGroupName)) != len(listTagGroupName):
+	if len(set(listTagNames)) != len(listTagNames):
 		return f'Found duplicate names'
+
+
+# TODO: Have a general constraintgroup linting? Make sure coefficients != 0, etc
+
+def lintConstrGroupName (groupName: str) -> str:
+	'''
+	Checks that the provided group name is valid, returning None if
+	there are no errors or the actual error message if there is one
+	'''
+	GROUPNAME_MAX_LENGTH = 30
+	GROUPNAME_MIN_LENGTH = 3
+	GROUPNAME_REGEX = "^[A-Za-z0-9_-]+$"
+
+	# [[ Check ]] Size
+	if len(groupName) < GROUPNAME_MIN_LENGTH:
+		return f'Groupname "{groupName}" too short. Must be at least {GROUPNAME_MIN_LENGTH} characters'
+	elif len(groupName) > GROUPNAME_MAX_LENGTH:
+		return f'Groupname "{groupName}" is {len(groupName) - GROUPNAME_MAX_LENGTH} characters too long.'
+	
+	# [[ Check ]] Only alphanumeric names allowed
+	if re.search(GROUPNAME_REGEX, groupName) == None:
+		for c in groupName:
+			if re.search(GROUPNAME_REGEX, str(c)) == None:
+				return f'Invalid groupname "{groupName}". Illegal character "{c}"'
+
+
+def lintMultiplyConstrGroupNames (listGroupNames: List[str]) -> str:
+	# [[ Check ]] All groups named
+	for ind, name in enumerate(listGroupNames):
+		if name == None or name == '':
+			return f'Not all groups are named'
+	
+	# [[ Check ]] Individually fine
+	for name in listGroupNames:
+		err = lintConstrGroupName(name)
+		if err:
+			return err
+
+	# [[ Check ]] Duplicate names
+	if len(set(listGroupNames)) != len(listGroupNames):
+		duplicates = set([x for x in listGroupNames if listGroupNames.count(x) > 1])
+		return f'Found duplicate group names {duplicates}'
+
 
 
 

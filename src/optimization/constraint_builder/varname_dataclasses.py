@@ -68,9 +68,10 @@ class CompiledConstraint:
 class StandardConstraintGroup:
 	selected_tags: Dict[str, List[str]]
 	split_by_groups: List[str]
-	name: str
+	constr_prefix: str
 	default_compare: ComparisonSign = ComparisonSign.EQ
-	default_value: float = 0
+	default_rightside: float = 0
+	default_coef: float = 1
 
 	@staticmethod
 	def createEmptyConstraint(varInfo: VarTagsInfo):
@@ -81,9 +82,10 @@ class StandardConstraintGroup:
 		return StandardConstraintGroup(
 			selected_tags=selected_dict,
 			split_by_groups=[],
-			name="unnamed constraint group",
+			constr_prefix="empty_group",
 			default_compare=ComparisonSign.EQ,
-			default_value=0.0
+			default_rightside=0.0,
+			default_coef=1.0
 		)
 
 
