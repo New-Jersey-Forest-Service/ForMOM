@@ -63,6 +63,9 @@ def updateLoadProj():
 		return
 	
 	newProjState = models.fromOutputStr(fileData, models.ProjectState)
+	if not isinstance(newProjState, models.ProjectState):
+		return
+
 	_passedProjectState = newProjState
 	
 	transitionToOverview()

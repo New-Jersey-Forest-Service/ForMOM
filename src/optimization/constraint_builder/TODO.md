@@ -9,6 +9,9 @@ Main -> Create
 Project Overview <\-> Constraint Builder
 
 
+BUGS:
+ - [ ] Eq, Le, Ge signs not being rendered correctly	
+
 So
  - [x] Build Main Screen
  - [x] Figure out file exporting & saving (json conversion of projectState)
@@ -16,7 +19,7 @@ So
  - [x] Create Transitions
    * [x] Start with Overview -> Constraint Builder
  - [x] CSV File Output
- - [ ] Better standard cosntraint
+ - [~] Better standard cosntraint
    * [!] ~~Add difference between name of constraint and constraint prefix~~
    * [x] Add option for default coefficient in constraints
    * [~] Lint constraint names (no spaces probably) 
@@ -25,21 +28,28 @@ So
 	=> It does allow exiting when no constraints exist which may be an issue :/
 
  - [ ] Refactoring 1.0
+ 	* [ ] Write test suite?
 	* [ ] Pull styling constants out (width, csv files, etc)
 	* [ ] GUI files with more standard names & functions
 	* [ ] Get inequality checks from the inequality class (instead of switch statement with strs EW)
 	* [ ] File IO File
 	* [ ] Hella renaming
  - [ ] Test
+ 	* [ ] See how courtney uses it
 	* [ ] Auto detecting bad input files
 	* [ ] Ground truths for string conversions
  - [ ] Better Looks
     * [ ] ttk ?
 
  - [ ] Future Functions
+    * [ ] Export straight to .dat
+    * [ ] Export individually to .csvs
+    * [ ] Include csv\_to_dat in this program
     * [ ] Automatic running
 	* [ ] Better exporting options
 	* [ ] To Dat conversion
+    * [ ] Handle change of objective file
+    * [ ] Renamable tags
 
 
 

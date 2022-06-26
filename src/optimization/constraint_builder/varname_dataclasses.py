@@ -10,10 +10,9 @@ NJDEP
 
 import json
 import attrs
+import cattrs
 from enum import Enum, unique, auto
 from typing import Any, List, Dict, Type
-
-import cattrs
 
 
 
@@ -114,8 +113,14 @@ def toOutputStr (obj: Any, type: Type) -> str:
 
 
 # TODO: How do I type annotate this ??
+# TODO: Add versioning to file saves ??
 def fromOutputStr (strObj: str, type: Type):
-	return cattrs.structure_attrs_fromdict(json.loads(strObj), type)
+	try:
+		return cattrs.structure_attrs_fromdict(json.loads(strObj), type)
+	except Exception as e:
+		print("[[ XX ERROR ]] Unable to read file. It may be corrupt or comes from an older version of the program")
+		print()
+		raise e
 
 
 
