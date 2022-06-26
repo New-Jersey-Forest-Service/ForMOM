@@ -54,6 +54,39 @@ So
 
 
 
+
+## [ ] Renamed Dataclasses
+
+
+
+
+
+## [x] Better Folder Structure
+launchcmd.py
+launchgui.py
+
+screens/
+ > mainmenu
+ > newproject
+ > projectoverview
+ > standardconstraint
+
+ioutils/
+ > fileio
+ > cmdinput
+
+processor/
+ > dataclasses
+ > linting
+ > constraintprocessor
+
+
+
+
+
+
+
+
 ## [x] Obj Import Screen
 The idea:
  - Select an objective file

@@ -7,13 +7,13 @@ import csv
 import json
 from pathlib import Path
 import tkinter as tk
-import constraint_builder_standard_constr
-import varname_dataclasses as models
-import constraint_processer as proc
+import processor.models as models
+import processor.constraintprocesser as proc
 from enum import Enum, unique, auto
 from typing import List
 from tkinter import ttk, filedialog
 import math
+import screens.standardconstraint
 
 
 
@@ -156,7 +156,7 @@ def transitionToEditing (constrInd: int) -> None:
 	for child in _passedRoot.winfo_children():
 		child.destroy()
 
-	constraint_builder_standard_constr.buildConstraintBuildingGUI(_passedRoot, _passedProjectState, constrInd)
+	screens.standardconstraint.buildConstraintBuildingGUI(_passedRoot, _passedProjectState, constrInd)
 
 
 

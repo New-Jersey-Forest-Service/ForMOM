@@ -8,10 +8,10 @@ import tkinter as tk
 
 
 import tkinter as tk
-import constraint_builder_obj_import
-import constraint_builder_project_overview
-import varname_dataclasses as models
-import constraint_processer as proc
+import screens.newproject
+import screens.projectoverview
+import processor.models as models
+# import processor.constraintprocesser as proc
 import copy
 from enum import Enum, unique, auto
 from typing import List, Union, Dict
@@ -93,7 +93,7 @@ def transitionToObjImport() -> None:
 		child.destroy()
 
 	# Transition
-	constraint_builder_obj_import.buildObjImport(_passedRoot, _passedProjectState)
+	screens.newproject.buildObjImport(_passedRoot, _passedProjectState)
 
 
 def transitionToOverview() -> None:
@@ -104,7 +104,7 @@ def transitionToOverview() -> None:
 		child.destroy()
 
 	# Transition
-	constraint_builder_project_overview.buildProjectOverviewGUI(_passedRoot, _passedProjectState)
+	screens.projectoverview.buildProjectOverviewGUI(_passedRoot, _passedProjectState)
 
 
 

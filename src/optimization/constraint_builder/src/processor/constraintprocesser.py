@@ -13,7 +13,7 @@ Started 05/21/2022
 '''
 
 # import optimization.constraint_builder.varname_dataclasses as models
-import varname_dataclasses as models
+import processor.models as models
 from pathlib import Path
 from typing import List, Dict
 import itertools

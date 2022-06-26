@@ -4,13 +4,13 @@ Constraint Builder Objective File Import
 
 from pathlib import Path
 import tkinter as tk
-import varname_dataclasses as models
-import constraint_processer as proc
+import processor.models as models
+import processor.constraintprocesser as proc
 from enum import Enum, unique, auto
 from typing import List
 from tkinter import ttk, filedialog
 import math
-import constraint_builder_project_overview
+import screens.projectoverview
 
 
 WIDTH_SML = 8
@@ -153,7 +153,7 @@ def transitionToOverview() -> None:
 		child.destroy()
 
 	# Transition
-	constraint_builder_project_overview.buildProjectOverviewGUI(_passedRoot, _passedProjectState)
+	screens.projectoverview.buildProjectOverviewGUI(_passedRoot, _passedProjectState)
 
 
 #
