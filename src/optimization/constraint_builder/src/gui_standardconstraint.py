@@ -1,19 +1,15 @@
 
 import copy
-import csv
-import math
-from pathlib import Path
-import traceback
 import tkinter as tk
-from enum import Enum, auto, unique
-from tkinter import filedialog, ttk
-from typing import Dict, List, Union
+from tkinter import ttk
+from typing import Dict, List
 
-import constraintprocesser as proc
+import proc_constraints as proc
 import gui_projectoverview
 import linting as lint
 import models
 from gui_consts import *
+import devtesting
 
 # TODO: Make this read from a VarTagsInfo
 # TODO: Make this output a StandardConstraintGroup
@@ -166,7 +162,7 @@ def transitionToOverview() -> None:
 		child.destroy()
 
 	# Transition
-	gui_projectoverview.buildProjectOverviewGUI(_passedRoot, _passedProjectState)
+	gui_projectoverview.buildGUI_ProjectOverview(_passedRoot, _passedProjectState)
 
 
 
@@ -303,7 +299,7 @@ def redrawExitButton() -> None:
 # Main GUI Construction
 #
 
-def buildConstraintBuildingGUI(root: tk.Tk, projectState: models.ProjectState, constrInd: int):
+def buildGUI_ConstraintBuilder(root: tk.Tk, projectState: models.ProjectState, constrInd: int):
 	global _varTagsInfo, _constrGroup, _passedRoot, _passedProjectState, _passedConstrInd, _btnBackToOverview
 
 	_varTagsInfo = projectState.varTags
@@ -523,31 +519,8 @@ def buildConstrPreviewFrame(root) -> tk.Frame:
 
 
 if __name__ == '__main__':
-	varnamesRaw = proc.readVarnamesRaw(
-		# './sample_data/minimodel_obj.csv', 
-		Path('/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/constraint_builder/sample_data/minimodel_obj.csv')
-	)
-
-	varTagsInfo = proc.buildVarTagsInfoObject(
-		varnamesRaw,
-		'_', 
-		['for_type', 'year', 'mng']
-		)
-
-	# TODO: To remove future polymorphism, add a general constriantinfo class ?
-	constrGroupList: List[models.StandardConstraintGroup] = [
-		models.StandardConstraintGroup(
-			selected_tags={'for_type': ['167N', '167S', '409'], 'year': ["2021", "2025", "2030", "2050"], 'mng': ['RBWF', 'PLSQ', 'TB']},
-			split_by_groups=['for_type'],
-			constr_prefix="MaxAcresBySpecies",
-			default_compare=models.ComparisonSign.EQ,
-			default_rightside=0
-		),
-		models.StandardConstraintGroup.createEmptyConstraint(varTagsInfo)
-	]
-
-	projState = models.ProjectState(varTagsInfo, constrGroupList)
+	projState = devtesting.dummyProjectState()
 
 	root = tk.Tk()
-	buildConstraintBuildingGUI(root, projState, 0)
+	buildGUI_ConstraintBuilder(root, projState, 0)
 	root.mainloop()

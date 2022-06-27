@@ -12,65 +12,28 @@ NJDEP / NJFS
 Started 05/21/2022
 '''
 
-from copy import copy, deepcopy
-import sys
-
-print("=====")
-print("\n\n".join(sys.path))
-print("=====")
-
+from copy import deepcopy
 import models
-from pathlib import Path
 from typing import List, Dict
 import itertools
-import csv
 
 import io_cmd
+import io_file
 import linting as lint
 
 
 # TODO:
-# [ ] Remove main method, this file is not meant to actually be run
 # [~] Come up with better names (groups, vars, varGroupList, etc is _really_ confusing)
-# [ ] Be more strict with delimiting
+# [x] Be more strict with delimiting
 #    - Only allow for one character in the delimiting ?
-# [~] Have dataclass for constraint classes
+# [x] Have dataclass for constraint classes
 #    - There should be a sense of an abstract constraint class (group members)
 #      and a concrete constraint class (which can be exactly compiled into constraints)
-# [ ] Use Set instead of List for tag_groups in class models.VarTagsInfo
-# [ ] Adjust architecture so all method for compiling constraints groups -> constraints
-#      live inside varname_dataclasses.py
 # [ ] Instead of returning lists of copmiled constraints, return an iterator or generator function
 # [ ] Have a way to be Exclusive or Inclusive with categories ??
 #    - We may want a constriant that for example applies to all but 2 tree species, and this would allow
 #      for generalizing the scripts for other obj inputs (other states ?)
 # [ ] Add type checks for important processing functions
-
-
-def readVarnamesRaw (objCSVPath: Path, numVars=-1) -> List[str]:
-	'''
-	Reads the raw variables names in the provided file.
-
-	If numVars = -1, it will read all of them. Otherwise,
-	it only reads upto numVars variables 
-	(potentially will return less variables if the file is small)
-	'''
-	allVarnames = []
-
-	with open(objCSVPath, 'r') as objFile:
-		r = csv.reader(objFile)
-		lineCount = 0
-		for row in r:
-			lineCount += 1
-			if lineCount == 1:
-				continue
-			if numVars >= 0 and len(allVarnames) >= numVars:
-				break
-
-			allVarnames.append(str(row[0]).strip())
-
-	return allVarnames
-
 
 def makeTagGroupMembersList (varnamesRaw: List[str], delim: str) -> List[List[str]]:
 	'''
@@ -217,7 +180,7 @@ if __name__ == '__main__':
 	# Input
 	objCSVPath = io_cmd.getCSVFilepath("Objective File: ")
 
-	varnamesRaw = readVarnamesRaw(objCSVPath)
+	varnamesRaw = io_file.readVarnamesRaw(objCSVPath)
 	delim = input(f"Sample Var '{varnamesRaw[0]}' | Delimiter: ")
 	errMsg = lint.lintAllVarNamesRaw(varnamesRaw, delim)
 	if errMsg:

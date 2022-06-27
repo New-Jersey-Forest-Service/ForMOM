@@ -20,7 +20,7 @@ def main():
 	root = tk.Tk()
 	root.minsize(width=400, height=400)
 
-	gui_mainmenu.buildOpeningScreen(root, projectState)
+	gui_mainmenu.buildGUI_OpeningScreen(root, projectState)
 
 	root.mainloop()
 

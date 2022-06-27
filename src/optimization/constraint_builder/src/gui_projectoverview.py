@@ -4,18 +4,15 @@ Constraint Builder Constraints Overview Screen
 
 import copy
 import csv
-import json
-import math
 import tkinter as tk
-from enum import Enum, auto, unique
-from pathlib import Path
-from tkinter import filedialog
 from typing import List
 
-import constraintprocesser as proc
+import proc_constraints as proc
 import gui_standardconstraint
 import models
 from gui_consts import *
+import devtesting
+import io_file
 
 # Exposed GUI Elements
 _frmConstrsDisplay: tk.Frame = None
@@ -44,7 +41,6 @@ _passedRoot: tk.Tk = None
 
 def updateDeleteConstrGroup (constrInd: int) -> None:
 	global _constrGroupList
-	# Do updating
 	print(f"Deleteting {_constrGroupList[constrInd].constr_prefix}")
 
 	_constrGroupList.pop(constrInd)
@@ -54,8 +50,8 @@ def updateDeleteConstrGroup (constrInd: int) -> None:
 
 def updateNewConstrGroup () -> None:
 	global _constrGroupList
-
 	print(f"Adding a new constraint")
+
 	_constrGroupList.append(models.StandardConstraintGroup.createEmptyConstraint(_passedProjectState.varTags))
 
 	redrawConstrListFrame(_constrGroupList)
@@ -65,12 +61,8 @@ def updateNewConstrGroup () -> None:
 def updateSaveProject () -> None:
 	print("Saving project file")
 
-	outputFilepathStr = filedialog.asksaveasfilename(
-		filetypes=PROJ_FILES,
-		defaultextension=PROJ_FILES
-		)
-
-	if isInvalidFile(outputFilepathStr):
+	outputFilepathStr = io_file.getSaveAsFilepath(PROJ_FILES)
+	if outputFilepathStr == None:
 		return
 
 	projectDataStr = models.toOutputStr(_passedProjectState, models.ProjectState)
@@ -78,53 +70,13 @@ def updateSaveProject () -> None:
 		outFile.write(projectDataStr)
 
 
-def isInvalidFile(dialogOutput) -> bool:
-    # For whatever reason, filedialog.askname() can return multiple different things ???
-    return dialogOutput == None or len(dialogOutput) == 0 or dialogOutput.strip() == ""
-
-
 def updateExportCSV () -> None:
 	print("Exporting to csv")
 
-	outputFilepathStr = filedialog.asksaveasfilename(
-		filetypes=CSV_FILES,
-		defaultextension=CSV_FILES
-		)
-
-	if isInvalidFile(outputFilepathStr):
+	outputFilepathStr = io_file.getSaveAsFilepath(CSV_FILES)
+	if outputFilepathStr == None:
 		return
-
-	with open(outputFilepathStr, 'w') as outFile:
-		writer = csv.writer(outFile, delimiter=',', quotechar='"')
-		
-		# Write top row - all variables names
-		delim = _passedProjectState.varTags.delim
-		allVarNamesSorted = copy.deepcopy(_passedProjectState.varTags.all_vars)
-		allVarNamesSorted.sort(key=lambda tags: delim.join(tags))
-		allVarNamesRaw = [delim.join(x) for x in allVarNamesSorted]
-
-		writer.writerow(['const_name'] + allVarNamesRaw + ['operator', 'rtSide'])
-
-		# Write each constraint
-		rowLen = len(allVarNamesSorted) + 3
-
-		for constGroup in _passedProjectState.constrGroupList:
-			individConstrs = proc.buildConstraintsFromStandardConstraintGroup(_passedProjectState.varTags, constGroup)
-
-			for constr in individConstrs:
-				nextRow = [''] * rowLen
-				nextRow[0] = constr.name
-				nextRow[-1] = constr.compare_value
-				nextRow[-2] = constr.compare_type.name.lower()
-
-				for ind, var in enumerate(allVarNamesSorted):
-					coef = 0
-					if var in constr.var_tags:
-						varInd = constr.var_tags.index(var)
-						coef = constr.var_coeffs[varInd]
-					nextRow[ind+1] = coef
-				
-				writer.writerow(nextRow)
+	io_file.writeToCSV(outputFilepathStr, _passedProjectState)
 	
 	print(":D File Written")
 
@@ -150,7 +102,7 @@ def transitionToEditing (constrInd: int) -> None:
 	for child in _passedRoot.winfo_children():
 		child.destroy()
 
-	gui_standardconstraint.buildConstraintBuildingGUI(_passedRoot, _passedProjectState, constrInd)
+	gui_standardconstraint.buildGUI_ConstraintBuilder(_passedRoot, _passedProjectState, constrInd)
 
 
 
@@ -206,7 +158,7 @@ def redrawConstrListFrame (constrGroupList: List[models.StandardConstraintGroup]
 # Main GUI Construction
 #
 
-def buildProjectOverviewGUI(root: tk.Tk, projectState: models.ProjectState) -> None:
+def buildGUI_ProjectOverview(root: tk.Tk, projectState: models.ProjectState) -> None:
 	global _constrGroupList, _passedRoot, _passedProjectState
 
 	_passedProjectState = projectState
@@ -274,29 +226,10 @@ def buildExportButtonsFrame(root: tk.Tk) -> tk.Frame:
 
 
 if __name__ == '__main__':
-	varTagsInfo = proc.makeVarTagsInfoObjectFromFile(
-		# './sample_data/minimodel_obj.csv', 
-		'/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/constraint_builder/sample_data/minimodel_obj.csv',
-		'_', 
-		['for_type', 'year', 'mng']
-		)
-
-	# TODO: To remove future polymorphism, add a general constriantinfo class ?
-	constrGroupList: List[models.StandardConstraintGroup] = [
-		models.StandardConstraintGroup(
-			selected_tags={'for_type': ['167N', '167S', '409'], 'year': ["2021", "2025", "2030", "2050"], 'mng': ['RBWF', 'PLSQ', 'TB']},
-			split_by_groups=['for_type'],
-			constr_prefix="MaxAcresBySpecies",
-			default_compare=models.ComparisonSign.EQ,
-			default_rightside=0
-		),
-		models.StandardConstraintGroup.createEmptyConstraint(varTagsInfo)
-	]
-
-	projState = models.ProjectState('_', varTagsInfo, constrGroupList)
+	projState = devtesting.dummyProjectState()
 
 	root = tk.Tk()
-	buildProjectOverviewGUI(root, projState)
+	buildGUI_ProjectOverview(root, projState)
 	root.mainloop()
 
 

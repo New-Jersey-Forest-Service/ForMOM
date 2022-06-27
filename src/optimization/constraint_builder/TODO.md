@@ -11,6 +11,7 @@ Project Overview <\-> Constraint Builder
 
 Other
  - [ ] Get the outputs from all the fvs runs
+ - [ ] Consider making it pretty
 
 
 Feedback:
@@ -45,15 +46,15 @@ So
 
  - [ ] Refactoring 1.0
  	* [ ] Write test suite?
-	* [ ] Pull styling constants out (width, csv files, etc)
-	* [ ] GUI files with more standard names & functions
-	* [ ] Get inequality checks from the inequality class (instead of switch statement with strs EW)
-	* [ ] File IO File
+	* [x] Pull styling constants out (width, csv files, etc)
+	* [x] GUI files with more standard names & functions
+	* [x] Get inequality checks from the inequality class (instead of switch statement with strs EW)
+	* [x] File IO File
 	* [x] Hella renaming
- - [ ] Test
- 	* [ ] See how courtney uses it
-	* [ ] Auto detecting bad input files
-	* [ ] Ground truths for string conversions
+ - [~] Test
+ 	* [x] See how courtney uses it
+	* [ ] Auto detecting bad save files
+	* [ ] Ground truths for string conversions & testing
  - [ ] Better Looks
     * [ ] ttk ?
 

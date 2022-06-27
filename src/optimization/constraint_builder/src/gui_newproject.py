@@ -6,14 +6,16 @@ import math
 import tkinter as tk
 from enum import Enum, auto, unique
 from pathlib import Path
-from tkinter import filedialog, ttk
+from tkinter import ttk
 from typing import List
 
-import constraintprocesser as proc
+import proc_constraints as proc
 import gui_projectoverview
+import io_file
 import linting as lint
 import models
 from gui_consts import *
+import devtesting
 
 # Exposed gui elements
 _lblObjFile: tk.Label = None
@@ -59,25 +61,12 @@ def updateNewObjFile() -> None:
 	'''
 	global _objFileStr
 
-	prevStr = _objFileStr
-
-	_objFileStr = filedialog.askopenfilename(
-            filetypes=CSV_FILES,
-            defaultextension=CSV_FILES
-        )
-
-	if _isValidFile(_objFileStr):
-		_objFileStr = str(_objFileStr)
-	else:
-		_objFileStr = prevStr
+	newPath = io_file.getOpenFilepath(CSV_FILES)
+	if newPath != None:
+		_objFileStr = newPath
 
 	processParseFile()
 	multiRedrawFileUpdate()
-
-
-def _isValidFile(dialogOutput) -> bool:
-	# For whatever reason, filedialog.askname() can return multiple different things ???
-	return dialogOutput != None and len(dialogOutput) > 0 and dialogOutput.strip() != ""
 
 
 def updateNewDelim() -> None:
@@ -119,7 +108,7 @@ def processParseFile() -> None:
 		return
 	
 	# TODO: Lint file name (in processing module)
-	_varNamesRaw = proc.readVarnamesRaw(Path(_objFileStr))
+	_varNamesRaw = io_file.readVarnamesRaw(Path(_objFileStr))
 	_objSampleVar = _varNamesRaw[0]
 
 	if _delimiter == None:
@@ -148,7 +137,7 @@ def transitionToOverview() -> None:
 		child.destroy()
 
 	# Transition
-	gui_projectoverview.buildProjectOverviewGUI(_passedRoot, _passedProjectState)
+	gui_projectoverview.buildGUI_ProjectOverview(_passedRoot, _passedProjectState)
 
 
 #
@@ -257,7 +246,7 @@ def redrawNamingStatus(inputNames: List[str]) -> None:
 # Main GUI Construction
 #
 
-def buildObjImport(root: tk.Tk, projectState: models.ProjectState):
+def buildGUI_ObjImport(root: tk.Tk, projectState: models.ProjectState):
 	global _btnNextStage, _passedRoot, _passedProjectState
 
 	# Reading in references
@@ -344,6 +333,7 @@ def buildGroupNaming(root: tk.Tk) -> tk.Frame:
 
 
 if __name__ == '__main__':
+	projState = devtesting.dummyProjectState()
 	root = tk.Tk()
-	buildObjImport(root)
+	buildGUI_ObjImport(root, projState)
 	root.mainloop()

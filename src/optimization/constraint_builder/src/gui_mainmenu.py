@@ -6,14 +6,11 @@ This gives the user the option to load a project or start fresh.
 
 import tkinter as tk
 
-
-import tkinter as tk
-import models
 import gui_newproject
 import gui_projectoverview
-from tkinter import filedialog
+import io_file
+import models
 from gui_consts import *
-
 
 _passedProjectState: models.ProjectState = None
 _passedRoot: tk.Tk = None
@@ -36,15 +33,8 @@ def updateNewProj():
 def updateLoadProj():
 	global _passedProjectState
 
-	projFilepath: str = filedialog.askopenfilename(
-		filetypes=PROJ_FILES,
-		defaultextension=PROJ_FILES
-		)
-
-	if isInvalidFile(projFilepath):
-		return
+	projFilepath: str = io_file.getOpenFilepath()
 	
-	# YES, ik it's ugly bringing the entire file into main memory :/
 	fileData = None
 	with open(projFilepath, 'r') as file:
 		fileData = file.read()
@@ -58,12 +48,6 @@ def updateLoadProj():
 	_passedProjectState = newProjState
 	
 	transitionToOverview()
-
-
-
-def isInvalidFile(dialogOutput) -> bool:
-	# For whatever reason, filedialog.askname() can return multiple different things ???
-	return dialogOutput == None or len(dialogOutput) == 0 or dialogOutput.strip() == ""
 
 
 
@@ -82,7 +66,7 @@ def transitionToObjImport() -> None:
 		child.destroy()
 
 	# Transition
-	gui_newproject.buildObjImport(_passedRoot, _passedProjectState)
+	gui_newproject.buildGUI_ObjImport(_passedRoot, _passedProjectState)
 
 
 def transitionToOverview() -> None:
@@ -93,7 +77,7 @@ def transitionToOverview() -> None:
 		child.destroy()
 
 	# Transition
-	gui_projectoverview.buildProjectOverviewGUI(_passedRoot, _passedProjectState)
+	gui_projectoverview.buildGUI_ProjectOverview(_passedRoot, _passedProjectState)
 
 
 
@@ -102,7 +86,7 @@ def transitionToOverview() -> None:
 # Main GUI Construction
 #
 
-def buildOpeningScreen(root: tk.Tk, projectState: models.ProjectState):
+def buildGUI_OpeningScreen(root: tk.Tk, projectState: models.ProjectState):
 	global _passedProjectState, _passedRoot
 
 	_passedProjectState = projectState
@@ -133,7 +117,7 @@ if __name__ == '__main__':
 	projectState = models.ProjectState(None, None)
 
 	root = tk.Tk()
-	buildOpeningScreen(root, projectState)
+	buildGUI_OpeningScreen(root, projectState)
 	root.mainloop()
 
 
