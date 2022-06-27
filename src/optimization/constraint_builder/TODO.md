@@ -13,8 +13,20 @@ Other
  - [ ] Get the outputs from all the fvs runs
 
 
+Feedback:
+ - It's not clear at all what to do on the objective import
+ - Delimiter doesn't make sense
+ - Allow for fullscreening ?
+ - Standard Constraint, fix arrow moving to a side
+ - It's not clear why to use arrows
+ - Continuity constraints are gonna be painful
+ - Allow for variables on both sides
+ - Look at windows export
+ - Look into changing right sides
+ - Have more options for fine-tuning with variable selection
+
 BUGS:
- - [ ] Eq, Le, Ge signs not being rendered correctly	
+ - [x] Eq, Le, Ge signs not being rendered correctly	
 
 So
  - [x] Build Main Screen
