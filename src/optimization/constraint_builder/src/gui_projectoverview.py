@@ -68,6 +68,7 @@ def updateNewConstrGroup () -> None:
 	redrawConstrListFrame(_constrGroupList)
 
 
+# TODO: Move so much of this into fileio
 def updateSaveProject () -> None:
 	print("Saving project file")
 
@@ -104,7 +105,7 @@ def updateExportCSV () -> None:
 		writer = csv.writer(outFile, delimiter=',', quotechar='"')
 		
 		# Write top row - all variables names
-		delim = _passedProjectState.delim
+		delim = _passedProjectState.varTags.delim
 		allVarNamesSorted = copy.deepcopy(_passedProjectState.varTags.all_vars)
 		allVarNamesSorted.sort(key=lambda tags: delim.join(tags))
 		allVarNamesRaw = [delim.join(x) for x in allVarNamesSorted]

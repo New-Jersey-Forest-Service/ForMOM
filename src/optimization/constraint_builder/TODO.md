@@ -9,6 +9,10 @@ Main -> Create
 Project Overview <\-> Constraint Builder
 
 
+Other
+ - [ ] Get the outputs from all the fvs runs
+
+
 BUGS:
  - [ ] Eq, Le, Ge signs not being rendered correctly	
 
@@ -57,11 +61,47 @@ So
 
 ## [ ] Renamed Dataclasses
 
+```python
+# What's needed to parse an objective file
+#  - Objective File
+#  - Delimiter
+#  - Tag Names
+
+
+
+# User Input Process. It must necessarily be in this order
+objFile = getObjFile()
+
+exampleVar = readExampleVar(objFile)
+delim = getDelim(exampleVar)
+
+exampleTagMembers = readExampleTags(objFile, delim)
+tagNames = getTagNames(exampleTagMembers)
+
+
+# Actual Processing
+varInfo = buildVarInfo(objFile, delim, tagNames)
+
+> def buildVarInfo (objFile, delim, tagNames):
+> 	varNamesRaw = getVarNames(objFile, delim)
+>	varNamesRaw.sort()
+>   varNamesSplit = [x.split(delim) for x in varNamesRaw]
+>	tagOrder = tagNames
+>
+>	tagMembers = dict()
+```
 
 
 
 
-## [x] Better Folder Structure
+
+
+
+
+
+## [~] Better Folder Structure
+
+- [x] Create better folders:
 launchcmd.py
 launchgui.py
 
@@ -79,6 +119,8 @@ processor/
  > dataclasses
  > linting
  > constraintprocessor
+
+- [ ] Actually populate files
 
 
 

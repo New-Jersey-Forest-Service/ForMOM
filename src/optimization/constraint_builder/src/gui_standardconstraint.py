@@ -1,7 +1,8 @@
 
 import tkinter as tk
 import gui_projectoverview
-import constraintprocesser
+import constraintprocesser as proc
+import linting as lint
 import models
 import copy
 from enum import Enum, unique, auto
@@ -62,7 +63,7 @@ def updateGeneralConstrInfo():
 	# Name is always just a string cast
 	# TODO: Lint
 	prefix = str(_entPrefix.get())
-	prefixErr = proc.lintConstrGroupName(prefix)
+	prefixErr = lint.lintConstrGroupName(prefix)
 	if prefixErr:
 		_errWithGeneralInfo = prefixErr
 	else:
