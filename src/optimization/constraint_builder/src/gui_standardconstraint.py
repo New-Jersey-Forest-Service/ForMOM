@@ -2,6 +2,8 @@
 import copy
 import csv
 import math
+from pathlib import Path
+import traceback
 import tkinter as tk
 from enum import Enum, auto, unique
 from tkinter import filedialog, ttk
@@ -66,19 +68,10 @@ def updateGeneralConstrInfo():
 
 	# Selector needs to be checked
 	selector = _cbbOpSelector.get().strip()
-	compType = None
-
-	# TODO: Move this conversion to the comparison sign class
-	if selector == '=':
-		compType = models.ComparisonSign.EQ
-	elif selector == '<=':
-		compType = models.ComparisonSign.LE
-	elif selector == '>=':
-		compType = models.ComparisonSign.GE
-	else:
+	compType = models.ComparisonSign.fromSybols(selector)
+	if compType == None:
 		print(f'[[ !! Warning ]] Found illegal comparison selector option: "{selector}"')
-
-	if compType:
+	else:
 		_constrGroup.default_compare = compType
 	
 	# Right side value
@@ -204,7 +197,7 @@ def redrawStandardInfo(constr: models.StandardConstraintGroup) -> None:
 	_entPrefix.delete(0, tk.END)
 	_entPrefix.insert(0, constr.constr_prefix)
 
-	_cbbOpSelector.set(str(constr.default_compare))
+	_cbbOpSelector.set(str(constr.default_compare.toSymbols()))
 
 	_entDefaultRtside.delete(0, tk.END)
 	_entDefaultRtside.insert(0, constr.default_rightside)
@@ -255,7 +248,7 @@ def generate_sample_constraint_string(constrList: List[models.CompiledConstraint
 		for ind, varTags in enumerate(constr.var_tags):
 			# TODO: Use some kind of rendering class / methods??
 			coeff = constr.var_coeffs[ind]
-			varStr = "_".join(varTags)
+			varStr = "_".join(varTags) # Eww stinky! "_" should be replaced with some type of delimiter string
 
 			if coeff == 1:
 				pass
@@ -267,7 +260,7 @@ def generate_sample_constraint_string(constrList: List[models.CompiledConstraint
 			varStrList.append(varStr)	
 		varsStr = " + ".join(varStrList)
 
-		rightHandStr = str(constr.compare_type) + " " + str(constr.compare_value)
+		rightHandStr = str(constr.compare_type.toSymbols()) + " " + str(constr.compare_value)
 
 		finalStr += constr.name + ":" + "\n" 
 		finalStr += varsStr + " " + rightHandStr + "\n"
@@ -375,7 +368,7 @@ def buildGeneralConstraintFrame(root: tk.Tk) -> tk.Frame:
 
 	lblOpType = tk.Label(frmGenConInfo, text="Default Operator Type:")
 	# TODO: Pull operator types from global config
-	_cbbOpSelector = ttk.Combobox(frmGenConInfo, values=('>=', '<=', '='))
+	_cbbOpSelector = ttk.Combobox(frmGenConInfo, values=tuple([x.toSymbols() for x in models.ComparisonSign]))
 	_cbbOpSelector['state'] = 'readonly'
 	lblOpType.grid(row=1, column=0, padx=5, pady=5, sticky="nse")
 	_cbbOpSelector.grid(row=1, column=1, padx=5, pady=5, sticky="nsw")
@@ -530,9 +523,13 @@ def buildConstrPreviewFrame(root) -> tk.Frame:
 
 
 if __name__ == '__main__':
-	varTagsInfo = proc.makeVarTagsInfoObjectFromFile(
+	varnamesRaw = proc.readVarnamesRaw(
 		# './sample_data/minimodel_obj.csv', 
-		'/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/constraint_builder/sample_data/minimodel_obj.csv',
+		Path('/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/constraint_builder/sample_data/minimodel_obj.csv')
+	)
+
+	varTagsInfo = proc.buildVarTagsInfoObject(
+		varnamesRaw,
 		'_', 
 		['for_type', 'year', 'mng']
 		)
@@ -549,7 +546,7 @@ if __name__ == '__main__':
 		models.StandardConstraintGroup.createEmptyConstraint(varTagsInfo)
 	]
 
-	projState = models.ProjectState('_', varTagsInfo, constrGroupList)
+	projState = models.ProjectState(varTagsInfo, constrGroupList)
 
 	root = tk.Tk()
 	buildConstraintBuildingGUI(root, projState, 0)

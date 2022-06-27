@@ -23,9 +23,25 @@ from typing import Any, List, Dict, Type
 
 @unique
 class ComparisonSign(Enum):
-	GE = 'ge'
-	LE = 'le'
-	EQ = 'eq'
+	GE = '>='
+	LE = '<='
+	EQ = '=='
+
+	def toSymbols (self):
+		return self._value_
+
+	@staticmethod
+	def fromSybols (symbols: str):
+		stripped = symbols.strip()
+
+		if not stripped in _compSignMap.keys():
+			return None
+		return _compSignMap[stripped]
+
+_compSignMap = {}
+for cs in ComparisonSign:
+	_compSignMap[cs._value_] = cs
+
 
 @attrs.frozen
 class VarTagsInfo:
