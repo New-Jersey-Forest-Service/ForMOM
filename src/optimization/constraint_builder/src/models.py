@@ -27,30 +27,12 @@ class ComparisonSign(Enum):
 	LE = 'le'
 	EQ = 'eq'
 
-	# def __str__(self):
-	# 	if self.value == 0:
-	# 		return ">="
-	# 	if self.value == 1:
-	# 		return "<="
-	# 	if self.value == 2:
-	# 		return "= "
-	# 	else:
-	# 		return "??"
-	
-
-
-
-# @unique
-# class SelectionType(Enum):
-# 	EXLUDE_SELECTED = auto()
-# 	INCLUDE_SELECTED = auto()
-
-
 @attrs.frozen
 class VarTagsInfo:
+	delim: str
 	tag_order: List[str]
 	all_vars: List[List[str]]
-	tag_groups: Dict[str, List[str]]
+	tag_members: Dict[str, List[str]]
 
 
 @attrs.define
@@ -92,14 +74,13 @@ class StandardConstraintGroup:
 class ProjectState:
 	# TODO: Re-evaluate how the data is being split up. It feels a little weird
 	#       for the delimiter to be here. Maybe put it into VarTagsInfo? Maybe into compilation class?
-	delim: str
 	varTags: VarTagsInfo
 	constrGroupList: List[StandardConstraintGroup]
 
 	@staticmethod
 	def createEmptyprojectState():
 		return ProjectState(
-			None, None, None
+			None, None
 		)
 
 
@@ -107,7 +88,7 @@ class ProjectState:
 def toOutputStr (obj: Any, type: Type) -> str:
 	if not isinstance(obj, type):
 		objType = type(obj)
-		raise TypeError(f"L + ratio. Expected {type} got {objType} ")
+		raise TypeError(f"Expected {type} got {objType} ")
 	
 	return json.dumps(cattrs.unstructure(obj))
 

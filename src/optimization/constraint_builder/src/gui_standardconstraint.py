@@ -1,8 +1,8 @@
 
 import tkinter as tk
-import screens.projectoverview
-import processor.models as models
-import processor.constraintprocesser as proc
+import gui_projectoverview
+import constraintprocesser
+import models
 import copy
 from enum import Enum, unique, auto
 from typing import List, Union, Dict
@@ -177,7 +177,7 @@ def transitionToOverview() -> None:
 		child.destroy()
 
 	# Transition
-	screens.projectoverview.buildProjectOverviewGUI(_passedRoot, _passedProjectState)
+	gui_projectoverview.buildProjectOverviewGUI(_passedRoot, _passedProjectState)
 
 
 
@@ -236,7 +236,7 @@ def redrawPreviewConstraints(varTags: models.VarTagsInfo, constr: models.Standar
 	if _errWithGeneralInfo:
 		constrStr = _errWithGeneralInfo
 	else:
-		allConstrs = proc.compileStandardConstraintGroup(varTags, constr)
+		allConstrs = proc.buildConstraintsFromStandardConstraintGroup(varTags, constr)
 
 		if len(allConstrs) > 0:
 			constrStr = generate_sample_constraint_string(allConstrs, -1, -1)
@@ -282,7 +282,7 @@ def generate_sample_constraint_string(constrList: List[models.CompiledConstraint
 
 def redrawIncExcLists(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
 	includedTags = constr.selected_tags
-	excludedTags = copy.deepcopy(varTags.tag_groups)
+	excludedTags = copy.deepcopy(varTags.tag_members)
 
 	for tagGroup in includedTags:
 		for tag in includedTags[tagGroup]:

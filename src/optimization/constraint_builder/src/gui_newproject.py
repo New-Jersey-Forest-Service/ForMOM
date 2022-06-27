@@ -4,13 +4,14 @@ Constraint Builder Objective File Import
 
 from pathlib import Path
 import tkinter as tk
-import processor.models as models
-import processor.constraintprocesser as proc
+import models
+import constraintprocesser as proc
+import linting as lint
 from enum import Enum, unique, auto
 from typing import List
 from tkinter import ttk, filedialog
 import math
-import screens.projectoverview
+import gui_projectoverview
 
 
 WIDTH_SML = 8
@@ -100,7 +101,7 @@ def updateGroupName() -> None:
 	global _nameEntVarList, _groupnameList, _errWithNamesList
 
 	_groupnameList = [x.get() for x in _nameEntVarList]
-	_errWithNamesList = proc.lintMultipleTagGroupNames(_groupnameList)
+	_errWithNamesList = lint.lintAllTagGroupNames(_groupnameList)
 
 	multiRedrawNameUpdate()
 
@@ -112,6 +113,8 @@ def updateGroupName() -> None:
 def processParseFile() -> None:
 	global _varNamesRaw, _objSampleVar, _errWithObjFile, _tagLists
 
+
+	# TODO: This processing call really should be a single thing no?
 	_varNamesRaw = None
 	_objSampleVar = None
 	_errWithObjFile = None
@@ -119,19 +122,18 @@ def processParseFile() -> None:
 
 	if _objFileStr == None:
 		return
+	
 	# TODO: Lint file name (in processing module)
-	_varNamesRaw = proc.readAllObjVarnames(Path(_objFileStr))
+	_varNamesRaw = proc.readVarnamesRaw(Path(_objFileStr))
 	_objSampleVar = _varNamesRaw[0]
 
 	if _delimiter == None:
 		return
-	_errWithObjFile = proc.lintVarNames(_varNamesRaw, _delimiter)
+	_errWithObjFile = lint.lintAllVarNamesRaw(_varNamesRaw, _delimiter)
 
 	if _errWithObjFile:
 		return
-	_tagLists = proc.makeTagGroupMembersList(
-		proc.splitVarsToTags(_varNamesRaw, _delimiter)
-	)
+	_tagLists = proc.makeTagGroupMembersList(_varNamesRaw, _delimiter)
 
 
 
@@ -143,9 +145,7 @@ def transitionToOverview() -> None:
 	global _passedRoot, _passedProjectState
 
 	# Write Data
-	_passedProjectState.delim = _delimiter
-	_passedProjectState.varTags = \
-		proc.makeVarTagsInfoObject(_varNamesRaw, _delimiter, _groupnameList)
+	_passedProjectState.varTags = proc.buildVarTagsInfoObject(_varNamesRaw, _delimiter, _groupnameList)
 	_passedProjectState.constrGroupList = []
 
 	# Clear Root
@@ -153,7 +153,7 @@ def transitionToOverview() -> None:
 		child.destroy()
 
 	# Transition
-	screens.projectoverview.buildProjectOverviewGUI(_passedRoot, _passedProjectState)
+	gui_projectoverview.buildProjectOverviewGUI(_passedRoot, _passedProjectState)
 
 
 #

@@ -8,16 +8,10 @@ import tkinter as tk
 
 
 import tkinter as tk
-import screens.newproject
-import screens.projectoverview
-import processor.models as models
-# import processor.constraintprocesser as proc
-import copy
-from enum import Enum, unique, auto
-from typing import List, Union, Dict
-from tkinter import ttk, filedialog
-import math
-import csv
+import models
+import gui_newproject
+import gui_projectoverview
+from tkinter import filedialog
 
 
 WIDTH_SML = 8
@@ -93,7 +87,7 @@ def transitionToObjImport() -> None:
 		child.destroy()
 
 	# Transition
-	screens.newproject.buildObjImport(_passedRoot, _passedProjectState)
+	gui_newproject.buildObjImport(_passedRoot, _passedProjectState)
 
 
 def transitionToOverview() -> None:
@@ -104,7 +98,7 @@ def transitionToOverview() -> None:
 		child.destroy()
 
 	# Transition
-	screens.projectoverview.buildProjectOverviewGUI(_passedRoot, _passedProjectState)
+	gui_projectoverview.buildProjectOverviewGUI(_passedRoot, _passedProjectState)
 
 
 

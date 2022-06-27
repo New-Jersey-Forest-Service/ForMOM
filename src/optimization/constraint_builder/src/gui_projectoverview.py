@@ -7,13 +7,13 @@ import csv
 import json
 from pathlib import Path
 import tkinter as tk
-import processor.models as models
-import processor.constraintprocesser as proc
+import models
+import constraintprocesser as proc
 from enum import Enum, unique, auto
 from typing import List
 from tkinter import ttk, filedialog
 import math
-import screens.standardconstraint
+import gui_standardconstraint
 
 
 
@@ -115,7 +115,7 @@ def updateExportCSV () -> None:
 		rowLen = len(allVarNamesSorted) + 3
 
 		for constGroup in _passedProjectState.constrGroupList:
-			individConstrs = proc.compileStandardConstraintGroup(_passedProjectState.varTags, constGroup)
+			individConstrs = proc.buildConstraintsFromStandardConstraintGroup(_passedProjectState.varTags, constGroup)
 
 			for constr in individConstrs:
 				nextRow = [''] * rowLen
@@ -156,7 +156,7 @@ def transitionToEditing (constrInd: int) -> None:
 	for child in _passedRoot.winfo_children():
 		child.destroy()
 
-	screens.standardconstraint.buildConstraintBuildingGUI(_passedRoot, _passedProjectState, constrInd)
+	gui_standardconstraint.buildConstraintBuildingGUI(_passedRoot, _passedProjectState, constrInd)
 
 
 

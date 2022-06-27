@@ -5,11 +5,10 @@ This file launches the program
 '''
 
 import tkinter as tk
-# from screens import *
-import screens.mainmenu
+import gui_mainmenu
 from enum import Enum, unique, auto
 from typing import List, Dict
-import processor.models as models
+import models
 
 
 
@@ -21,7 +20,7 @@ def main():
 	root = tk.Tk()
 	root.minsize(width=400, height=400)
 
-	screens.mainmenu.buildOpeningScreen(root, projectState)
+	gui_mainmenu.buildOpeningScreen(root, projectState)
 
 	root.mainloop()
 
