@@ -1,22 +1,17 @@
 
+import copy
+import csv
+import math
 import tkinter as tk
-import gui_projectoverview
+from enum import Enum, auto, unique
+from tkinter import filedialog, ttk
+from typing import Dict, List, Union
+
 import constraintprocesser as proc
+import gui_projectoverview
 import linting as lint
 import models
-import copy
-from enum import Enum, unique, auto
-from typing import List, Union, Dict
-from tkinter import ttk, filedialog
-import math
-import csv
-
-
-WIDTH_SML = 8
-WIDTH_MED = 15
-WIDTH_BIG = 35
-CSV_FILES = [('CSV Files', '*.csv'), ('All Files', '*.*')]
-
+from gui_consts import *
 
 # TODO: Make this read from a VarTagsInfo
 # TODO: Make this output a StandardConstraintGroup

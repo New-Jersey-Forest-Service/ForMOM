@@ -5,11 +5,11 @@ This file launches the program
 '''
 
 import tkinter as tk
-import gui_mainmenu
-from enum import Enum, unique, auto
-from typing import List, Dict
-import models
+from enum import Enum, auto, unique
+from typing import Dict, List
 
+import gui_mainmenu
+import models
 
 
 def main():

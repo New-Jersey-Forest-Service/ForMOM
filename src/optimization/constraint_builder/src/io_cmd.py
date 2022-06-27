@@ -1,8 +1,9 @@
 
-from typing import List
-import linting as lint
-from pathlib import Path
 import sys
+from pathlib import Path
+from typing import List
+
+import linting as lint
 
 
 def getTagGroupNames (tagMems: List[List[str]]) -> List[str]:

@@ -2,23 +2,18 @@
 Constraint Builder Objective File Import
 '''
 
-from pathlib import Path
-import tkinter as tk
-import models
-import constraintprocesser as proc
-import linting as lint
-from enum import Enum, unique, auto
-from typing import List
-from tkinter import ttk, filedialog
 import math
+import tkinter as tk
+from enum import Enum, auto, unique
+from pathlib import Path
+from tkinter import filedialog, ttk
+from typing import List
+
+import constraintprocesser as proc
 import gui_projectoverview
-
-
-WIDTH_SML = 8
-WIDTH_MED = 15
-WIDTH_BIG = 35
-CSV_FILES = [('CSV Files', '*.csv'), ('All Files', '*.*')]
-
+import linting as lint
+import models
+from gui_consts import *
 
 # Exposed gui elements
 _lblObjFile: tk.Label = None

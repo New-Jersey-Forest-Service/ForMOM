@@ -37,7 +37,7 @@ So
 	* [ ] GUI files with more standard names & functions
 	* [ ] Get inequality checks from the inequality class (instead of switch statement with strs EW)
 	* [ ] File IO File
-	* [ ] Hella renaming
+	* [x] Hella renaming
  - [ ] Test
  	* [ ] See how courtney uses it
 	* [ ] Auto detecting bad input files

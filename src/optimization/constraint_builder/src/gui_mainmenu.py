@@ -12,13 +12,8 @@ import models
 import gui_newproject
 import gui_projectoverview
 from tkinter import filedialog
+from gui_consts import *
 
-
-WIDTH_SML = 8
-WIDTH_MED = 15
-WIDTH_BIG = 35
-CSV_FILES = [('CSV Files', '*.csv'), ('All Files', '*.*')]
-PROJ_FILES = [('Project Files', '*.cproj'), ('All Files', '*.*')]
 
 _passedProjectState: models.ProjectState = None
 _passedRoot: tk.Tk = None

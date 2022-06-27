@@ -5,24 +5,17 @@ Constraint Builder Constraints Overview Screen
 import copy
 import csv
 import json
-from pathlib import Path
-import tkinter as tk
-import models
-import constraintprocesser as proc
-from enum import Enum, unique, auto
-from typing import List
-from tkinter import ttk, filedialog
 import math
+import tkinter as tk
+from enum import Enum, auto, unique
+from pathlib import Path
+from tkinter import filedialog
+from typing import List
+
+import constraintprocesser as proc
 import gui_standardconstraint
-
-
-
-WIDTH_SML = 8
-WIDTH_MED = 15
-WIDTH_BIG = 35
-CSV_FILES = [('CSV Files', '*.csv'), ('All Files', '*.*')]
-PROJ_FILES = [('Project Files', '*.cproj'), ('All Files', '*.*')]
-
+import models
+from gui_consts import *
 
 # Exposed GUI Elements
 _frmConstrsDisplay: tk.Frame = None
