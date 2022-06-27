@@ -16,6 +16,7 @@ import linting as lint
 import models
 from gui_consts import *
 import devtesting
+import proc_render as render
 
 # Exposed gui elements
 _lblObjFile: tk.Label = None
@@ -97,7 +98,7 @@ def updateGroupName() -> None:
 def processParseFile() -> None:
 	global _varNamesRaw, _objSampleVar, _errWithObjFile, _tagLists
 
-
+	# TODO: Remember what old me meant with the comment below
 	# TODO: This processing call really should be a single thing no?
 	_varNamesRaw = None
 	_objSampleVar = None
@@ -170,9 +171,7 @@ def redrawFilestr(objFileStr: str) -> None:
 	if objFileStr == None:
 		prevStr = "Select a file"
 	else:
-		prevStr = objFileStr
-		if len(prevStr) > WIDTH_BIG:
-			prevStr = "... " + prevStr[4-WIDTH_BIG:]
+		prevStr = render.trimEllipsisRight(objFileStr, WIDTH_BIG)
 
 	_lblObjFile['text'] = prevStr
 
@@ -220,8 +219,7 @@ def redrawNamingFrame(tagLists: List[List[str]]) -> None:
 			entMemName = tk.Entry(_frmNameGroups, width=15, textvariable=strVarGroupname)
 
 			exampleMemsStr = ", ".join(exampleMems)
-			if len(exampleMemsStr) > WIDTH_BIG:
-				exampleMemsStr = exampleMemsStr[:WIDTH_BIG - 4] + " ..."
+			exampleMemsStr = render.trimEllipsisLeft(exampleMemsStr, WIDTH_BIG)
 			lblExampleMems = tk.Label(_frmNameGroups, text=exampleMemsStr, anchor="e")
 
 			entMemName.grid(row=ind+1, column=0, padx=5, pady=5, sticky="nse")

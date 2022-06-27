@@ -10,6 +10,7 @@ import linting as lint
 import models
 from gui_consts import *
 import devtesting
+import proc_render as render
 
 # TODO: Make this read from a VarTagsInfo
 # TODO: Make this output a StandardConstraintGroup
@@ -210,7 +211,7 @@ def redrawSplitByGroups(constr: models.StandardConstraintGroup) -> None:
 
 	for group in splitbyGroups:
 		_splitVarDict[group].set(1)
-	# TODO: Also set the splitbys outside the group to 0
+	# TODO: Also set the splitbys outside the group to 0 ?
 
 
 def redrawPreviewConstraints(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
@@ -224,45 +225,18 @@ def redrawPreviewConstraints(varTags: models.VarTagsInfo, constr: models.Standar
 		allConstrs = proc.buildConstraintsFromStandardConstraintGroup(varTags, constr)
 
 		if len(allConstrs) > 0:
-			constrStr = generate_sample_constraint_string(allConstrs, -1, -1)
+			constrStr = render.renderMultipleCompiledConstraints(
+				constrList=allConstrs, 
+				delim=varTags.delim, 
+				charWidth=150
+				)
 		else:
 			constrStr = "No Constraints Exist"
 
+	# TODO: A canvas instead of a text box would give more control
+
 	_txtConstPreview.delete("1.0", tk.END)
 	_txtConstPreview.insert("1.0", constrStr)
-
-
-# TODO: Actually use charHeight & charWidth ?
-def generate_sample_constraint_string(constrList: List[models.CompiledConstraint], charHeight:int, charWidth: int) -> str:
-	NUM_CONSTRS = 5
-	constrs = constrList[:NUM_CONSTRS]
-
-	finalStr = ''
-
-	for constr in constrs:
-		varStrList = []
-		for ind, varTags in enumerate(constr.var_tags):
-			# TODO: Use some kind of rendering class / methods??
-			coeff = constr.var_coeffs[ind]
-			varStr = "_".join(varTags) # Eww stinky! "_" should be replaced with some type of delimiter string
-
-			if coeff == 1:
-				pass
-			elif coeff == int(coeff):
-				varStr = str(int(coeff)) + "*" + varStr
-			else:
-				varStr = str(coeff) + "*" + varStr
-
-			varStrList.append(varStr)	
-		varsStr = " + ".join(varStrList)
-
-		rightHandStr = str(constr.compare_type.toSymbols()) + " " + str(constr.compare_value)
-
-		finalStr += constr.name + ":" + "\n" 
-		finalStr += varsStr + " " + rightHandStr + "\n"
-		finalStr += "\n"
-
-	return finalStr
 
 
 def redrawIncExcLists(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
