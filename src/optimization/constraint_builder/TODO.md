@@ -26,6 +26,27 @@ Feedback:
  - Look into changing right sides
  - Have more options for fine-tuning with variable selection
 
+Todo From Feedback:
+ - [ ] Rework the constraint building process
+	* [ ] One stage to select variables into constraints (no number options)
+	* [ ] Allow for variables on both sides of the sign
+	* [ ] Another step to set inequalities, values, etc
+	* [ ] In this step allow for fine-tuning of constraints
+	* [ ] Use the book example as a ground truth
+ - [ ] Better UX
+	* [ ] It's so not clear what to do when starting
+	* [ ] Add info about # of constraints in a cosntraint group to overview screen
+	* [ ] Make screen prettier
+		- [ ] Start Screen at least
+	* [ ] Split objective file importing into 3 steps, file => seperator => tag groups
+		- [ ] Add explanatory text to obj import
+	* [ ] Tag Naming
+		- [ ] Show errors in individual tagnames even if not all are named
+		- [ ] Error message for naming needs to show up immediately
+ - [ ] Bugs
+	* [ ] Properly csv export for windows machines
+
+
 BUGS:
  - [x] Eq, Le, Ge signs not being rendered correctly	
 

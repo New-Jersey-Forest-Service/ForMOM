@@ -13,8 +13,13 @@ import attrs
 import cattrs
 from enum import Enum, unique, auto
 from typing import Any, List, Dict, Type
+from copy import deepcopy
 
 
+
+
+
+# TODO: Redo a _lot_ of this
 
 
 
@@ -60,7 +65,10 @@ class CompiledConstraint:
 	compare_value: float
 
 
-# TODO: Look into attrs linting to guarantee state is sensible (ex: no spaces in constraint name)
+
+
+
+# TODO: Purge this little yuckling
 @attrs.define
 class StandardConstraintGroup:
 	selected_tags: Dict[str, List[str]]
@@ -68,21 +76,87 @@ class StandardConstraintGroup:
 	constr_prefix: str
 	default_compare: ComparisonSign = ComparisonSign.EQ
 	default_rightside: float = 0
-	default_coef: float = 1
+	defualt_coef: float = 1
 
 	@staticmethod
 	def createEmptyConstraint(varInfo: VarTagsInfo):
 		selected_dict = {}
-		for tagGroup in varInfo.tag_order:
-			selected_dict[tagGroup] = []
-
+		for tag in varInfo.tag_order:
+			selected_dict[tag] = []
+		
 		return StandardConstraintGroup(
-			selected_tags=selected_dict,
-			split_by_groups=[],
-			constr_prefix="empty_group",
-			default_compare=ComparisonSign.EQ,
-			default_rightside=0.0,
-			default_coef=1.0
+			selected_dict, [], "empty_group"
+		)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@attrs.define
+class ConstraintEquation:
+	namePrefix: str
+	nameSuffix: str
+	constant: float
+
+	leftVars: List[List[str]]
+	leftCoefs: List[float]
+	rightVars: List[List[str]]
+	rightCoefs: List[float]
+
+	def getName(self):
+		return self.namePrefix + self.nameSuffix
+
+
+@attrs.define
+class ConstraintGroup:
+	groupName: str
+	equations: List[ConstraintEquation]
+
+	# TODO: These may be unneeded ??
+	# These are meant to go unchanged once the group
+	SPLIT_BY: List[str]
+	DEFAULT_COMPARE: ComparisonSign
+	DEFAULT_LEFT_COEF: float
+	DEFAULT_RIGHT_COEF: float
+
+
+@attrs.define
+class SetupConstraintGroup:
+	namePrefix: str
+	splitBy: List[str]
+	defComp: ComparisonSign
+	defLeftCoef: float
+	defRightCoef: float
+	defConstant: float
+
+	selLeftTags: Dict[str, List[str]]
+	selRightTags: Dict[str, List[str]]
+
+	@staticmethod
+	def createEmptyConstraint(varInfo: VarTagsInfo):
+		selectedTags = {}
+		for tag in varInfo.tag_order:
+			selectedTags[tag] = []
+		
+		return SetupConstraintGroup(
+			namePrefix="unnamed",
+			splitBy=[],
+			defComp=ComparisonSign.EQ,
+			defLeftCoef=1,
+			defRightCoef=1,
+			defConstant=0,
+			selLeftTags=selectedTags,
+			selRightTags=deepcopy(selectedTags)
 		)
 
 
