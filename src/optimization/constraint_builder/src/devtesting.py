@@ -11,14 +11,13 @@ import io_file
 import models
 
 
-def dummyProjectState() -> models.ProjectState:
-
+def dummyOldProjectState() -> models.OLDProjectState:
 	varnamesRaw = io_file.readVarnamesRaw(
 		# './sample_data/minimodel_obj.csv', 
 		'/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/constraint_builder/sample_data/minimodel_obj.csv',
 		)
 
-	varTagsInfo = proc.buildVarTagsInfoObject(
+	varTagsInfo = proc.buildVarDataObject(
 		varnamesRaw,
 		'_', 
 		['for_type', 'year', 'mng']
@@ -36,9 +35,34 @@ def dummyProjectState() -> models.ProjectState:
 		models.StandardConstraintGroup.createEmptyConstraint(varTagsInfo)
 	]
 
-	return models.ProjectState(
+	proc.buildConstraintsFromStandardConstraintGroup(varTagsInfo, constrGroupList[0])
+
+	return models.OLDProjectState(
 		varTags=varTagsInfo,
 		constrGroupList=constrGroupList
+	)
+
+
+
+
+def dummyProjectState() -> models.ProjectState:
+	varnamesRaw = io_file.readVarnamesRaw(
+		# './sample_data/minimodel_obj.csv', 
+		'/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/constraint_builder/sample_data/minimodel_obj.csv',
+		)
+
+	varData = proc.buildVarDataObject(
+		varnamesRaw,
+		'_', 
+		['for_type', 'year', 'mng']
+		)
+
+	# TODO: Actually have some constraints here for testing
+	constrGroupList: List[models.ConstraintGroup] = []
+
+	return models.ProjectState(
+		varData = varData,
+		constraintList = constrGroupList
 	)
 
 

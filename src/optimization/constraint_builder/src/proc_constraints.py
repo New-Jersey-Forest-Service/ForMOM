@@ -67,7 +67,7 @@ def makeTagGroupMembersList (varnamesRaw: List[str], delim: str) -> List[List[st
 	return tagGroupMembers
 
 
-def buildVarTagsInfoObject (varnamesRaw: List[str], delim: str, tagGroupNames: List[str]) -> models.VarTagsInfo:
+def buildVarDataObject (varnamesRaw: List[str], delim: str, tagGroupNames: List[str]) -> models.VarsData:
 	'''
 		DOES NOT LINT. Make sure to call the linting functions before passing into this.
 		With poor data, this will throw an error (or worse, fail silently)
@@ -80,7 +80,7 @@ def buildVarTagsInfoObject (varnamesRaw: List[str], delim: str, tagGroupNames: L
 	for ind, name in enumerate(tagGroupNames):
 		tagGroupsDict[name] = tagGroupMembersList[ind]
 
-	return models.VarTagsInfo(
+	return models.VarsData(
 		delim = delim,
 		tag_order = tagGroupNames,
 		all_vars = [x.split(delim) for x in sortedVarsRaw],
@@ -88,83 +88,89 @@ def buildVarTagsInfoObject (varnamesRaw: List[str], delim: str, tagGroupNames: L
 	)
 
 
-def buildConstraintsFromStandardConstraintGroup (varInfo: models.VarTagsInfo, stdConGroup: models.StandardConstraintGroup) -> List[models.CompiledConstraint]:
-	conDict = {}
-	delim = varInfo.delim
+# I apologize to future me if I ever have to refactor this :(
+def buildConstraintGroup (groupSetup: models.SetupConstraintGroup, varData: models.VarsData) -> models.ConstraintGroup:
+	delim: str = varData.delim
 
-	#	
-	# Generate names of all constraints
-	conNames = []
-	conNameTags = []
+	# Generate all applicable variables
+	allLeftVars: List[List[str]] = []
+	allRightVars: List[List[str]] = []
 
-	# Iterating through varInfo.tag_order guarantees the order is correct
-	for tagGroup in varInfo.tag_order:
-		if tagGroup in stdConGroup.split_by_groups:
-			conNameTags.append(stdConGroup.selected_tags[tagGroup])
+	leftSelAsList = [groupSetup.selLeftTags[k] for k in varData.tag_order]
+	for tags in itertools.product(*leftSelAsList):
+		allLeftVars.append(list(tags))
+
+	rightSelAsList = [groupSetup.selRightTags[k] for k in varData.tag_order]
+	for tags in itertools.product(*rightSelAsList):
+		allRightVars.append(list(tags))
+
+	# Now split them into seperate equations
+	allSelectedVars: List[List[str]] = deepcopy(leftSelAsList)
+	for ind, _ in enumerate(varData.tag_order):
+		for mem in rightSelAsList[ind]:
+			if mem not in allSelectedVars[ind]:
+				allSelectedVars[ind].append(mem)
 	
-	for conTags in itertools.product(*conNameTags):
-		conNames.append(delim.join([stdConGroup.constr_prefix] + list(conTags)))
-	if len(conNames) == 0:
-		conNames = [stdConGroup.constr_prefix]
-	
-	# The names are used as keys in the constraint dictionary, so we
-	# populate the dictionary with empty lists
-	for name in conNames:
-		conDict[name] = []
-	
-	# print(conDict)
-	
-
-	#
-	# Generate the indicies that get split by
-	tagListsByGroup = [] # this is a 2D array
-	for tagGroup in varInfo.tag_order:
-		tagListsByGroup.append(stdConGroup.selected_tags[tagGroup])
-	
-	# TODO: Refactor to avoid needing indToSplitBy
-	indToSplitBy = []
-	for splitByGroup in stdConGroup.split_by_groups:
-		ind = varInfo.tag_order.index(splitByGroup)
-		indToSplitBy.append(ind)
-	indToSplitBy.sort()
-
-
-	#
-	# Generate all potential variables and split into multiple constraints
-	for varTags in itertools.product(*tagListsByGroup):
-		varTags = list(varTags)
-		if not (varTags in varInfo.all_vars):
-			continue
-
-		tagsToSplitBy = []
-		for ind in indToSplitBy:
-			tagsToSplitBy.append(varTags[ind])
-		conName = delim.join([stdConGroup.constr_prefix] + tagsToSplitBy)
-
-		conDict[conName].append(varTags)
-
-	# Check for potential empty constraints & convert to list
-	allKeys = list(conDict.keys())
-	compiledConList = []
-
-	for key in allKeys:
-		numVars = len(conDict[key])
-
-		if numVars == 0:
-			io_cmd.printInfo(f"Found empty constraint {key}")
+	allSelectedSplits: List[List[str]] = []
+	for ind, tagGroup in enumerate(varData.tag_order):
+		if tagGroup in groupSetup.splitBy:
+			allSelectedSplits.append(allSelectedVars[ind])
 		else:
-			compiledConList.append(
-				models.CompiledConstraint(
-					name = key,
-					var_tags = conDict[key],
-					var_coeffs = [stdConGroup.default_coef] * numVars,
-					compare_type = stdConGroup.default_compare,
-					compare_value = stdConGroup.default_rightside
-				)
-			)
-	
-	return compiledConList
+			allSelectedSplits.append([None])
 
+	actuallyAllLeftVars: List[List[str]] = []
+	actuallyAllRightVars: List[List[str]] = []
+	for tags in itertools.product(*leftSelAsList):
+		actuallyAllLeftVars.append(list(tags))
+	for tags in itertools.product(*rightSelAsList):
+		actuallyAllRightVars.append(list(tags))
+
+	eqList: List[models.Equation] = []
+
+	for split in itertools.product(*allSelectedSplits):
+		leftsideVars = []
+		rightsideVars = []
+
+		for x in actuallyAllLeftVars:
+			if all([split[ind] == None or split[ind] == y 
+				for ind, y in enumerate(x)]):
+					leftsideVars.append(x)
+
+		for x in actuallyAllRightVars:
+			if all([split[ind] == None or split[ind] == y
+				for ind, y in enumerate(x)]):
+					rightsideVars.append(x)
+		
+		# Now we can construct the equation
+		suffix = None
+		if all([x == [None] for x in allSelectedSplits]):
+			suffix = ''
+		else:
+			suffix = delim.join(filter(lambda mem: mem, split))
+
+		print(suffix)
+
+		eqList.append(
+			models.Equation(
+				namePrefix=groupSetup.namePrefix,
+				nameSuffix=suffix,
+				constant=groupSetup.defConstant,
+				leftVars=leftsideVars,
+				leftCoefs=[groupSetup.defLeftCoef] * len(leftsideVars),
+				rightVars=rightsideVars,
+				rightCoefs=[groupSetup.defRightCoef] * len(rightsideVars)
+			)
+		)
+
+
+	return models.ConstraintGroup(
+		groupName=groupSetup.namePrefix,
+		equations=eqList,
+		SPLIT_BY=groupSetup.splitBy,
+		DEFAULT_COMPARE=groupSetup.defComp,
+		DEFAULT_LEFT_COEF=groupSetup.defLeftCoef,
+		DEFAULT_RIGHT_COEF=groupSetup.defRightCoef
+	)
 
 
 
@@ -177,24 +183,63 @@ def buildConstraintsFromStandardConstraintGroup (varInfo: models.VarTagsInfo, st
 
 
 if __name__ == '__main__':
+
+	import devtesting
+	devtesting.dummyOldProjectState()
+
+
 	# Input
-	objCSVPath = io_cmd.getCSVFilepath("Objective File: ")
+	# objCSVPath = io_cmd.getCSVFilepath("Objective File: ")
+	objCSVPath = './sample_data/minimodel_obj.csv'
 
 	varnamesRaw = io_file.readVarnamesRaw(objCSVPath)
-	delim = input(f"Sample Var '{varnamesRaw[0]}' | Delimiter: ")
+	# delim = input(f"Sample Var '{varnamesRaw[0]}' | Delimiter: ")
+	delim = '_'
 	errMsg = lint.lintAllVarNamesRaw(varnamesRaw, delim)
 	if errMsg:
 		io_cmd.errorAndExit(errMsg)
 
 	tagMems = makeTagGroupMembersList(varnamesRaw, delim)
-	tagNames = io_cmd.getTagGroupNames(tagMems)
+	# tagNames = io_cmd.getTagGroupNames(tagMems)
+	tagNames = ['for_type', 'year', 'mng']
 	errMsg = lint.lintAllTagGroupNames(tagNames)
 	if errMsg:
 		io_cmd.errorAndExit(errMsg)
 
 	# Processing
-	varInfo = buildVarTagsInfoObject(varnamesRaw, delim, tagNames)
-	print(varInfo)
+	varInfo = buildVarDataObject(varnamesRaw, delim, tagNames)
+
+
+	# Constraint Testing
+	setupConstr = models.SetupConstraintGroup.createEmptySetup(varInfo)
+	setupConstr.splitBy = ['for_type']
+
+	selectedLeft = {
+		'for_type': ['167N', '167S'],
+		'year': ['2030', '2050'],
+		'mng': ['SPB', 'WFNM', 'STQO']
+	}
+
+	selectedRight = {
+		'for_type': ['167N', '409'],
+		'year': ['2021', '2025'],
+		'mng': ['SPB', 'WFNM', 'STQO']
+	}
+
+	setupConstr.selLeftTags = selectedLeft
+	setupConstr.selRightTags = selectedRight
+
+	print(f"Setup: \n{setupConstr}\n")
+
+	# Processing
+	actualConstraint = buildConstraintGroup(setupConstr, varInfo)
+
+	print("\n\n")
+	for eq in actualConstraint.equations:
+		print(eq, end="\n===\n")
+	print(f"Constr: \n{actualConstraint}\n")
+
+
 
 
 

@@ -48,12 +48,26 @@ for cs in ComparisonSign:
 	_compSignMap[cs._value_] = cs
 
 
+
+
 @attrs.frozen
-class VarTagsInfo:
+class VarsData:
 	delim: str
 	tag_order: List[str]
 	all_vars: List[List[str]]
 	tag_members: Dict[str, List[str]]
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @attrs.define
@@ -76,16 +90,29 @@ class StandardConstraintGroup:
 	constr_prefix: str
 	default_compare: ComparisonSign = ComparisonSign.EQ
 	default_rightside: float = 0
-	defualt_coef: float = 1
+	default_coef: float = 1
 
 	@staticmethod
-	def createEmptyConstraint(varInfo: VarTagsInfo):
+	def createEmptyConstraint(varInfo: VarsData):
 		selected_dict = {}
 		for tag in varInfo.tag_order:
 			selected_dict[tag] = []
 		
 		return StandardConstraintGroup(
 			selected_dict, [], "empty_group"
+		)
+
+@attrs.define
+class OLDProjectState:
+	# TODO: Re-evaluate how the data is being split up. It feels a little weird
+	#       for the delimiter to be here. Maybe put it into VarTagsInfo? Maybe into compilation class?
+	varTags: VarsData
+	constrGroupList: List[StandardConstraintGroup]
+
+	@staticmethod
+	def createEmptyprojectState():
+		return OLDProjectState(
+			None, None
 		)
 
 
@@ -102,8 +129,9 @@ class StandardConstraintGroup:
 
 
 
+
 @attrs.define
-class ConstraintEquation:
+class Equation:
 	namePrefix: str
 	nameSuffix: str
 	constant: float
@@ -120,7 +148,7 @@ class ConstraintEquation:
 @attrs.define
 class ConstraintGroup:
 	groupName: str
-	equations: List[ConstraintEquation]
+	equations: List[Equation]
 
 	# TODO: These may be unneeded ??
 	# These are meant to go unchanged once the group
@@ -143,17 +171,17 @@ class SetupConstraintGroup:
 	selRightTags: Dict[str, List[str]]
 
 	@staticmethod
-	def createEmptyConstraint(varInfo: VarTagsInfo):
+	def createEmptySetup(varData: VarsData):
 		selectedTags = {}
-		for tag in varInfo.tag_order:
+		for tag in varData.tag_order:
 			selectedTags[tag] = []
 		
 		return SetupConstraintGroup(
 			namePrefix="unnamed",
 			splitBy=[],
 			defComp=ComparisonSign.EQ,
-			defLeftCoef=1,
-			defRightCoef=1,
+			defLeftCoef=1.0,
+			defRightCoef=1.0,
 			defConstant=0,
 			selLeftTags=selectedTags,
 			selRightTags=deepcopy(selectedTags)
@@ -162,16 +190,15 @@ class SetupConstraintGroup:
 
 @attrs.define
 class ProjectState:
-	# TODO: Re-evaluate how the data is being split up. It feels a little weird
-	#       for the delimiter to be here. Maybe put it into VarTagsInfo? Maybe into compilation class?
-	varTags: VarTagsInfo
-	constrGroupList: List[StandardConstraintGroup]
+	varData: VarsData
+	constraintList: List[ConstraintGroup]
 
-	@staticmethod
-	def createEmptyprojectState():
-		return ProjectState(
-			None, None
-		)
+
+
+
+
+
+
 
 
 
