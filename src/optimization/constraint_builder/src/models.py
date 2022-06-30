@@ -135,6 +135,7 @@ class Equation:
 	namePrefix: str
 	nameSuffix: str
 	constant: float
+	comparison: ComparisonSign
 
 	leftVars: List[List[str]]
 	leftCoefs: List[float]

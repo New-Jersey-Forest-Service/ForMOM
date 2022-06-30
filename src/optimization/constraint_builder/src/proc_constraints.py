@@ -140,28 +140,30 @@ def buildConstraintGroup (groupSetup: models.SetupConstraintGroup, varData: mode
 			if all([split[ind] == None or split[ind] == y
 				for ind, y in enumerate(x)]):
 					rightsideVars.append(x)
+
+		# Check if it's an empty constraint
+		if len(leftsideVars) == 0 and len(rightsideVars) == 0:
+			continue
 		
 		# Now we can construct the equation
 		suffix = None
 		if all([x == [None] for x in allSelectedSplits]):
 			suffix = ''
 		else:
-			suffix = delim.join(filter(lambda mem: mem, split))
-
-		print(suffix)
+			suffix = delim.join(filter(lambda mem: mem != None, split))
 
 		eqList.append(
 			models.Equation(
 				namePrefix=groupSetup.namePrefix,
 				nameSuffix=suffix,
 				constant=groupSetup.defConstant,
+				comparison=groupSetup.defComp,
 				leftVars=leftsideVars,
 				leftCoefs=[groupSetup.defLeftCoef] * len(leftsideVars),
 				rightVars=rightsideVars,
 				rightCoefs=[groupSetup.defRightCoef] * len(rightsideVars)
 			)
 		)
-
 
 	return models.ConstraintGroup(
 		groupName=groupSetup.namePrefix,
