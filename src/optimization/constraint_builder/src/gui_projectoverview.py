@@ -8,6 +8,7 @@ import tkinter as tk
 from typing import List
 
 import proc_constraints as proc
+import proc_render as render
 import gui_variablefiltering
 import models
 from gui_consts import *
@@ -127,19 +128,29 @@ def redrawConstrListFrame (constrGroupList: List[models.SetupConstraintGroup]) -
 	for child in _frmConstrsDisplay.winfo_children():
 		child.destroy()
 
+	CONSTRS_PER_ROW = 3
+	_frmConstrsDisplay.columnconfigure([x for x in range(CONSTRS_PER_ROW)], weight=1)
+
 	for ind, constrGroup in enumerate(constrGroupList):
 		frmConstr = tk.Frame(_frmConstrsDisplay, relief=tk.RIDGE, bd=2)
-		frmConstr.grid(row=ind, column=0, sticky="ew", pady=(0, 10))
+		frmConstr.grid(
+			row=ind//CONSTRS_PER_ROW, 
+			column=ind%CONSTRS_PER_ROW, 
+			sticky="ew", 
+			pady=(0, 10),
+			padx=5
+			)
 		frmConstr.columnconfigure(1, weight=1)
 		
-		lblName = tk.Label(frmConstr, text=constrGroup.namePrefix)
-		lblName.grid(row=0, column=0, sticky="w")
+		name = render.trimEllipsisRight(constrGroup.namePrefix, WIDTH_BIG)
+		lblName = tk.Label(frmConstr, text=name)
+		lblName.grid(row=0, column=0, sticky="w", padx=10, pady=5)
 
 		btnDelete = tk.Button(frmConstr, text="Delete", command=lambda ind=ind: updateDeleteConstrGroup(ind))
-		btnDelete.grid(row=0, column=1, sticky="e")
+		btnDelete.grid(row=0, column=1, sticky="e", padx=5, pady=5)
 
 		btnEdit = tk.Button(frmConstr, text="Edit >", command=lambda ind=ind: transitionToEditing(ind))
-		btnEdit.grid(row=0, column=2, sticky="e")
+		btnEdit.grid(row=0, column=2, sticky="e", padx=5, pady=5)
 
 
 
@@ -204,7 +215,7 @@ def buildConstraintButtonFrame(root: tk.Tk) -> tk.Frame:
 	frmNewConstrBtn.columnconfigure(0, weight=1)
 
 	btnNew = tk.Button(frmNewConstrBtn, text="New Constraint Group", anchor="center", command=updateNewConstrGroup)
-	btnNew.grid(row=0, column=0, sticky="ew")
+	btnNew.grid(row=0, column=0)
 
 	return frmNewConstrBtn
 
@@ -217,7 +228,7 @@ def buildExportButtonsFrame(root: tk.Tk) -> tk.Frame:
 	btnSaveProj.grid(row=0, column=0, sticky="e")
 
 	btnExportProj = tk.Button(frmExport, text="Export to .csv", command=updateExportCSV)
-	btnExportProj.grid(row=0, column=1, sticky="e")
+	btnExportProj.grid(row=0, column=1, sticky="e", padx=10, pady=10)
 
 	return frmExport
 
