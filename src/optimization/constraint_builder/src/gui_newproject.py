@@ -25,6 +25,7 @@ _cbbDelimSelector: ttk.Combobox = None
 
 _frmNameGroups: tk.Frame = None
 _lblVerifyNames: tk.Label = None
+_lblTopofTagNaming: tk.Label = None
 
 _nameEntVarList: List[tk.StringVar] = None
 
@@ -67,6 +68,7 @@ def updateNewObjFile() -> None:
 		_objFileStr = newPath
 
 	processParseFile()
+	updateGroupName()
 	multiRedrawFileUpdate()
 
 
@@ -149,7 +151,7 @@ def multiRedrawFileUpdate() -> None:
 	global _objFileStr, _objSampleVar, _tagLists, _groupnameList
 
 	# Exclusively for file update
-	redrawFilestr(_objFileStr)
+	redrawFileStr(_objFileStr)
 	redrawSamplevar(_objSampleVar)
 	redrawNamingFrame(_tagLists)
 
@@ -162,7 +164,7 @@ def multiRedrawNameUpdate() -> None:
 	redrawNamingStatus(_groupnameList)
 
 
-def redrawFilestr(objFileStr: str) -> None:
+def redrawFileStr(objFileStr: str) -> None:
 	'''
 		Updates the label for the file path string
 	'''
@@ -190,6 +192,7 @@ def redrawNamingFrame(tagLists: List[List[str]]) -> None:
 	'''
 	global _frmNameGroups, _nameEntVarList
 
+	_lblTopofTagNaming['text'] = ''
 	if _nameEntVarList == None:
 		_nameEntVarList = []
 
@@ -203,6 +206,8 @@ def redrawNamingFrame(tagLists: List[List[str]]) -> None:
 		lblMessage = tk.Label(_frmNameGroups, text="Select a file", anchor="center")
 		lblMessage.grid(row=0, column=0, columnspan=2, sticky="nsew")
 	else:
+		_lblTopofTagNaming['text'] = 'Name the Tag Groups'
+
 		if len(_nameEntVarList) > len(tagLists):
 			_nameEntVarList = _nameEntVarList[:len(tagLists)]
 		_nameEntVarList = _nameEntVarList + \
@@ -228,6 +233,9 @@ def redrawNamingFrame(tagLists: List[List[str]]) -> None:
 
 def redrawNamingStatus(inputNames: List[str]) -> None:
 	global _lblVerifyNames, _errWithNamesList, _errWithObjFile
+
+	print(f" > Redrawing Naming status: {_errWithObjFile}")
+	print(f" > {inputNames}")
 
 	if inputNames == None or _errWithObjFile != None:
 		_lblVerifyNames['text'] = ''
@@ -274,10 +282,10 @@ def buildGUI_ObjImport(root: tk.Tk, projectState: models.ProjectState):
 	multiRedrawFileUpdate()
 
 
-def buildFileParseFrame(root: tk.Tk) -> tk.Frame:
+def buildFileParseFrame(root: tk.Tk) -> ttk.LabelFrame:
 	global _lblObjFile, _lblLoadedSampleVar, _cbbDelimSelector
 
-	frmFileParseSetup = tk.Frame(root, relief=tk.RAISED, bd=2)
+	frmFileParseSetup = ttk.LabelFrame(root, relief=tk.RAISED, borderwidth=2, text="File Importing")
 
 	btnObjFile = tk.Button(
 		frmFileParseSetup, text="Objective .csv", command=updateNewObjFile)
@@ -293,39 +301,41 @@ def buildFileParseFrame(root: tk.Tk) -> tk.Frame:
 	lblSampleVar.grid(row=1, column=0, sticky="nse", padx=5, pady=5)
 	_lblLoadedSampleVar.grid(row=1, column=1, sticky="nsw", padx=5, pady=5)
 
-	lblDelim = tk.Label(frmFileParseSetup, text="Delimiter:")
+	lblDelim = tk.Label(frmFileParseSetup, text="Separator:")
 	# TODO: Pull delimiters from program config
 	_cbbDelimSelector = ttk.Combobox(frmFileParseSetup, values=('_', '-', '='))
 	_cbbDelimSelector['state'] = 'readonly'
 	lblDelim.grid(row=2, column=0, sticky="nse", padx=5, pady=5)
-	_cbbDelimSelector.grid(row=2, column=1, sticky="nsw", padx=5, pady=5)
+	_cbbDelimSelector.grid(row=2, column=1, sticky="nsw", padx=5, pady=10)
 
 	_cbbDelimSelector.bind("<<ComboboxSelected>>", lambda evnt: updateNewDelim())
 
 	return frmFileParseSetup
 
 
-def buildGroupNaming(root: tk.Tk) -> tk.Frame:
-	global _frmNameGroups, _lblVerifyNames
+def buildGroupNaming(root: tk.Tk) -> ttk.LabelFrame:
+	global _frmNameGroups, _lblVerifyNames, _lblTopofTagNaming
 
-	frmNameAndVerify = tk.Frame(root, relief=tk.SUNKEN, bd=2)
-	frmNameAndVerify.grid(row=2, column=0, padx=10, pady=(0, 10), sticky="nsew")
+	frmNameAndVerify = ttk.LabelFrame(root, relief=tk.RAISED, borderwidth=2, text="Variable Tags")
 	frmNameAndVerify.columnconfigure(0, weight=1)
+
+	_lblTopofTagNaming = tk.Label(frmNameAndVerify, text="", anchor="center")
+	_lblTopofTagNaming.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+	# lblExplainer = tk.Label(frmNameAndVerify, text="Name the variable tag groups", anchor="w")
+	# lblExplainer.grid(row=0, column=0, padx=10, pady=10)
 
 	# frmNameGroups is populated by the redraw methods
 	_frmNameGroups = tk.Frame(frmNameAndVerify)
-	_frmNameGroups.grid(row=0, column=0, columnspan=2, pady=10)
+	_frmNameGroups.grid(row=1, column=0, columnspan=2, pady=10)
 	_frmNameGroups.columnconfigure([0, 1], weight=1)
 
 	lblNamesCol = tk.Label(_frmNameGroups, text="Name", anchor="center")
-	lblExampleMemsCol = tk.Label(
-		_frmNameGroups, text="Example Members", anchor="center")
+	lblExampleMemsCol = tk.Label(_frmNameGroups, text="Example Members", anchor="center")
 	lblNamesCol.grid(row=0, column=0)
 	lblExampleMemsCol.grid(row=0, column=1)
 
-	_lblVerifyNames = tk.Label(
-		frmNameAndVerify, text="Fill in group names", anchor="center")
-	_lblVerifyNames.grid(row=2, column=0, padx=4, pady=5)
+	_lblVerifyNames = tk.Label(frmNameAndVerify, text="Fill in group names", anchor="center")
+	_lblVerifyNames.grid(row=2, column=0, padx=4, pady=(0, 15))
 
 	return frmNameAndVerify
 

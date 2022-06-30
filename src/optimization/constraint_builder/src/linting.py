@@ -79,6 +79,10 @@ def lintAllTagGroupNames (listTagNames: List[str]) -> str:
 	'''
 	Checks a list of tag names instead of a single one (like lintTagGroupName)
 	'''
+	# [[ Check ]] There are at least some names
+	if len(listTagNames) == 0:
+		return f'No groups are named'
+
 	# [[ Check ]] All variable named
 	for ind, name in enumerate(listTagNames):
 		if name == None or name == '':
