@@ -108,7 +108,7 @@ def readVarnamesRaw (objCSVPath: Path, numVars=-1) -> List[str]:
 
 # TODO: Yea it feels messy having this in here :/
 
-def writeToCSV (filepath: str, projState: models.ProjectState):
+def writeToCSV (filepath: str, projState: models.OLDProjectState):
 	with open(filepath, 'w') as outFile:
 		writer = csv.writer(outFile, delimiter=',', quotechar='"')
 		

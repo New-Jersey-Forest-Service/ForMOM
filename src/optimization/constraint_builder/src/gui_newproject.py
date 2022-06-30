@@ -47,7 +47,7 @@ _varNamesRaw: List[str] = None
 _tagLists: List[List[str]] = None
 
 _passedRoot: tk.Tk = None
-_passedProjectState: models.ProjectState = None
+_passedProjectState: models.OLDProjectState = None
 
 
 
@@ -130,7 +130,7 @@ def transitionToOverview() -> None:
 	global _passedRoot, _passedProjectState
 
 	# Write Data
-	_passedProjectState.varTags = proc.buildVarTagsInfoObject(_varNamesRaw, _delimiter, _groupnameList)
+	_passedProjectState.varTags = proc.buildVarDataObject(_varNamesRaw, _delimiter, _groupnameList)
 	_passedProjectState.constrGroupList = []
 
 	# Clear Root
@@ -244,7 +244,7 @@ def redrawNamingStatus(inputNames: List[str]) -> None:
 # Main GUI Construction
 #
 
-def buildGUI_ObjImport(root: tk.Tk, projectState: models.ProjectState):
+def buildGUI_ObjImport(root: tk.Tk, projectState: models.OLDProjectState):
 	global _btnNextStage, _passedRoot, _passedProjectState
 
 	# Reading in references
@@ -331,7 +331,7 @@ def buildGroupNaming(root: tk.Tk) -> tk.Frame:
 
 
 if __name__ == '__main__':
-	projState = devtesting.dummyProjectState()
+	projState = devtesting.dummyOldProjectState()
 	root = tk.Tk()
 	buildGUI_ObjImport(root, projState)
 	root.mainloop()

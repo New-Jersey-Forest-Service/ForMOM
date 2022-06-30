@@ -93,7 +93,7 @@ So
 
 
 
-## [ ] Renamed Dataclasses
+## [x] Renamed Dataclasses
 
 ```python
 # What's needed to parse an objective file
@@ -133,7 +133,7 @@ varInfo = buildVarInfo(objFile, delim, tagNames)
 
 
 
-## [~] Better Folder Structure
+## [x] Better Folder Structure
 
 - [x] Create better folders:
 launchcmd.py
@@ -155,6 +155,33 @@ processor/
  > constraintprocessor
 
 - [ ] Actually populate files
+
+
+
+
+
+
+## [ ] Re-Stitch the Program (goal for today)
+[ ] Remove old dataclasses
+[ ] Transitions
+
+
+
+## [ ] Constraint Tuning
+[ ] Build the skeleton
+
+
+
+## [ ] Variable Filtering (Constraint Screen 2.0)
+Updates:
+ - [ ] updateGeneralConstrInfo
+ - [ ] updateMoveTags
+
+Redraws:
+ - [ ] General Info Frame
+ - [ ] IncExcLists
+ - [ ] Preview Window
+ - [ ] continueButton
 
 
 

@@ -40,7 +40,7 @@ _constrGroup: models.StandardConstraintGroup = None
 
 _errWithGeneralInfo: str = None
 
-_passedProjectState: models.ProjectState = None
+_passedProjectState: models.OLDProjectState = None
 _passedRoot: tk.Tk = None
 _passedConstrInd: int = 0
 
@@ -174,14 +174,14 @@ def transitionToOverview() -> None:
 # Redraw Calls
 #
 
-def redrawForSetup(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
+def redrawForSetup(varTags: models.VarsData, constr: models.StandardConstraintGroup) -> None:
 	redrawStandardInfo(constr)
 	redrawSplitByGroups(constr)
 
 	redrawForUpdate(varTags, constr)
 
 
-def redrawForUpdate(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
+def redrawForUpdate(varTags: models.VarsData, constr: models.StandardConstraintGroup) -> None:
 	redrawIncExcLists(varTags, constr)
 	redrawPreviewConstraints(varTags, constr)
 	redrawExitButton()
@@ -214,7 +214,7 @@ def redrawSplitByGroups(constr: models.StandardConstraintGroup) -> None:
 	# TODO: Also set the splitbys outside the group to 0 ?
 
 
-def redrawPreviewConstraints(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
+def redrawPreviewConstraints(varTags: models.VarsData, constr: models.StandardConstraintGroup) -> None:
 	global _txtConstPreview
 
 	constrStr = None
@@ -225,7 +225,7 @@ def redrawPreviewConstraints(varTags: models.VarTagsInfo, constr: models.Standar
 		allConstrs = proc.buildConstraintsFromStandardConstraintGroup(varTags, constr)
 
 		if len(allConstrs) > 0:
-			constrStr = render.renderMultipleCompiledConstraints(
+			constrStr = render.renderMultipleCompiledConstraintsOLD(
 				constrList=allConstrs, 
 				delim=varTags.delim, 
 				charWidth=150
@@ -239,7 +239,7 @@ def redrawPreviewConstraints(varTags: models.VarTagsInfo, constr: models.Standar
 	_txtConstPreview.insert("1.0", constrStr)
 
 
-def redrawIncExcLists(varTags: models.VarTagsInfo, constr: models.StandardConstraintGroup) -> None:
+def redrawIncExcLists(varTags: models.VarsData, constr: models.StandardConstraintGroup) -> None:
 	includedTags = constr.selected_tags
 	excludedTags = copy.deepcopy(varTags.tag_members)
 
@@ -273,7 +273,7 @@ def redrawExitButton() -> None:
 # Main GUI Construction
 #
 
-def buildGUI_ConstraintBuilder(root: tk.Tk, projectState: models.ProjectState, constrInd: int):
+def buildGUI_ConstraintBuilder(root: tk.Tk, projectState: models.OLDProjectState, constrInd: int):
 	global _varTagsInfo, _constrGroup, _passedRoot, _passedProjectState, _passedConstrInd, _btnBackToOverview
 
 	_varTagsInfo = projectState.varTags
@@ -316,6 +316,8 @@ def buildGUI_ConstraintBuilder(root: tk.Tk, projectState: models.ProjectState, c
 
 	_btnBackToOverview = tk.Button(frmExportOptions, text="< Back to Overview", anchor="center", command=transitionToOverview)
 	_btnBackToOverview.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+
+
 
 
 	print("\n === Now at Standard Constraint Overview === \n")
@@ -364,7 +366,7 @@ def buildGeneralConstraintFrame(root: tk.Tk) -> tk.Frame:
 	return frmGenConInfo
 
 
-def buildVarSelectingFrame(root: tk.Tk, varTagsInfo: models.VarTagsInfo) -> tk.Frame:
+def buildVarSelectingFrame(root: tk.Tk, varTagsInfo: models.VarsData) -> tk.Frame:
 	global _incVarDict, _excVarDict, _incLsbDict, _excLsbDict
 	TAG_GROUPS_PER_ROW = 3
 
@@ -392,11 +394,11 @@ def buildVarSelectingFrame(root: tk.Tk, varTagsInfo: models.VarTagsInfo) -> tk.F
 		lblTagGroup.grid(row=0, column=0, columnspan=2)
 
 		# Excluded
-		lblExcluded = tk.Label(frmTagSel, text=f"Excluded {tagGroup}")
+		lblExcluded = tk.Label(frmTagSel, text=f"Excluded")
 		lblExcluded.grid(row=1, column=0, padx=10)
 
 		exListVar = tk.StringVar(value=[]) # Empty Lists for skeleton building
-		lsbExcluded = tk.Listbox(frmTagSel, listvariable=exListVar, width=WIDTH_MED)
+		lsbExcluded = tk.Listbox(frmTagSel, listvariable=exListVar, width=WIDTH_SML)
 		lsbExcluded['selectmode'] = 'extended'
 		lsbExcluded.grid(row=2, column=0, padx=10)
 
@@ -416,11 +418,11 @@ def buildVarSelectingFrame(root: tk.Tk, varTagsInfo: models.VarTagsInfo) -> tk.F
 		btnExTransfer.grid(row=0, column=1, sticky="e")
 
 		# Included
-		lblIncluded = tk.Label(frmTagSel, text=f"Included {tagGroup}")
+		lblIncluded = tk.Label(frmTagSel, text=f"Included")
 		lblIncluded.grid(row=1, column=1, padx=10)
 
 		incListVar = tk.StringVar(value=[])
-		lsbIncluded = tk.Listbox(frmTagSel, listvariable=incListVar, width=WIDTH_MED)
+		lsbIncluded = tk.Listbox(frmTagSel, listvariable=incListVar, width=WIDTH_SML)
 		lsbIncluded['selectmode'] = 'extended'
 		lsbIncluded.grid(row=2, column=1, padx=10)
 
@@ -450,7 +452,7 @@ def buildVarSelectingFrame(root: tk.Tk, varTagsInfo: models.VarTagsInfo) -> tk.F
 	return frmVariableSelecting
 
 
-def buildSplitByFrame(root, varTagsInfo: models.VarTagsInfo) -> tk.Frame:
+def buildSplitByFrame(root, varTagsInfo: models.VarsData) -> tk.Frame:
 	global _splitVarDict
 
 	_splitVarDict = {}
@@ -493,7 +495,7 @@ def buildConstrPreviewFrame(root) -> tk.Frame:
 
 
 if __name__ == '__main__':
-	projState = devtesting.dummyProjectState()
+	projState = devtesting.dummyOldProjectState()
 
 	root = tk.Tk()
 	buildGUI_ConstraintBuilder(root, projState, 0)

@@ -15,7 +15,7 @@ import models
 def main():
 	print("Hi")
 	# Very important to instantiate the object so it can be passed arround
-	projectState = models.ProjectState.createEmptyprojectState()
+	projectState = models.OLDProjectState.createEmptyprojectState()
 
 	root = tk.Tk()
 	root.minsize(width=400, height=400)

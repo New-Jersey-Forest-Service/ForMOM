@@ -21,7 +21,7 @@ _frmConstrsDisplay: tk.Frame = None
 # State Variables
 _constrGroupList: List[models.StandardConstraintGroup] = None
 
-_passedProjectState: models.ProjectState = None
+_passedProjectState: models.OLDProjectState = None
 _passedRoot: tk.Tk = None
 
 
@@ -65,7 +65,7 @@ def updateSaveProject () -> None:
 	if outputFilepathStr == None:
 		return
 
-	projectDataStr = models.toOutputStr(_passedProjectState, models.ProjectState)
+	projectDataStr = models.toOutputStr(_passedProjectState, models.OLDProjectState)
 	with open(outputFilepathStr, 'w') as outFile:
 		outFile.write(projectDataStr)
 
@@ -158,7 +158,7 @@ def redrawConstrListFrame (constrGroupList: List[models.StandardConstraintGroup]
 # Main GUI Construction
 #
 
-def buildGUI_ProjectOverview(root: tk.Tk, projectState: models.ProjectState) -> None:
+def buildGUI_ProjectOverview(root: tk.Tk, projectState: models.OLDProjectState) -> None:
 	global _constrGroupList, _passedRoot, _passedProjectState
 
 	_passedProjectState = projectState
@@ -226,7 +226,7 @@ def buildExportButtonsFrame(root: tk.Tk) -> tk.Frame:
 
 
 if __name__ == '__main__':
-	projState = devtesting.dummyProjectState()
+	projState = devtesting.dummyOldProjectState()
 
 	root = tk.Tk()
 	buildGUI_ProjectOverview(root, projState)
