@@ -5,8 +5,6 @@ This file launches the program
 '''
 
 import tkinter as tk
-from enum import Enum, auto, unique
-from typing import Dict, List
 
 import gui_mainmenu
 import models
@@ -15,7 +13,7 @@ import models
 def main():
 	print("Hi")
 	# Very important to instantiate the object so it can be passed arround
-	projectState = models.OLDProjectState.createEmptyprojectState()
+	projectState = models.ProjectState.createEmptyProjectState()
 
 	root = tk.Tk()
 	root.minsize(width=400, height=400)

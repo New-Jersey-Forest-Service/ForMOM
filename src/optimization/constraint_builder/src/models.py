@@ -70,56 +70,6 @@ class VarsData:
 
 
 
-@attrs.define
-class CompiledConstraint:
-	name: str
-	var_tags: List[List[str]]
-	var_coeffs: List[float]
-	compare_type: ComparisonSign
-	compare_value: float
-
-
-
-
-
-# TODO: Purge this little yuckling
-@attrs.define
-class StandardConstraintGroup:
-	selected_tags: Dict[str, List[str]]
-	split_by_groups: List[str]
-	constr_prefix: str
-	default_compare: ComparisonSign = ComparisonSign.EQ
-	default_rightside: float = 0
-	default_coef: float = 1
-
-	@staticmethod
-	def createEmptyConstraint(varInfo: VarsData):
-		selected_dict = {}
-		for tag in varInfo.tag_order:
-			selected_dict[tag] = []
-		
-		return StandardConstraintGroup(
-			selected_dict, [], "empty_group"
-		)
-
-@attrs.define
-class OLDProjectState:
-	# TODO: Re-evaluate how the data is being split up. It feels a little weird
-	#       for the delimiter to be here. Maybe put it into VarTagsInfo? Maybe into compilation class?
-	varTags: VarsData
-	constrGroupList: List[StandardConstraintGroup]
-
-	@staticmethod
-	def createEmptyprojectState():
-		return OLDProjectState(
-			None, None
-		)
-
-
-
-
-
-
 
 
 
@@ -192,7 +142,15 @@ class SetupConstraintGroup:
 @attrs.define
 class ProjectState:
 	varData: VarsData
-	constraintList: List[ConstraintGroup]
+	# constraintList: List[ConstraintGroup]
+	# TODO: Remove this \/
+	setupList: List[SetupConstraintGroup]
+
+	@staticmethod
+	def createEmptyProjectState ():
+		return ProjectState(
+			None, None
+		)
 
 
 

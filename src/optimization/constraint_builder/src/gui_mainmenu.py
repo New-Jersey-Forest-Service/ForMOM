@@ -12,7 +12,7 @@ import io_file
 import models
 from gui_consts import *
 
-_passedProjectState: models.OLDProjectState = None
+_passedProjectState: models.ProjectState = None
 _passedRoot: tk.Tk = None
 
 
@@ -25,7 +25,7 @@ _passedRoot: tk.Tk = None
 def updateNewProj():
 	global _passedProjectState
 
-	_passedProjectState = models.OLDProjectState.createEmptyprojectState()
+	_passedProjectState = models.ProjectState.createEmptyProjectState()
 
 	transitionToObjImport()
 
@@ -33,7 +33,7 @@ def updateNewProj():
 def updateLoadProj():
 	global _passedProjectState
 
-	projFilepath: str = io_file.getOpenFilepath()
+	projFilepath: str = io_file.getOpenFilepath(PROJ_FILES)
 	
 	fileData = None
 	with open(projFilepath, 'r') as file:
@@ -41,8 +41,8 @@ def updateLoadProj():
 	if fileData == None:
 		return
 	
-	newProjState = models.fromOutputStr(fileData, models.OLDProjectState)
-	if not isinstance(newProjState, models.OLDProjectState):
+	newProjState = models.fromOutputStr(fileData, models.ProjectState)
+	if not isinstance(newProjState, models.ProjectState):
 		return
 
 	_passedProjectState = newProjState
@@ -86,7 +86,7 @@ def transitionToOverview() -> None:
 # Main GUI Construction
 #
 
-def buildGUI_OpeningScreen(root: tk.Tk, projectState: models.OLDProjectState):
+def buildGUI_OpeningScreen(root: tk.Tk, projectState: models.ProjectState):
 	global _passedProjectState, _passedRoot
 
 	_passedProjectState = projectState
@@ -114,7 +114,7 @@ def buildGUI_OpeningScreen(root: tk.Tk, projectState: models.OLDProjectState):
 
 
 if __name__ == '__main__':
-	projectState = models.OLDProjectState(None, None)
+	projectState = models.ProjectState.createEmptyProjectState()
 
 	root = tk.Tk()
 	buildGUI_OpeningScreen(root, projectState)

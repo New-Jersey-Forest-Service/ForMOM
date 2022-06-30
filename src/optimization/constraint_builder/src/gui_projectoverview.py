@@ -8,7 +8,7 @@ import tkinter as tk
 from typing import List
 
 import proc_constraints as proc
-import gui_standardconstraint
+import gui_variablefiltering
 import models
 from gui_consts import *
 import devtesting
@@ -19,9 +19,9 @@ _frmConstrsDisplay: tk.Frame = None
 
 
 # State Variables
-_constrGroupList: List[models.StandardConstraintGroup] = None
+_constrGroupList: List[models.SetupConstraintGroup] = None
 
-_passedProjectState: models.OLDProjectState = None
+_passedProjectState: models.ProjectState = None
 _passedRoot: tk.Tk = None
 
 
@@ -41,7 +41,7 @@ _passedRoot: tk.Tk = None
 
 def updateDeleteConstrGroup (constrInd: int) -> None:
 	global _constrGroupList
-	print(f"Deleteting {_constrGroupList[constrInd].constr_prefix}")
+	print(f"Deleteting {_constrGroupList[constrInd].namePrefix}")
 
 	_constrGroupList.pop(constrInd)
 
@@ -52,7 +52,7 @@ def updateNewConstrGroup () -> None:
 	global _constrGroupList
 	print(f"Adding a new constraint")
 
-	_constrGroupList.append(models.StandardConstraintGroup.createEmptyConstraint(_passedProjectState.varTags))
+	_constrGroupList.append(models.SetupConstraintGroup.createEmptySetup(_passedProjectState.varData))
 
 	redrawConstrListFrame(_constrGroupList)
 
@@ -65,7 +65,7 @@ def updateSaveProject () -> None:
 	if outputFilepathStr == None:
 		return
 
-	projectDataStr = models.toOutputStr(_passedProjectState, models.OLDProjectState)
+	projectDataStr = models.toOutputStr(_passedProjectState, models.ProjectState)
 	with open(outputFilepathStr, 'w') as outFile:
 		outFile.write(projectDataStr)
 
@@ -95,14 +95,14 @@ def updateExportCSV () -> None:
 
 def transitionToEditing (constrInd: int) -> None:
 	global _constrGroupList, _passedProjectState, _passedRoot
-	print(f"Editing {_constrGroupList[constrInd].constr_prefix}")
+	print(f"Editing {_constrGroupList[constrInd].namePrefix}")
 
-	_passedProjectState.constrGroupList = _constrGroupList
+	_passedProjectState.setupList = _constrGroupList
 
 	for child in _passedRoot.winfo_children():
 		child.destroy()
 
-	gui_standardconstraint.buildGUI_ConstraintBuilder(_passedRoot, _passedProjectState, constrInd)
+	gui_variablefiltering.buildGUI_VariableFiltering(_passedRoot, _passedProjectState, constrInd)
 
 
 
@@ -121,7 +121,7 @@ def transitionToEditing (constrInd: int) -> None:
 # Redraw Calls
 #
 
-def redrawConstrListFrame (constrGroupList: List[models.StandardConstraintGroup]) -> None:
+def redrawConstrListFrame (constrGroupList: List[models.SetupConstraintGroup]) -> None:
 	global _frmConstrsDisplay
 
 	for child in _frmConstrsDisplay.winfo_children():
@@ -132,7 +132,7 @@ def redrawConstrListFrame (constrGroupList: List[models.StandardConstraintGroup]
 		frmConstr.grid(row=ind, column=0, sticky="ew", pady=(0, 10))
 		frmConstr.columnconfigure(1, weight=1)
 		
-		lblName = tk.Label(frmConstr, text=constrGroup.constr_prefix)
+		lblName = tk.Label(frmConstr, text=constrGroup.namePrefix)
 		lblName.grid(row=0, column=0, sticky="w")
 
 		btnDelete = tk.Button(frmConstr, text="Delete", command=lambda ind=ind: updateDeleteConstrGroup(ind))
@@ -158,12 +158,12 @@ def redrawConstrListFrame (constrGroupList: List[models.StandardConstraintGroup]
 # Main GUI Construction
 #
 
-def buildGUI_ProjectOverview(root: tk.Tk, projectState: models.OLDProjectState) -> None:
+def buildGUI_ProjectOverview(root: tk.Tk, projectState: models.ProjectState) -> None:
 	global _constrGroupList, _passedRoot, _passedProjectState
 
 	_passedProjectState = projectState
 	_passedRoot = root
-	_constrGroupList = projectState.constrGroupList
+	_constrGroupList = projectState.setupList
 
 	root.title("Constraint Builder - Stage 3: Constraints Overview")
 	root.rowconfigure(1, weight=1)
@@ -226,7 +226,7 @@ def buildExportButtonsFrame(root: tk.Tk) -> tk.Frame:
 
 
 if __name__ == '__main__':
-	projState = devtesting.dummyOldProjectState()
+	projState = devtesting.dummyProjectState()
 
 	root = tk.Tk()
 	buildGUI_ProjectOverview(root, projState)

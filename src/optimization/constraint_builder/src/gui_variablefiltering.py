@@ -57,6 +57,7 @@ _errWithGeneralInfo: str = None
 
 _passedProjectState: models.ProjectState = None
 _passedRoot: tk.Tk = None
+_passedConstrInd: int = -1
 
 
 
@@ -272,8 +273,24 @@ def redrawContinueButton ():
 # Transitions
 #
 
+# TODO
 def transitionToFineTune ():
 	return
+
+
+def transitionToOverview ():
+	global _passedRoot, _passedProjectState
+	print("Going to overview")
+
+	# Update State
+	_passedProjectState.setupList[_passedConstrInd] = _constrGroupSetup
+
+	# Clear Root
+	for child in _passedRoot.winfo_children():
+		child.destroy()
+
+	# Transition
+	gui_projectoverview.buildGUI_ProjectOverview(_passedRoot, _passedProjectState)
 
 
 
@@ -281,14 +298,15 @@ def transitionToFineTune ():
 # GUI Constructions
 #
 
-def buildGUI_VariableFiltering(root: tk.Tk, projState: models.ProjectState):
-	global _passedRoot, _passedProjectState, _btnContinue, _varData, _constrGroupSetup, LSB_LOOKUP
-
-	_varData = projState.varData
-	_constrGroupSetup = models.SetupConstraintGroup.createEmptySetup(_varData)
+def buildGUI_VariableFiltering(root: tk.Tk, projState: models.ProjectState, constrInd: int):
+	global _passedRoot, _passedProjectState, _passedConstrInd, _btnContinue, _varData, _constrGroupSetup, LSB_LOOKUP
 
 	_passedRoot = root
 	_passedProjectState = projState
+	_passedConstrInd = constrInd
+
+	_varData = projState.varData
+	_constrGroupSetup = projState.setupList[constrInd]
 
 	root.title("Constraint Builder - New Constraint: Variable Filtering")
 	root.rowconfigure([3,5], weight=1)
@@ -316,8 +334,8 @@ def buildGUI_VariableFiltering(root: tk.Tk, projState: models.ProjectState):
 	frmExportOptions.rowconfigure(0, weight=1)
 	frmExportOptions.columnconfigure(0, weight=1)
 
-	_btnContinue = tk.Button(frmExportOptions, text="Fine Tune >", anchor="center", command=transitionToFineTune)
-	_btnContinue.grid(row=0, column=0, padx=10, pady=10, sticky="e")
+	_btnContinue = tk.Button(frmExportOptions, text="< Overview", anchor="center", command=transitionToOverview)
+	_btnContinue.grid(row=0, column=0, padx=10, pady=10, sticky="w")
 
 
 	# Important for State
@@ -630,6 +648,6 @@ if __name__ == '__main__':
 	projState = devtesting.dummyProjectState()
 
 	root = tk.Tk()
-	buildGUI_VariableFiltering(root, projState)
+	buildGUI_VariableFiltering(root, projState, 0)
 	root.mainloop()
 
