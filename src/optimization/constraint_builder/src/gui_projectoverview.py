@@ -165,12 +165,12 @@ def buildGUI_ProjectOverview(root: tk.Tk, projectState: models.ProjectState) -> 
 	_passedRoot = root
 	_constrGroupList = projectState.setupList
 
-	root.title("Constraint Builder - Stage 3: Constraints Overview")
+	root.title("Constraint Builder - Project Overview")
 	root.rowconfigure(1, weight=1)
 	root.columnconfigure(0, weight=1)
 
 	# Header text
-	lblHeader = tk.Label(root, text="Stage 3 - Constraints Overview")
+	lblHeader = tk.Label(root, text="Project Overview")
 	lblHeader.grid(row=0, column=0, padx=10, pady=(10, 0))
 
 	# Constraint Groups Display

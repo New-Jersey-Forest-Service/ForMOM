@@ -308,11 +308,11 @@ def buildGUI_VariableFiltering(root: tk.Tk, projState: models.ProjectState, cons
 	_varData = projState.varData
 	_constrGroupSetup = projState.setupList[constrInd]
 
-	root.title("Constraint Builder - New Constraint: Variable Filtering")
+	root.title("NJDEP Constraint Builder - Variable Filtering")
 	root.rowconfigure([3,5], weight=1)
 	root.columnconfigure([0, 1], weight=1)
 
-	lblHeader = tk.Label(root, text="New Constraint - Variable Filtering", anchor="center")
+	lblHeader = tk.Label(root, text="Variable Filtering", anchor="center")
 	lblHeader.grid(row=0, column=0, padx=10, pady=(10, 0), columnspan=2)
 
 	frmGenInfo = buildGeneralInfoFrame(root, _passedProjectState.varData)

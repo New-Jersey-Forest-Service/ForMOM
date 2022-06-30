@@ -92,7 +92,7 @@ def buildGUI_OpeningScreen(root: tk.Tk, projectState: models.ProjectState):
 	_passedProjectState = projectState
 	_passedRoot = root
 
-	root.title("Constraint Builder - Main Screen")
+	root.title("NJDEP Constraint Builder")
 
 	root.columnconfigure(0, weight=1)
 	root.rowconfigure(1, weight=1)

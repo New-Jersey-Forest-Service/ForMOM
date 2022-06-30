@@ -260,11 +260,11 @@ def buildGUI_ObjImport(root: tk.Tk, projectState: models.ProjectState):
 	_passedProjectState = projectState
 
 	# GUI Building
-	root.title("Constraint Builder - Stage 1: Setup Variables")
+	root.title("NJDEP Constraint Builder - Objective File Importing")
 	root.rowconfigure([1, 2], weight=1)
 	root.columnconfigure(0, weight=1)
 
-	lblHeader = tk.Label(root, text="Stage 1 - Variable Setup", anchor="center")
+	lblHeader = tk.Label(root, text="Objective File Importing", anchor="center")
 	lblHeader.grid(row=0, column=0, padx=10, pady=(10, 0))
 
 	# File selection & parsing
