@@ -113,7 +113,7 @@ def buildGUI_OpeningScreen(root: tk.Tk, projectState: models.ProjectState):
 	btnLoadProj.grid(row=1, column=0, sticky="ew", pady=5)
 
 
-	lblSubInfo = tk.Label(root, text="ForMOM Project\nDev: Michael Gorbunov\nTest: Courtney Compton, Bill Zipse", anchor="e", justify="right")
+	lblSubInfo = tk.Label(root, text="ForMOM Project\nDev: Michael Gorbunov\nTest: Courtney Willits, Bill Zipse", anchor="e", justify="right")
 	lblSubInfo.grid(row=2, column=0, sticky="se", padx=20, pady=(0, 20))
 
 
