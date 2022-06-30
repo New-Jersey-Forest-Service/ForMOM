@@ -97,18 +97,26 @@ def buildGUI_OpeningScreen(root: tk.Tk, projectState: models.ProjectState):
 	root.columnconfigure(0, weight=1)
 	root.rowconfigure(1, weight=1)
 
-	lblHeader = tk.Label(root, text="NJDEP Constraint Builder")
-	lblHeader.grid(row=0, column=0, sticky="ew")
+	lblHeader = tk.Label(root, text="NJDEP Constraint Builder", font=("Arial", 16), anchor="center")
+	lblHeader.grid(row=0, column=0, sticky="ew", padx=20, pady=10)
+
 
 	frmOptions = tk.Frame(root)
-	frmOptions.grid(row=1, column=0)
-	frmOptions.columnconfigure([0, 1], weight=1)
+	frmOptions.grid(row=1, column=0, sticky="")
+	# frmOptions.rowconfigure([0, 1], weight=1)
+	# frmOptions.columnconfigure(0, weight=1)
 
 	btnNewProj = tk.Button(frmOptions, text="New Constraint Project", command=updateNewProj)
-	btnNewProj.grid(row=0, column=0, sticky="ew")
+	btnNewProj.grid(row=0, column=0, sticky="ew", pady=5)
 
 	btnLoadProj = tk.Button(frmOptions, text="Open Project", command=updateLoadProj)
-	btnLoadProj.grid(row=0, column=1, sticky="ew")
+	btnLoadProj.grid(row=1, column=0, sticky="ew", pady=5)
+
+
+	lblSubInfo = tk.Label(root, text="ForMOM Project\nDev: Michael Gorbunov\nTest: Courtney Compton, Bill Zipse", anchor="e", justify="right")
+	lblSubInfo.grid(row=2, column=0, sticky="se", padx=20, pady=(0, 20))
+
+
 
 
 
