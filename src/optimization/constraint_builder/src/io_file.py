@@ -107,7 +107,44 @@ def readVarnamesRaw (objCSVPath: Path, numVars=-1) -> List[str]:
 #
 
 def writeToCSV (filepath: str, projState: models.ProjectState):
-	return
+
+	with open(filepath, 'w') as outFile:
+		writer = csv.writer(outFile)
+
+		delim = projState.varData.delim
+		allVarNamesSorted = copy.deepcopy(projState.varData.all_vars)
+		allVarNamesSorted.sort(key=lambda tags: "".join(tags))
+		allVarNamesRaw = [delim.join(x) for x in allVarNamesSorted]
+
+		writer.writerow(['const_name'] + allVarNamesRaw + ['operator', 'rtSide'])
+
+		rowLen = len(allVarNamesSorted) + 3
+
+		for setupGroup in projState.setupList:
+			constrGroup: models.ConstraintGroup = proc.buildConstraintGroup(setupGroup, projState.varData)
+
+			for constr in constrGroup.equations:
+				newRow = [''] * rowLen
+
+				name = constr.namePrefix
+				if constr.nameSuffix != '':
+					name += delim + constr.nameSuffix
+				newRow[0] = name
+				newRow[-1] = constr.constant
+				newRow[-2] = constr.comparison.exportName()
+
+				for ind, var in enumerate(allVarNamesSorted):
+					coef = 0.0
+					if var in constr.leftVars:
+						# leftInd = 
+						leftInd = constr.leftVars.index(var)
+						coef += constr.leftCoefs[leftInd]
+					if var in constr.rightVars:
+						rightInd = constr.rightVars.index(var)
+						coef -= constr.rightCoefs[rightInd]
+					newRow[ind+1] = coef
+
+				writer.writerow(newRow)
 
 	# with open(filepath, 'w') as outFile:
 	# 	writer = csv.writer(outFile, delimiter=',', quotechar='"')

@@ -32,8 +32,11 @@ class ComparisonSign(Enum):
 	LE = '<='
 	EQ = '=='
 
-	def toSymbols (self):
+	def toSymbols (self) -> str:
 		return self._value_
+	
+	def exportName (self) -> str:
+		return _toExportName[self]
 
 	@staticmethod
 	def fromSybols (symbols: str):
@@ -42,6 +45,12 @@ class ComparisonSign(Enum):
 		if not stripped in _compSignMap.keys():
 			return None
 		return _compSignMap[stripped]
+
+_toExportName = {
+	ComparisonSign.GE: 'ge',
+	ComparisonSign.LE: 'le',
+	ComparisonSign.EQ: 'eq'
+}
 
 _compSignMap = {}
 for cs in ComparisonSign:
@@ -92,8 +101,8 @@ class Equation:
 	rightVars: List[List[str]]
 	rightCoefs: List[float]
 
-	def getName(self):
-		return self.namePrefix + self.nameSuffix
+	# def getName(self):
+	# 	return self.namePrefix + self.nameSuffix
 
 
 @attrs.define
