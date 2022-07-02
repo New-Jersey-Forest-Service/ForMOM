@@ -110,7 +110,7 @@ def convertInputToFinalModel (objData: models.InputObjectiveData, constData: mod
 	eq_mat = []
 
 	# Actually populating the lists
-	var_names = objData.var_names
+	var_names = constData.var_names
 	obj_coeffs = objData.obj_coeffs
 
 	for ind, name in enumerate(constData.const_names):
