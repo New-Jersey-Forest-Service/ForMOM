@@ -19,8 +19,6 @@ from copy import deepcopy
 
 
 
-# TODO: Redo a _lot_ of this
-
 
 
 #

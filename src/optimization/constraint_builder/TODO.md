@@ -26,25 +26,30 @@ Feedback:
  - Look into changing right sides
  - Have more options for fine-tuning with variable selection
 
+Other things
+ - [ ] File Format
+	* [ ] Allow for parsing older version (add version id)
+
 Todo From Feedback:
- - [ ] Rework the constraint building process
+ - [~] Rework the constraint building process
 	* [ ] One stage to select variables into constraints (no number options)
-	* [ ] Allow for variables on both sides of the sign
+	* [x] Allow for variables on both sides of the sign
 	* [ ] Another step to set inequalities, values, etc
 	* [ ] In this step allow for fine-tuning of constraints
 	* [ ] Use the book example as a ground truth
- - [ ] Better UX
-	* [ ] It's so not clear what to do when starting
+ - [~] Better UX
+	* [~] It's so not clear what to do when starting
 	* [ ] Add info about # of constraints in a cosntraint group to overview screen
 	* [ ] Make screen prettier
-		- [ ] Start Screen at least
+		- [x] Start Screen at least
 	* [ ] Split objective file importing into 3 steps, file => seperator => tag groups
-		- [ ] Add explanatory text to obj import
-	* [ ] Tag Naming
+		- [x] Add explanatory text to obj import
+	* [~] Tag Naming
 		- [ ] Show errors in individual tagnames even if not all are named
-		- [ ] Error message for naming needs to show up immediately
+		- [x] Error message for naming needs to show up immediately
  - [ ] Bugs
 	* [ ] Properly csv export for windows machines
+	* [ ] Handle Excel
 
 
 BUGS:
@@ -87,9 +92,10 @@ So
 	* [ ] Better exporting options
 	* [ ] To Dat conversion
     * [ ] Handle change of objective file
-    * [ ] Renamable tags
-
-
+    * [ ] Renamable tags ('Pitch Pine North' instead of 167N)
+    * [ ] Look for Constants (& allow for evaluating numerical expressions)
+    * [ ] Better Splitting (allow pairings from left to right, ex: 2021 Left <-> 2025 Right)
+    * [ ] FVS Write tool to start all managements after all previous managements etc etc
 
 
 

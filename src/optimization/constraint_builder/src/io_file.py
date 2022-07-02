@@ -107,7 +107,6 @@ def readVarnamesRaw (objCSVPath: Path, numVars=-1) -> List[str]:
 #
 
 def writeToCSV (filepath: str, projState: models.ProjectState):
-
 	with open(filepath, 'w') as outFile:
 		writer = csv.writer(outFile)
 
@@ -145,38 +144,5 @@ def writeToCSV (filepath: str, projState: models.ProjectState):
 					newRow[ind+1] = coef
 
 				writer.writerow(newRow)
-
-	# with open(filepath, 'w') as outFile:
-	# 	writer = csv.writer(outFile, delimiter=',', quotechar='"')
-		
-	# 	# Write top row - all variables names
-	# 	delim = projState.varTags.delim
-	# 	allVarNamesSorted = copy.deepcopy(projState.varTags.all_vars)
-	# 	allVarNamesSorted.sort(key=lambda tags: delim.join(tags))
-	# 	allVarNamesRaw = [delim.join(x) for x in allVarNamesSorted]
-
-	# 	writer.writerow(['const_name'] + allVarNamesRaw + ['operator', 'rtSide'])
-
-	# 	# Write each constraint
-	# 	rowLen = len(allVarNamesSorted) + 3
-
-	# 	for constGroup in projState.constrGroupList:
-	# 		individConstrs = proc.buildConstraintsFromStandardConstraintGroup(projState.varTags, constGroup)
-
-	# 		for constr in individConstrs:
-	# 			nextRow = [''] * rowLen
-	# 			nextRow[0] = constr.name
-	# 			nextRow[-1] = constr.compare_value
-	# 			nextRow[-2] = constr.compare_type.name.lower()
-
-	# 			for ind, var in enumerate(allVarNamesSorted):
-	# 				coef = 0
-	# 				if var in constr.var_tags:
-	# 					varInd = constr.var_tags.index(var)
-	# 					coef = constr.var_coeffs[varInd]
-	# 				nextRow[ind+1] = coef
-				
-	# 			writer.writerow(nextRow)
-
 
 
