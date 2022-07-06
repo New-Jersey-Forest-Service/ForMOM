@@ -15,18 +15,9 @@ New Jersey Forest Service 2022
 import sys
 import pyomo.environ as pyo
 
-#Colab mount Google Drive and map paths
-from google.colab import drive
-drive.mount('gdrive')
-#Google drive paths
-COLABPATH = 'gdrive/My Drive/Colab Notebooks/'
-DATAPATH = 'gdrive/My Drive/Colab Notebooks/data/'
-#add COLABPATH to system path to load classes
-#and custom modules
-sys.path.insert(0, COLABPATH)
-
 #Path for input file
-filepath = DATAPATH+'SLmonthly_1.dat'
+filepath = '../convert_to_dat/MiniModelRunning/out.dat'
+# filepath = '../convert_to_dat/sample_data/SLmonthly1_out.dat'
 
 # In Python2, integer divisions truncate values (1/2 = 0 instead of 0.5)
 # which breaks the solver. Either way, we should be using python3
