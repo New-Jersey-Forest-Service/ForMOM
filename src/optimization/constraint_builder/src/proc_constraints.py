@@ -121,9 +121,11 @@ def buildConstraintGroup (groupSetup: models.SetupConstraintGroup, varData: mode
 	actuallyAllLeftVars: List[List[str]] = []
 	actuallyAllRightVars: List[List[str]] = []
 	for tags in itertools.product(*leftSelAsList):
-		actuallyAllLeftVars.append(list(tags))
+		if list(tags) in varData.all_vars:
+			actuallyAllLeftVars.append(list(tags))
 	for tags in itertools.product(*rightSelAsList):
-		actuallyAllRightVars.append(list(tags))
+		if list(tags) in varData.all_vars:
+			actuallyAllRightVars.append(list(tags))
 
 	eqList: List[models.Equation] = []
 
