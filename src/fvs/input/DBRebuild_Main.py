@@ -23,12 +23,14 @@ NJDEP
 # [x] Actually get county counts
 #  - This would be helpful on a national scale but 
 #    I think it's a little too much effort right now
-# [ ] Ask about creating a new DB at the beginning
-# [ ] Lint the passed county dict
+# [~] Ask about creating a new DB at the beginning
+#  - [x] At least inform the user it's going to override the file before startign
+# [x] Lint the passed split dict
 
 import sqlite3
 import re
 import sys
+from typing import Union
 import DBRebuild_StandID as dbStandID
 
 
@@ -38,10 +40,12 @@ DB_NAME = 'FIADB_NJ.db'
 INV_YEARS = [2015, 2016, 2017, 2018, 2019, 2020]
 COUNTY_SPLIT_DICT = {
 	'167': {
-		'167N': [23, 25, 29, 1],
+		'167N': [23, 25, 29, 1, 19],
 		'167S': [5, 7, 15, 11, 9]
 	}
 }
+
+
 
 
 
@@ -70,10 +74,24 @@ INV_YEARS = [str(x) for x in INV_YEARS]
 def main():
 	global DB_FILEPATH
 
+	print()
+	err_with_config = lint_config() # Everything is lives in the globals
+	if err_with_config:
+		err_and_exit(err_with_config)
+
+	print("Warning: Running this script will overwrite (permanently change) the file")
+	print(f"\t{DB_FILEPATH}\n")
+	usr_input = str(input("Do you wish to continue? (y/n)"))
+	if (usr_input.strip().lower() != 'y'):
+		print("Ok, exiting")
+		sys.exit(0)
+
+	print()
+	print(" [[ STARTING ]] ")
+
+	# Actual DB Processing
 	db_con = sqlite3.connect(DB_FILEPATH)
 	cur = db_con.cursor()
-
-	print(" [[ STARTING ]] ")
 
 	print()
 	print("Deleting tables")
@@ -117,6 +135,71 @@ def main():
 def run_script(cur: sqlite3.Cursor, path: str) -> None:
 	with open(path, 'r') as f:
 		cur.executescript(f.read())
+
+
+
+#
+# Step 0
+#
+# Linting the config
+#
+
+# TODO: Warn for missing consecutive years
+def lint_config() -> str:
+	'''
+		Returns an error message if there is an error, otherwise None.
+
+		In the case of a warning, it gets printed.
+	'''
+
+	# [[ Warn Check ]] Consecutive Years
+	int_invyears = [int(x) for x in INV_YEARS]
+	expected_len = max(int_invyears) - min(int_invyears) + 1
+	if len(INV_YEARS) != expected_len:
+		print(" > [[ Warning ]]")
+		print(" > Inventory years specified are NOT consequitive")
+	
+	# [[ Err Check ]] No empty splits
+	for for_type in COUNTY_SPLIT_DICT.keys():
+		split = COUNTY_SPLIT_DICT[for_type]
+		if split == None or \
+			type(split) != dict:
+				return f'Cannot understand how to split {for_type}, invalid config'
+		if len(list(split.keys())) == 0:
+			return f'No splits specified for {for_type}'
+	
+	# [[ Err Check ]] No duplicate renamings
+	all_renamed = set()
+	for for_type in COUNTY_SPLIT_DICT.keys():
+		for rename in COUNTY_SPLIT_DICT[for_type].keys():
+			if rename in all_renamed:
+				return f"Found multiple splits renaming a forest type to {rename}"
+			all_renamed.add(rename)
+	
+	# [[ Err Check ]] No duplicate counties within a specific split
+	for for_type in COUNTY_SPLIT_DICT.keys():
+		for rename in COUNTY_SPLIT_DICT[for_type]:
+			counties = COUNTY_SPLIT_DICT[for_type][rename]
+
+			duplicate_elms = set([x if counties.count(x) > 1 else None for x in counties])
+			if None in duplicate_elms:
+				duplicate_elms.remove(None)
+			duplicate_elms = list(duplicate_elms)
+			if len(duplicate_elms) > 0:
+				return f"Split {rename} has duplicated counties {duplicate_elms}"
+
+	# [[ Err Check ]] No duplicate counties within a forest type split
+	for for_type in COUNTY_SPLIT_DICT.keys():
+		all_county = set()
+
+		for rename in COUNTY_SPLIT_DICT[for_type]:
+			for county in COUNTY_SPLIT_DICT[for_type][rename]:
+				if county in all_county:
+					return f"For {for_type}, county code {county} shows up in multiple splits"
+				all_county.add(county)
+	
+	return None
+
 
 
 
@@ -234,6 +317,7 @@ def check_for_large_stands(cur: sqlite3.Cursor, county_count_dict: dict) -> None
 		print(f" > [[ Warning ]]")
 		print(f" > \tStand IDs {', '.join(large_standids)} have {FVS_MAX_TREES}+ entries in FVS_TREEINIT_PLOT.")
 		print(f" > \tConsider splitting up by county codes")
+		print(f" >")
 	
 	for for_type in large_standids:
 		county_codes = list(county_count_dict[for_type].keys())
@@ -247,12 +331,13 @@ def check_for_large_stands(cur: sqlite3.Cursor, county_count_dict: dict) -> None
 			print(" > %4d | %d" % (county, amnt))
 			total += amnt
 		print(f" >  tot | {total}")
+		print(f" >")
 
 
 
 def err_and_exit(err: str) -> None:
-	print(f'\t[[ Error ]]\n{err}')
-	print(f'Now aborting')
+	print(f'\n\t[[ Error ]]\n{err}')
+	print(f'\nNow aborting')
 	sys.exit(1)
 
 

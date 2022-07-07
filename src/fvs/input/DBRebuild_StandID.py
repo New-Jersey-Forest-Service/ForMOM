@@ -13,14 +13,17 @@ Michael Gorbunov
 
 import sqlite3
 import sys
-from typing import List, Dict
+from typing import List, Dict, Union
 
 # TODO: Less magic numbers
 #   - [ ] Somehow explain or derive the 7
 # TODO: Less magic names
 #	- [ ] Use dataclases or attrs classes instead of dicts
-# TODO: Better queries
+# TODO: Faster queries
 #	- [ ] Rewrite the queries to use cur.executemany()
+
+COUNTY_KEY = 'county'
+YEAR_KEY = 'year'
 
 def parse_as_int_if_valid(float_str: str) -> int:
 	try:
@@ -34,6 +37,7 @@ def create_dict_fortype_of_standcn(cur: sqlite3.Cursor, tables: List[str], count
 	# creates a map from for_type (str) -> list of STAND_CN (List[int])
 	stand_fortype_map = {}
 
+	errdict = {}
 	fortypes_to_split = list(county_split_dict.keys())
 
 	for table_name in tables:
@@ -51,17 +55,17 @@ def create_dict_fortype_of_standcn(cur: sqlite3.Cursor, tables: List[str], count
 			# Do the county split
 			if for_type in fortypes_to_split:
 				county = parse_as_int_if_valid(row[2])
-				for_type = county_split_id(for_type, county, str_groups, stand_cn, county_split_dict)
+				for_type, errdict = county_split_id(for_type, county, str_groups, stand_cn, county_split_dict, errdict)
 
 			if for_type not in stand_fortype_map.keys():
 				stand_fortype_map[for_type] = [stand_cn]
 			elif not stand_cn in stand_fortype_map[for_type]:
 				stand_fortype_map[for_type].append(stand_cn)
 	
-	return stand_fortype_map
+	return stand_fortype_map, errdict
 
 
-def create_dict_fortype_of_standcn_by_county(cur: sqlite3.Cursor, tables: List[str], county_split_dict: Dict[str, Dict[str, List[int]]]):
+def create_dict_fortype_of_standcn_by_county(cur: sqlite3.Cursor, tables: List[str], county_split_dict: Dict[str, Dict[str, List[int]]]) -> Union[dict, dict]:
 	'''
 	Generates a map associating forest types with counties with stand_cn
 	{	
@@ -73,9 +77,13 @@ def create_dict_fortype_of_standcn_by_county(cur: sqlite3.Cursor, tables: List[s
 		'167S': { ... },
 			...
 	}
+
+	Also returns an error dictionary, containing all forest types found in counties
+	outside the specified ones, and which years and coutnies the unspecified ones were found in.
 	'''
 	stand_fortype_by_county = {}
 
+	split_errdict = {}
 	fortypes_to_split = list(county_split_dict.keys())
 
 	for table_name in tables:
@@ -93,7 +101,7 @@ def create_dict_fortype_of_standcn_by_county(cur: sqlite3.Cursor, tables: List[s
 			# Do the county split
 			county = parse_as_int_if_valid(row[2])
 			if for_type in fortypes_to_split:
-				for_type = county_split_id(for_type, county, str_groups, stand_cn, county_split_dict)
+				for_type, split_errdict = county_split_id(for_type, county, str_groups, stand_cn, county_split_dict, split_errdict)
 
 			if for_type not in stand_fortype_by_county.keys():
 				stand_fortype_by_county[for_type] = {}
@@ -102,22 +110,33 @@ def create_dict_fortype_of_standcn_by_county(cur: sqlite3.Cursor, tables: List[s
 			if not stand_cn in stand_fortype_by_county[for_type][county]:
 				stand_fortype_by_county[for_type][county].append(stand_cn)
 	
-	return stand_fortype_by_county
+	return stand_fortype_by_county, split_errdict
 
 
-def county_split_id (for_type: str, county: int, str_groups: str, stand_cn: str, county_split_dict: dict) -> str:
+def county_split_id (for_type: str, county: int, str_groups: List[str], stand_cn: str, county_split_dict: dict, err_dict: Dict[str, Dict[str, list]]) -> Union[str, dict]:
 	for new_fortype in county_split_dict[for_type].keys():
 		if county in county_split_dict[for_type][new_fortype]:
-			return new_fortype
+			return new_fortype, err_dict
 	
-	# The for loop above is expected to return
-	# TODO: Communicate this better
-	# print(" > [[ Warning ]]")
-	# print(f" > \tFound {for_type} forest type outside of specified counties")
-	# print(f" > \tGroups: {str_groups}")
-	# print(f" > \tStand CN: {stand_cn}")
-	# print(f" > \tCounty: {county}")
-	return for_type
+	# The above didn't return, so we want to log that a forest type was found outside the specified counties
+	YEAR_PREFIX = 'FIA_Inv_Yr='
+	year = None
+	for x in str_groups:
+		if type(x) == str and x[:len(YEAR_PREFIX)] == YEAR_PREFIX:
+			year = x[len(YEAR_PREFIX):]
+			break
+
+	if year == None:
+		print(" > [[ Warning ]]")
+		print(f" > \tFound entry for {for_type} outside of specified counties but without year info")
+		print(f" > Expected to find {YEAR_PREFIX} in {str_groups}, but did not")
+		
+	if for_type not in err_dict.keys():
+		err_dict[for_type] = {COUNTY_KEY: set(), YEAR_KEY: set()}
+	err_dict[for_type][COUNTY_KEY].add(county)
+	err_dict[for_type][YEAR_KEY].add(year)
+
+	return for_type, err_dict
 
 
 
@@ -147,7 +166,7 @@ def get_num_fortypes_by_county(cur: sqlite3.Cursor, table: str, county_split_dic
 	}
 	'''
 	county_size_dict = {}
-	fortype_by_county_dict = create_dict_fortype_of_standcn_by_county(
+	fortype_by_county_dict, _ = create_dict_fortype_of_standcn_by_county(
 		cur,
 		['FVS_STANDINIT_PLOT', 'FVS_PLOTINIT_PLOT'],
 		county_split_dict
@@ -173,19 +192,18 @@ def get_num_fortypes_by_county(cur: sqlite3.Cursor, table: str, county_split_dic
 
 		if ind % 10 == 0 and ind != 0:
 			print(" > Counted counties for 10 forest types")
-		
 
 	return county_size_dict
 
 
 def do_id_replace(cur: sqlite3.Cursor, county_split_dict: dict) -> None:
 	# Actual processing
-	fortype_dict = create_dict_fortype_of_standcn(
+	fortype_dict, err_dict = create_dict_fortype_of_standcn(
 		cur, 
 		["FVS_STANDINIT_PLOT", "FVS_PLOTINIT_PLOT"],
 		county_split_dict
 	)
-
+		
 	# Now do replacements
 	replace_ids_in_table(cur, "FVS_PLOTINIT_PLOT", fortype_dict)
 	replace_ids_in_table(cur, "FVS_STANDINIT_PLOT", fortype_dict)
@@ -194,6 +212,26 @@ def do_id_replace(cur: sqlite3.Cursor, county_split_dict: dict) -> None:
 	replace_ids_in_table(cur, "FVS_PLOTINIT_PLOT_INVYEARST", fortype_dict)
 	replace_ids_in_table(cur, "FVS_STANDINIT_PLOT_INVYEARST", fortype_dict)
 	replace_ids_in_table(cur, "FVS_TREEINIT_PLOT_INVYEARST", fortype_dict)
+
+	# Print any errors relating to the ID splits
+	mismatched_types = list(err_dict.keys())
+	mismatched_types.sort()
+	if len(mismatched_types) > 0:
+		print(" > ")
+		print(" > [[ WARNING ]]")
+		print(f" > Found forest types {mismatched_types} outside of specified splits")
+		for for_type in mismatched_types:
+			print(f" > ")
+			print(f" > \tForest type: {for_type}")
+			counties = list(err_dict[for_type][COUNTY_KEY])
+			counties.sort()
+
+			years = list(err_dict[for_type][YEAR_KEY])
+			years.sort()
+
+			print(f" > \tFound in counties: {counties}")
+			print(f" > \tFrom inventory years {years}")
+		print(" > ")
 
 	print(" > Finished ID Replace")
 
