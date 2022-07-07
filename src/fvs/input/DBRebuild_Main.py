@@ -45,6 +45,8 @@ COUNTY_SPLIT_DICT = {
 
 
 
+
+
 # FIA Specific Configuration - These are specified by the programmer
 DEFAULT_DB_REGEX = r'FS_FIADB_STATECD_\d{2,2}\.db'
 FVS_MAX_TREES = 3000
@@ -234,6 +236,7 @@ def check_for_large_stands(cur: sqlite3.Cursor, county_count_dict: dict) -> None
 		print(f" > [[ Warning ]]")
 		print(f" > \tStand IDs {', '.join(large_standids)} have {FVS_MAX_TREES}+ entries in FVS_TREEINIT_PLOT.")
 		print(f" > \tConsider splitting up by county codes")
+		print(f" >")
 	
 	for for_type in large_standids:
 		county_codes = list(county_count_dict[for_type].keys())
@@ -247,6 +250,7 @@ def check_for_large_stands(cur: sqlite3.Cursor, county_count_dict: dict) -> None
 			print(" > %4d | %d" % (county, amnt))
 			total += amnt
 		print(f" >  tot | {total}")
+		print(f" >")
 
 
 
