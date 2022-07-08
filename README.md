@@ -62,7 +62,7 @@ are aware this is an issue.
 
 
 ## DBRebuild
-Command Line Utility, Located on main in src/fvs/input.
+Command Line Utility, Located on main in [src/fvs/input](https://github.com/New-Jersey-Forest-Service/ForMOM/tree/main/src/fvs/input).
 
 ![20Week_DBRebuild](https://user-images.githubusercontent.com/49537988/178081051-e70ae0e2-faeb-45b7-9502-6a4190c1dbf1.png)
 
