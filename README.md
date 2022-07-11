@@ -105,7 +105,7 @@ This program takes two csvs specifying constraints and the objective file, and p
 
 If the constraint builder were fully fleshed out, this program would be unnecessary, so this will eventually be pruned from the project.
 
-**Credits**: The original csv format was made by Bill, and the converter was written by Michael
+**Credits**: The original csv format was made by Bill, and the converter was written by both Michael and Bill
 
 
 ## Dependencies
