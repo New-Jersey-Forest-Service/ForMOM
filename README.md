@@ -4,16 +4,23 @@ Forest Management Optimization Model
 A set of tools to optimize forest management for carbon, presently 
 being developed to assess practices in the state of New Jersey. 
 
-This repository is maintained mostly by Michael Gorbunov. If you have questions specifically about the software
+The ForMOM project is possible due to the combined effort of many NJFS 
+employees. This project is organized by Bill Zipse, and has been the 
+consistent work of Lauren Gazerwitz, Courtney Willitts, Michael Gorbunov, Ben 
+Pisano, Bernie Isaacson & Justin Gimmillaro, with participation from Mike 
+Hart, Rosa Yoo & Jason Grabowsky (Rutgers University).
+
+The FIADB re-organization work was primarily accomplished by Lauren 
+Gazerwitz, the FVS work was primarily accomplished by Courtney Willitts, 
+Bernie Isaacson, and Justin Gimmillaro, and the data processing and building 
+of visuals was primarily completed by Bernie Isaacson and Ben Pisano. The 
+development of the database automation process, the constraint builder, and 
+the .csv to .dat converter were completed by Michael Gorbunov.
+
+This repository is maintained mostly by Michael Gorbunov. If you have 
+questions specifically about the software
 here, please reach out at [michael.gorbunov@nj.dep.gov](michael.gorbunov@nj.dep.gov).
 
-However, the entire project is a team effort. ForMOM is organized by Bill Zipse, and has been 
-the work of
-Lauren Gazerwitz, Courtney Willits, Michael Gorbunov, Bernhard Isaacson, Benjamin Pisano, and Justin Gillmaro.
-We've had great input from others - Jason Grabosky, Rosa Yoo, Michael Hart just to name a few.
-
-A majority of the FVS work was done by Courtney, Lauren, and Justin. Bernie (Bernhard) and Ben have helped processing
-the data and building visuals.
 
 
 # Project Overview
@@ -24,7 +31,7 @@ Roughly speaking there are two steps in the process of forest management optimiz
  - **Step 2**: Add constraints and optimize to find the optimal management
 
 The simulation of forest management is done primarily with FVS. We take the state inventory 
-from FIA, simplify it into distinct forest types, and then run it through FVS.
+from FIA, re-organize it into distinct forest types, and then run it through FVS.
 
 Most of the code in this repository is to assist with step 2. After getting values from FVS,
 we write constraints using a custom program for constraint building. The constraints
@@ -36,8 +43,8 @@ optimization problem.
 
 ## Step 1 - Simulating Managements
 
-Before optimizing managements, we simulate them. We take data from FIA, simplify it, and run it through FVS.
-The FVS runs are not in this repository. but the tool we use to rebuild the database are located in
+Before optimizing managements, we simulate them. We take state data from FIA, re-organize it by forest type and year, and run it through FVS.
+The FVS runs are not in this repository. but the tool we use to re-organize the database are located in
 [src/fvs/input](https://github.com/New-Jersey-Forest-Service/ForMOM/tree/main/src/fvs/input). For information
 on running it, look to the [wiki page about it](https://github.com/New-Jersey-Forest-Service/ForMOM/wiki/FVS#inputs).
 
@@ -69,11 +76,11 @@ Command Line Utility, Located on main in [src/fvs/input](https://github.com/New-
 
 ![20Week_DBRebuild](https://user-images.githubusercontent.com/49537988/178081051-e70ae0e2-faeb-45b7-9502-6a4190c1dbf1.png)
 
-This program takes a raw sqlite3 database from FIA Datamart and simplifies it to be run through FVS more
-simply. We have it setup for New Jersey, but it is configurable for other states - there are example configs for MD and WY.
+This program takes a raw sqlite3 database from FIA Datamart and re-organizes it so that it can be run through FVS. 
+We have it setup for New Jersey, but it is configurable for other states - there are example configs for MD and WY.
 Check out the [wiki page](https://github.com/New-Jersey-Forest-Service/ForMOM/wiki/FVS#inputs) for more information on running it.
 
-**Credits**: The actual simplification process was thought of and developed by Lauren and Courtney, it was only automated by Michael.
+**Credits**: The actual re-organization process was thought of and developed by Lauren and Courtney, it was only automated by Michael.
 
 
 
