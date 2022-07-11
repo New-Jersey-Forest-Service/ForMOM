@@ -7,10 +7,13 @@ being developed to assess practices in the state of New Jersey.
 This repository is maintained mostly by Michael Gorbunov. If you have questions specifically about the software
 here, please reach out at [michael.gorbunov@nj.dep.gov](michael.gorbunov@nj.dep.gov).
 
-ForMOM is organized by Bill Zipse, but has really been a team effort with
-Lauren Gazerwitz, Courtney Willits, Michael Gorbunov, Bernhard Isaacson, Benjamin Pisano, Justin Gillmaro,
-and we've had great input from others - Jason Grabosky, Rosa Yoo, Michael Hart just to name a few.
+However, the entire project is a team effort. ForMOM is organized by Bill Zipse, and has been 
+the work of
+Lauren Gazerwitz, Courtney Willits, Michael Gorbunov, Bernhard Isaacson, Benjamin Pisano, and Justin Gillmaro.
+We've had great input from others - Jason Grabosky, Rosa Yoo, Michael Hart just to name a few.
 
+A majority of the FVS work was done by Courtney, Lauren, and Justin. Bernie (Bernhard) and Ben have helped processing
+the data and building visuals.
 
 
 # Project Overview
@@ -70,7 +73,7 @@ This program takes a raw sqlite3 database from FIA Datamart and simplifies it to
 simply. We have it setup for New Jersey, but it is configurable for other states - there are example configs for MD and WY.
 Check out the [wiki page](https://github.com/New-Jersey-Forest-Service/ForMOM/wiki/FVS#inputs) for more information on running it.
 
-**Credits**: The simplification process was thought of and made by Lauren Gazerwitz, and it was automated by Michael Gorbunov.
+**Credits**: The actual simplification process was thought of and developed by Lauren and Courtney, it was only automated by Michael.
 
 
 
@@ -89,7 +92,7 @@ The program is under development so there is no usage guide yet.
 You can try it yourself by running launchgui.py and using one of the files in the sample_data folder.
 
 **Credits**: All development by Michael Gorbunov, but a lot of good 
-feedback and ideas came from others on the team - Bill Zipse, Bernhard Isaacson, Courtney Willits
+feedback and ideas came from others on the team - specifically Bill, Bernie, and Courtney
 
 
 
@@ -98,11 +101,11 @@ GUI Application, Located on dev-optimization branch in [src/optimization/convert
 
 ![20Week_CSVToDat](https://user-images.githubusercontent.com/49537988/178082801-357ac544-3d1a-42dd-bb92-abad91ca7347.png)
 
-
-
 This program takes two csvs specifying constraints and the objective file, and produces a .dat file.
 
 If the constraint builder were fully fleshed out, this program would be unnecessary, so this will eventually be pruned from the project.
+
+**Credits**: The original csv format was made by Bill, and the converter was written by Michael
 
 
 ## Dependencies
