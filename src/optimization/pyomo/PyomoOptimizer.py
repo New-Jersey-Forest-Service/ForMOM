@@ -98,6 +98,8 @@ decvars = instance.x.keys()
 decvars_values = {str(k): pyo.value(instance.x[k]) for k in decvars}
 decvars = list(decvars_values.keys())
 
+# Pg. 14 - 22 of this textbook on optimization are really handy http://web.mit.edu/15.053/www/AMP-Chapter-01.pdf
+
 # Slack & Shadow Price extraction 
 # 
 # Courtesy of this stack overflow
