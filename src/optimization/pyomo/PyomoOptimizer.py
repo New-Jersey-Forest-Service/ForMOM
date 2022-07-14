@@ -16,7 +16,7 @@ import sys
 import pyomo.environ as pyo
 
 #Path for input file
-filepath = '../convert_to_dat/MiniModelRunning/out.dat'
+filepath = '/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/MiniModelRunning/run2/out.dat'
 # filepath = '../convert_to_dat/sample_data/SLmonthly1_out.dat'
 
 # In Python2, integer divisions truncate values (1/2 = 0 instead of 0.5)
