@@ -1,0 +1,177 @@
+GLPSOL: GLPK LP/MIP Solver, v4.65
+Parameter(s) specified in the command line:
+ --write /tmp/tmppnexmpoh.glpk.raw --wglp /tmp/tmp8nq0tpoh.glpk.glp --cpxlp
+ /tmp/tmppavz0mke.pyomo.lp
+Reading problem data from '/tmp/tmppavz0mke.pyomo.lp'...
+52 rows, 59 columns, 222 non-zeros
+502 lines were read
+Writing problem data to '/tmp/tmp8nq0tpoh.glpk.glp'...
+431 lines were written
+GLPK Simplex Optimizer, v4.65
+52 rows, 59 columns, 222 non-zeros
+Preprocessing...
+50 rows, 56 columns, 219 non-zeros
+Scaling...
+ A: min|aij| =  1.000e+00  max|aij| =  1.000e+00  ratio =  1.000e+00
+Problem data seem to be well scaled
+Constructing initial basis...
+Size of triangular part is 50
+*     0: obj =   1.176578211e+08 inf =   0.000e+00 (7)
+*     6: obj =   1.185484292e+08 inf =   0.000e+00 (0)
+OPTIMAL LP SOLUTION FOUND
+Time used:   0.0 secs
+Memory used: 0.1 Mb (113637 bytes)
+Writing basic solution to '/tmp/tmppnexmpoh.glpk.raw'...
+120 lines were written
+
+
+
+
+
+
+Solve attempted
+Status: ok
+Termination Condition: optimal
+
+
+
+
+
+
+
+
+ == Variables
+167N_2021_PLSQ       | 221277.0
+167N_2021_THNB       | 0.0
+167N_2025_PLSQ       | 219245.0
+167N_2025_THNB       | 0.0
+167N_2030_PLSQ       | 216705.0
+167N_2030_THNB       | 0.0
+167N_2050_PLSQ       | 206545.0
+167N_2050_THNB       | 0.0
+167S_2021_PLSQ       | 197602.0
+167S_2021_THNB       | 0.0
+167S_2025_PLSQ       | 195786.0
+167S_2025_THNB       | 0.0
+167S_2030_PLSQ       | 193516.0
+167S_2030_THNB       | 0.0
+167S_2050_PLSQ       | 184436.0
+167S_2050_THNB       | 0.0
+505_2021_ASV         | 54907.0
+505_2021_IFM         | 0.0
+505_2021_PLSQ        | 0.0
+505_2021_THNB        | 0.0
+505_2025_ASV         | 54403.0
+505_2025_IFM         | 0.0
+505_2025_PLSQ        | 0.0
+505_2025_THNB        | 0.0
+505_2030_ASV         | 0.0
+505_2030_IFM         | 0.0
+505_2030_PLSQ        | 53773.0
+505_2030_THNB        | 0.0
+505_2050_ASV         | 51253.0
+505_2050_IFM         | 0.0
+505_2050_PLSQ        | 0.0
+505_2050_THNB        | 0.0
+608_2021_AWR         | 0.0
+608_2021_PLSQ        | 118164.0
+608_2025_AWR         | 0.0
+608_2025_PLSQ        | 118164.0
+608_2030_AWR         | 0.0
+608_2030_PLSQ        | 118164.0
+608_2050_AWR         | 0.0
+608_2050_PLSQ        | 118164.0
+999_2021_AWR         | 0.0
+999_2021_CAR         | 2931.0
+999_2021_NAR         | 0.0
+999_2021_PLSQ        | 21914.0
+999_2025_AWR         | 0.0
+999_2025_CAR         | 2931.0
+999_2025_NAR         | 0.0
+999_2025_PLSQ        | 21650.0
+999_2030_AWR         | 5000.0
+999_2030_CAR         | 2931.0
+999_2030_NAR         | 0.0
+999_2030_PLSQ        | 16320.0
+999_2050_AWR         | 20000.0
+999_2050_CAR         | 2931.0
+999_2050_NAR         | 0.0
+999_2050_PLSQ        | 0.0
+dummy0               | 0.0
+dummy1               | 0.0
+
+
+ == Shadow Prices
+dummyGE0                                 | 0.0
+ARstart_2021                             | 0.0
+AWRConvert2021Ac                         | 0.0
+AWRConvert2025Ac                         | 0.0
+AWRConvert2030Ac                         | 0.319925785
+AWRConvert2050Ac                         | 12.602982514
+AWRTotalAc_2021                          | 0.0
+AWRTotalAc_2025                          | 0.0
+AWRTotalAc_2030                          | 0.0
+AWRTotalAc_2050                          | 0.0
+ThinSetup                                | 0.0
+TotalAcreage                             | 0.0
+YearlyAcreage_2021                       | 0.0
+YearlyAcreage_2025                       | 0.0
+YearlyAcreage_2030                       | 0.0
+YearlyAcreage_2050                       | 0.0
+167NAcreage_2021                         | 35.01963806
+167NAcreage_2025                         | 38.45547867
+167NAcreage_2030                         | 42.39970398
+167NAcreage_2050                         | 64.17437744
+167SAcreage_2021                         | 37.36980438
+167SAcreage_2025                         | 42.8428421
+167SAcreage_2030                         | 48.52858734
+167SAcreage_2050                         | 75.53630066
+505Acreage_2021                          | 55.20212555
+505Acreage_2025                          | 59.40862656
+505Acreage_2030                          | 63.70918655
+505Acreage_2050                          | 94.44068146
+608Acreage_2021                          | 45.94402313
+608Acreage_2025                          | 48.9426651
+608Acreage_2030                          | 51.85298157
+608Acreage_2050                          | 66.14112854
+999Acreage_2021                          | 7.028610229
+999Acreage_2025                          | 6.64113903
+999Acreage_2030                          | 6.27035284
+999Acreage_2050                          | 17.548811916
+ARCont2025_CAR                           | 2.525876522
+ARCont2025_NAR                           | 2.717151641
+ARcont2030_CAR                           | 1.332205295
+ARcont2030_NAR                           | 2.161596775
+ARcont2050_CAR                           | -6.064536094
+ARcont2050_NAR                           | -2.007115364
+ThinCont2025_167N                        | 2.97320175
+ThinCont2025_167S                        | 5.70724869
+ThinCont2025_505                         | 4.30147934
+ThinCont2030_167N                        | 5.82753754
+ThinCont2030_167S                        | 10.24826431
+ThinCont2030_505                         | 5.69832229
+ThinCont2050_167N                        | 6.41474151
+ThinCont2050_167S                        | 13.05078888
+ThinCont2050_505                         | 8.7090683
+
+
+ == Slacks for GE
+dummyGE0                                 | 0.0
+
+
+ == Slacks for LE
+TotalAcreage                             | 48472.0
+YearlyAcreage_2021                       | 0.0
+YearlyAcreage_2025                       | 4616.0
+YearlyAcreage_2030                       | 10386.0
+YearlyAcreage_2050                       | 33466.0
+AWRTotalAc_2025                          | 143009.0
+AWRTotalAc_2030                          | 138009.0
+AWRTotalAc_2050                          | 123009.0
+AWRTotalAc_2021                          | 143009.0
+AWRConvert2021Ac                         | 1000.0
+AWRConvert2025Ac                         | 4000.0
+AWRConvert2030Ac                         | 0.0
+AWRConvert2050Ac                         | 0.0
+ThinSetup                                | 473786.0
+ARstart_2021                             | 21914.0

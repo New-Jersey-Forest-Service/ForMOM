@@ -10,13 +10,7 @@ William Zipse
 NJDEP
 '''
 
-import os
-import sys
-import csv
-from typing import Union
-from pathlib import Path
 from tkinter import *
-from tkinter import messagebox
 from tkinter import filedialog
 
 from model_data_classes import *

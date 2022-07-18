@@ -1,0 +1,182 @@
+GLPSOL: GLPK LP/MIP Solver, v4.65
+Parameter(s) specified in the command line:
+ --write /tmp/tmpbrn89_3a.glpk.raw --wglp /tmp/tmpoogc3wrp.glpk.glp --cpxlp
+ /tmp/tmpn75a6bw1.pyomo.lp
+Reading problem data from '/tmp/tmpn75a6bw1.pyomo.lp'...
+64 rows, 55 columns, 186 non-zeros
+455 lines were read
+Writing problem data to '/tmp/tmpoogc3wrp.glpk.glp'...
+357 lines were written
+GLPK Simplex Optimizer, v4.65
+64 rows, 55 columns, 186 non-zeros
+Preprocessing...
+26 rows, 28 columns, 111 non-zeros
+Scaling...
+ A: min|aij| =  1.000e+00  max|aij| =  1.000e+00  ratio =  1.000e+00
+Problem data seem to be well scaled
+Constructing initial basis...
+Size of triangular part is 26
+*     0: obj =   3.569951689e+07 inf =   0.000e+00 (2)
+*     2: obj =   3.612055669e+07 inf =   0.000e+00 (0)
+OPTIMAL LP SOLUTION FOUND
+Time used:   0.0 secs
+Memory used: 0.1 Mb (88892 bytes)
+Writing basic solution to '/tmp/tmpbrn89_3a.glpk.raw'...
+128 lines were written
+
+
+
+
+
+
+Solve attempted
+Status: ok
+Termination Condition: optimal
+
+
+
+
+
+
+
+
+ == Variables
+167N_2021_THNB       | 221277.0
+167N_2021_THNP       | 0.0
+167N_2025_THNB       | 221277.0
+167N_2025_THNP       | 0.0
+167N_2030_THNB       | 221277.0
+167N_2030_THNP       | 0.0
+167N_2050_THNB       | 221277.0
+167N_2050_THNP       | 0.0
+167S_2021_THNB       | 197602.0
+167S_2021_THNP       | 0.0
+167S_2025_THNB       | 197602.0
+167S_2025_THNP       | 0.0
+167S_2030_THNB       | 197602.0
+167S_2030_THNP       | 0.0
+167S_2050_THNB       | 197602.0
+167S_2050_THNP       | 0.0
+505_2021_ASV         | 0.0
+505_2021_IFM         | 2000.0
+505_2021_THNB        | 52907.0
+505_2021_THNP        | 0.0
+505_2025_ASV         | 0.0
+505_2025_IFM         | 2000.0
+505_2025_THNB        | 52907.0
+505_2025_THNP        | 0.0
+505_2030_ASV         | 0.0
+505_2030_IFM         | 2000.0
+505_2030_THNB        | 52907.0
+505_2030_THNP        | 0.0
+505_2050_ASV         | 2000.0
+505_2050_IFM         | 0.0
+505_2050_THNB        | 52907.0
+505_2050_THNP        | 0.0
+608_2021_AWR         | 118164.0
+608_2025_AWR         | 118164.0
+608_2030_AWR         | 118164.0
+608_2050_AWR         | 118164.0
+999_2021_AWR         | 24845.0
+999_2021_CAR         | 0.0
+999_2021_NAR         | 0.0
+999_2021_SAR         | 0.0
+999_2025_AWR         | 24845.0
+999_2025_CAR         | 0.0
+999_2025_NAR         | 0.0
+999_2025_SAR         | 0.0
+999_2030_AWR         | 24845.0
+999_2030_CAR         | 0.0
+999_2030_NAR         | 0.0
+999_2030_SAR         | 0.0
+999_2050_AWR         | 24845.0
+999_2050_CAR         | 0.0
+999_2050_NAR         | 0.0
+999_2050_SAR         | 0.0
+dummy0               | 0.0
+dummy1               | 0.0
+
+
+ == Shadow Prices
+dummyGE0                                 | 0.0
+505ASV_2050Cap                           | 8.7090682983399
+ARstart_2021                             | 0.0
+AWRTotalAc_2021                          | 0.0
+AWRTotalAc_2025                          | 0.0
+AWRTotalAc_2030                          | 0.0
+AWRTotalAc_2050                          | 0.0
+ThinSetup                                | 0.0
+TotalAcreage                             | 0.0
+YearlyAcreage_2021                       | 0.0
+YearlyAcreage_2025                       | 0.0
+YearlyAcreage_2030                       | 0.0
+YearlyAcreage_2050                       | 0.0
+167NAcreage_2021                         | -0.0
+167NAcreage_2025                         | -0.0
+167NAcreage_2030                         | -0.0
+167NAcreage_2050                         | 57.7596359252929
+167SAcreage_2021                         | -0.0
+167SAcreage_2025                         | -0.0
+167SAcreage_2030                         | -0.0
+167SAcreage_2050                         | 62.4855117797851
+505Acreage_2021                          | 0.0
+505Acreage_2025                          | 0.0
+505Acreage_2030                          | 0.0
+505Acreage_2050                          | 85.7316131591796
+608Acreage_2021                          | -0.0
+608Acreage_2025                          | -0.0
+608Acreage_2030                          | -0.0
+608Acreage_2050                          | 46.7029762268066
+999Acreage_2021                          | 0.0
+999Acreage_2025                          | 0.0
+999Acreage_2030                          | 0.0
+999Acreage_2050                          | 30.1517944335937
+ARCont2025_CAR                           | -0.0
+ARCont2025_NAR                           | -0.0
+ARCont2025_SAR                           | -0.0
+ARcont2030_CAR                           | -0.0
+ARcont2030_NAR                           | -0.0
+ARcont2030_SAR                           | -0.0
+ARcont2050_CAR                           | 6.5384464263916
+ARcont2050_NAR                           | 10.5958671569824
+ARcont2050_SAR                           | 4.1367454528809
+ThinCont2025_167N                        | 0.0
+ThinCont2025_167S                        | 0.0
+ThinCont2025_505                         | -0.0
+ThinCont2030_167N                        | 0.0
+ThinCont2030_167S                        | 0.0
+ThinCont2030_505                         | -0.0
+ThinCont2050_167N                        | 0.0
+ThinCont2050_167S                        | 0.0
+ThinCont2050_505                         | 0.0
+ZeroingTHNP_167N_2021_THNP               | 0.0
+ZeroingTHNP_167N_2025_THNP               | 0.0
+ZeroingTHNP_167N_2030_THNP               | 0.0
+ZeroingTHNP_167N_2050_THNP               | 51.6219635009765
+ZeroingTHNP_167S_2021_THNP               | 0.0
+ZeroingTHNP_167S_2025_THNP               | 0.0
+ZeroingTHNP_167S_2030_THNP               | 0.0
+ZeroingTHNP_167S_2050_THNP               | 55.9751739501953
+ZeroingTHNP_505_2021_THNP                | 0.0
+ZeroingTHNP_505_2025_THNP                | 0.0
+ZeroingTHNP_505_2030_THNP                | 0.0
+ZeroingTHNP_505_2050_THNP                | 78.0643310546875
+
+
+ == Slacks for GE
+dummyGE0                                 | 0.0
+
+
+ == Slacks for LE
+TotalAcreage                             | 4.0
+YearlyAcreage_2021                       | 0.0
+YearlyAcreage_2025                       | 0.0
+YearlyAcreage_2030                       | 0.0
+YearlyAcreage_2050                       | 0.0
+AWRTotalAc_2021                          | 0.0
+AWRTotalAc_2025                          | 0.0
+AWRTotalAc_2030                          | 0.0
+AWRTotalAc_2050                          | 0.0
+ThinSetup                                | 2000.0
+ARstart_2021                             | 24845.0
+505ASV_2050Cap                           | 0.0
