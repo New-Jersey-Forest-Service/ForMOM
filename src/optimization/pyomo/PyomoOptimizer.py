@@ -15,18 +15,9 @@ New Jersey Forest Service 2022
 import sys
 import pyomo.environ as pyo
 
-#Colab mount Google Drive and map paths
-from google.colab import drive
-drive.mount('gdrive')
-#Google drive paths
-COLABPATH = 'gdrive/My Drive/Colab Notebooks/'
-DATAPATH = 'gdrive/My Drive/Colab Notebooks/data/'
-#add COLABPATH to system path to load classes
-#and custom modules
-sys.path.insert(0, COLABPATH)
-
 #Path for input file
-filepath = DATAPATH+'SLmonthly_1.dat'
+filepath = '/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/MiniModelRunning/run2/out.dat'
+# filepath = '../convert_to_dat/sample_data/SLmonthly1_out.dat'
 
 # In Python2, integer divisions truncate values (1/2 = 0 instead of 0.5)
 # which breaks the solver. Either way, we should be using python3
@@ -75,30 +66,66 @@ model.EQConstraint = pyo.Constraint(model.index_eq_consts, rule=eq_mat_rule)
 
 # Now read data file
 instance = model.create_instance(filename=filepath)
-solved_model = pyo.SolverFactory('glpk')
+
+# Add duals (shadow cost) info 
+# ong I have no idea why duals are the same as shadow costs, but they are so we good
+instance.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT_EXPORT)
+
+solver = pyo.SolverFactory('glpk')
 
 # Now optimize
-results = solved_model.solve(instance)
+results = solver.solve(instance, tee=True)
+print("\n" * 5)
 
-#print outputs
-'''
-This part of the program could use improvements;
-process some of this information into outputfiles
-or databases
-'''
-print()
-print(instance.OBJ.pprint())
-print(instance.EQConstraint.pprint())
-print(instance.GEConstraint.pprint())
-print(instance.LEConstraint.pprint())
+# Check status of model
+status = results.solver.status
+termination_cond = results.solver.termination_condition
 
-print('\n\n==== Nicer Formatting ====')
+print(f"Solve attempted")
+print(f"Status: {status}")
+print(f"Termination Condition: {termination_cond}")
+print("\n" * 5)
 
-for v in instance.component_objects(pyo.Objective, active=True):
-	print("Objective Value: ", pyo.value(v))
+if (termination_cond != pyo.TerminationCondition.optimal):
+	print(" [[ ERROR ]]: Solve ended without optimal solution")
+	print("\taborting")
+	sys.exit(0)
 
-print()
-print("Decision Variables")
-for v in instance.component_objects(pyo.Var, active=True):
-	for index in v:
-		print(index, " ", pyo.value(v[index]))
+
+
+# Get variable values
+decvars = instance.x.keys()
+decvars_values = {str(k): pyo.value(instance.x[k]) for k in decvars}
+decvars = list(decvars_values.keys())
+
+# Pg. 14 - 22 of this textbook on optimization are really handy http://web.mit.edu/15.053/www/AMP-Chapter-01.pdf
+
+# Slack & Shadow Price extraction 
+# 
+# Courtesy of this stack overflow
+# https://stackoverflow.com/questions/65523319/pyomo-accesing-retrieving-dual-variables-shadow-price-with-binary-variables
+
+shadow_prices = {str(key).split("[")[1][:-1]: instance.dual[key] for key in instance.dual.keys()}
+shadow_keys = list(shadow_prices.keys())
+
+# Extracting Slack Amounts
+ge_keys = instance.GEConstraint.keys()
+ge_slack = {str(key): instance.GEConstraint[key].lslack() for key in ge_keys}
+ge_keys = list(ge_slack.keys())
+
+le_keys = instance.LEConstraint.keys()
+le_slack = {str(key): instance.LEConstraint[key].uslack() for key in le_keys}
+le_keys = list(le_slack.keys())
+
+# Now actual output
+print("\n\n == Variables")
+[print("%-20s | %s" % (k, decvars_values[k])) for k in decvars]
+
+print("\n\n == Shadow Prices")
+[print("%-40s | %s" % (k, shadow_prices[k])) for k in shadow_keys]
+
+print("\n\n == Slacks for GE")
+[print("%-40s | %s" % (k, ge_slack[k])) for k in ge_keys]
+
+print("\n\n == Slacks for LE")
+[print("%-40s | %s" % (k, le_slack[k])) for k in le_keys]

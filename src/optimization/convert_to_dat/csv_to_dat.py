@@ -10,7 +10,6 @@ William Zipse
 NJDEP
 '''
 
-import os
 import sys
 import csv
 from typing import Union, List
@@ -110,8 +109,11 @@ def convertInputToFinalModel (objData: models.InputObjectiveData, constData: mod
 	eq_mat = []
 
 	# Actually populating the lists
-	var_names = objData.var_names
-	obj_coeffs = objData.obj_coeffs
+	var_names = constData.var_names
+	obj_coeffs = [0.0] * len(objData.obj_coeffs)
+	for ind, name in enumerate(objData.var_names):
+		coef_ind = var_names.index(name)
+		obj_coeffs[coef_ind] = objData.obj_coeffs[ind]
 
 	for ind, name in enumerate(constData.const_names):
 		# TODO: This .lower().strip() should happen in the linting step

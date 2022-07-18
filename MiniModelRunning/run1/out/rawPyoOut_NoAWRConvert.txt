@@ -1,0 +1,136 @@
+
+OBJ : Size=1, Index=None, Active=True
+    Key  : Active : Sense    : Expression
+    None :   True : maximize : 34.4373016357421*x[167N_2021_THNB] + 32.2928771972656*x[167N_2021_THNP] + 35.4822769165039*x[167N_2025_THNB] + 31.2475566864013*x[167N_2025_THNP] + 36.572166442871*x[167N_2030_THNB] + 31.3943672180175*x[167N_2030_THNP] + 57.7596359252929*x[167N_2050_THNB] + 51.6219635009765*x[167N_2050_THNP] + 36.4387779235839*x[167S_2021_THNB] + 34.9812507629394*x[167S_2021_THNP] + 37.1355934143066*x[167S_2025_THNB] + 34.2491264343261*x[167S_2025_THNP] + 38.2803230285644*x[167S_2030_THNB] + 34.5228767395019*x[167S_2030_THNP] + 62.4855117797851*x[167S_2050_THNB] + 55.9751739501953*x[167S_2050_THNP] + 55.2021255493164*x[505_2021_ASV] + 52.616355895996*x[505_2021_IFM] + 53.6938209533691*x[505_2021_THNB] + 49.5024185180664*x[505_2021_THNP] + 59.4086265563964*x[505_2025_ASV] + 54.11275100708*x[505_2025_IFM] + 55.1071472167968*x[505_2025_THNB] + 49.0158538818359*x[505_2025_THNP] + 63.4050559997558*x[505_2030_ASV] + 57.4300193786621*x[505_2030_IFM] + 58.0108642578125*x[505_2030_THNB] + 50.4638519287109*x[505_2030_THNP] + 94.4406814575195*x[505_2050_ASV] + 78.3806076049804*x[505_2050_IFM] + 85.7316131591796*x[505_2050_THNB] + 78.0643310546875*x[505_2050_THNP] + 27.2774925231933*x[608_2021_AWR] + 21.5948886871337*x[608_2025_AWR] + 21.1313648223877*x[608_2030_AWR] + 46.7029762268066*x[608_2050_AWR] + 4.82215595245361*x[999_2021_AWR] + 4.82215595245361*x[999_2021_CAR] + 4.82486200332642*x[999_2021_NAR] + 4.82215595245361*x[999_2021_SAR] + 4.35904598236084*x[999_2025_AWR] + 4.11526250839233*x[999_2025_CAR] + 3.92398738861084*x[999_2025_NAR] + 4.18675756454468*x[999_2025_SAR] + 6.59027862548828*x[999_2030_AWR] + 4.93814754486084*x[999_2030_CAR] + 4.10875606536865*x[999_2030_NAR] + 5.29899883270264*x[999_2030_SAR] + 30.1517944335937*x[999_2050_AWR] + 23.6133480072021*x[999_2050_CAR] + 19.5559272766113*x[999_2050_NAR] + 26.0150489807128*x[999_2050_SAR] - x[dummy0] - x[dummy1]
+None
+EQConstraint : Size=50, Index=index_eq_consts, Active=True
+    Key                        : Lower    : Body                                                                  : Upper    : Active
+              167NAcreage_2021 : 221277.0 :                                                     x[167N_2021_THNB] : 221277.0 :   True
+              167NAcreage_2025 : 221277.0 :                                                     x[167N_2025_THNB] : 221277.0 :   True
+              167NAcreage_2030 : 221277.0 :                                                     x[167N_2030_THNB] : 221277.0 :   True
+              167NAcreage_2050 : 221277.0 :                                                     x[167N_2050_THNB] : 221277.0 :   True
+              167SAcreage_2021 : 197602.0 :                                                     x[167S_2021_THNB] : 197602.0 :   True
+              167SAcreage_2025 : 197602.0 :                                                     x[167S_2025_THNB] : 197602.0 :   True
+              167SAcreage_2030 : 197602.0 :                                                     x[167S_2030_THNB] : 197602.0 :   True
+              167SAcreage_2050 : 197602.0 :                                                     x[167S_2050_THNB] : 197602.0 :   True
+               505Acreage_2021 :  54907.0 :                  x[505_2021_ASV] + x[505_2021_IFM] + x[505_2021_THNB] :  54907.0 :   True
+               505Acreage_2025 :  54907.0 :                  x[505_2025_ASV] + x[505_2025_IFM] + x[505_2025_THNB] :  54907.0 :   True
+               505Acreage_2030 :  54907.0 :                  x[505_2030_ASV] + x[505_2030_IFM] + x[505_2030_THNB] :  54907.0 :   True
+               505Acreage_2050 :  54907.0 :                  x[505_2050_ASV] + x[505_2050_IFM] + x[505_2050_THNB] :  54907.0 :   True
+               608Acreage_2021 : 118164.0 :                                                       x[608_2021_AWR] : 118164.0 :   True
+               608Acreage_2025 : 118164.0 :                                                       x[608_2025_AWR] : 118164.0 :   True
+               608Acreage_2030 : 118164.0 :                                                       x[608_2030_AWR] : 118164.0 :   True
+               608Acreage_2050 : 118164.0 :                                                       x[608_2050_AWR] : 118164.0 :   True
+               999Acreage_2021 :  24845.0 : x[999_2021_AWR] + x[999_2021_CAR] + x[999_2021_NAR] + x[999_2021_SAR] :  24845.0 :   True
+               999Acreage_2025 :  24845.0 : x[999_2025_AWR] + x[999_2025_CAR] + x[999_2025_NAR] + x[999_2025_SAR] :  24845.0 :   True
+               999Acreage_2030 :  24845.0 : x[999_2030_AWR] + x[999_2030_CAR] + x[999_2030_NAR] + x[999_2030_SAR] :  24845.0 :   True
+               999Acreage_2050 :  24845.0 : x[999_2050_AWR] + x[999_2050_CAR] + x[999_2050_NAR] + x[999_2050_SAR] :  24845.0 :   True
+                ARCont2025_CAR :      0.0 :                                     x[999_2021_CAR] - x[999_2025_CAR] :      0.0 :   True
+                ARCont2025_NAR :      0.0 :                                     x[999_2021_NAR] - x[999_2025_NAR] :      0.0 :   True
+                ARCont2025_SAR :      0.0 :                                     x[999_2021_SAR] - x[999_2025_SAR] :      0.0 :   True
+                ARcont2030_CAR :      0.0 :                                     x[999_2021_CAR] - x[999_2030_CAR] :      0.0 :   True
+                ARcont2030_NAR :      0.0 :                                     x[999_2021_NAR] - x[999_2030_NAR] :      0.0 :   True
+                ARcont2030_SAR :      0.0 :                                     x[999_2021_SAR] - x[999_2030_SAR] :      0.0 :   True
+                ARcont2050_CAR :      0.0 :                                     x[999_2021_CAR] - x[999_2050_CAR] :      0.0 :   True
+                ARcont2050_NAR :      0.0 :                                     x[999_2021_NAR] - x[999_2050_NAR] :      0.0 :   True
+                ARcont2050_SAR :      0.0 :                                     x[999_2021_SAR] - x[999_2050_SAR] :      0.0 :   True
+             ThinCont2025_167N :      0.0 :                                 x[167N_2021_THNB] - x[167N_2025_THNB] :      0.0 :   True
+             ThinCont2025_167S :      0.0 :                                 x[167S_2021_THNB] - x[167S_2025_THNB] :      0.0 :   True
+              ThinCont2025_505 :      0.0 :                                   x[505_2021_THNB] - x[505_2025_THNB] :      0.0 :   True
+             ThinCont2030_167N :      0.0 :                                 x[167N_2021_THNB] - x[167N_2030_THNB] :      0.0 :   True
+             ThinCont2030_167S :      0.0 :                                 x[167S_2021_THNB] - x[167S_2030_THNB] :      0.0 :   True
+              ThinCont2030_505 :      0.0 :                                   x[505_2021_THNB] - x[505_2030_THNB] :      0.0 :   True
+             ThinCont2050_167N :      0.0 :                                 x[167N_2021_THNB] - x[167N_2050_THNB] :      0.0 :   True
+             ThinCont2050_167S :      0.0 :                                 x[167S_2021_THNB] - x[167S_2050_THNB] :      0.0 :   True
+              ThinCont2050_505 :      0.0 :                                   x[505_2021_THNB] - x[505_2050_THNB] :      0.0 :   True
+    ZeroingTHNP_167N_2021_THNP :      0.0 :                                                     x[167N_2021_THNP] :      0.0 :   True
+    ZeroingTHNP_167N_2025_THNP :      0.0 :                                                     x[167N_2025_THNP] :      0.0 :   True
+    ZeroingTHNP_167N_2030_THNP :      0.0 :                                                     x[167N_2030_THNP] :      0.0 :   True
+    ZeroingTHNP_167N_2050_THNP :      0.0 :                                                     x[167N_2050_THNP] :      0.0 :   True
+    ZeroingTHNP_167S_2021_THNP :      0.0 :                                                     x[167S_2021_THNP] :      0.0 :   True
+    ZeroingTHNP_167S_2025_THNP :      0.0 :                                                     x[167S_2025_THNP] :      0.0 :   True
+    ZeroingTHNP_167S_2030_THNP :      0.0 :                                                     x[167S_2030_THNP] :      0.0 :   True
+    ZeroingTHNP_167S_2050_THNP :      0.0 :                                                     x[167S_2050_THNP] :      0.0 :   True
+     ZeroingTHNP_505_2021_THNP :      0.0 :                                                      x[505_2021_THNP] :      0.0 :   True
+     ZeroingTHNP_505_2025_THNP :      0.0 :                                                      x[505_2025_THNP] :      0.0 :   True
+     ZeroingTHNP_505_2030_THNP :      0.0 :                                                      x[505_2030_THNP] :      0.0 :   True
+     ZeroingTHNP_505_2050_THNP :      0.0 :                                                      x[505_2050_THNP] :      0.0 :   True
+None
+GEConstraint : Size=1, Index=index_ge_consts, Active=True
+    Key      : Lower : Body                  : Upper : Active
+    dummyGE0 :   0.0 : x[dummy0] + x[dummy1] :  +Inf :   True
+None
+LEConstraint : Size=11, Index=index_le_consts, Active=True
+    Key                : Lower : Body                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              : Upper     : Active
+          ARstart_2021 :  -Inf :                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               x[999_2021_CAR] + x[999_2021_NAR] + x[999_2021_SAR] :   24845.0 :   True
+       AWRTotalAc_2021 :  -Inf :                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 x[608_2021_AWR] + x[999_2021_AWR] :  143009.0 :   True
+       AWRTotalAc_2025 :  -Inf :                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 x[608_2025_AWR] + x[999_2025_AWR] :  143009.0 :   True
+       AWRTotalAc_2030 :  -Inf :                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 x[608_2030_AWR] + x[999_2030_AWR] :  143009.0 :   True
+       AWRTotalAc_2050 :  -Inf :                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 x[608_2050_AWR] + x[999_2050_AWR] :  143009.0 :   True
+             ThinSetup :  -Inf :                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          x[167N_2021_THNB] + x[167S_2021_THNB] + x[505_2021_THNB] :  473786.0 :   True
+          TotalAcreage :  -Inf : x[167N_2021_THNB] + x[167N_2025_THNB] + x[167N_2030_THNB] + x[167N_2050_THNB] + x[167S_2021_THNB] + x[167S_2025_THNB] + x[167S_2030_THNB] + x[167S_2050_THNB] + x[505_2021_ASV] + x[505_2021_IFM] + x[505_2021_THNB] + x[505_2025_ASV] + x[505_2025_IFM] + x[505_2025_THNB] + x[505_2030_ASV] + x[505_2030_IFM] + x[505_2030_THNB] + x[505_2050_ASV] + x[505_2050_IFM] + x[505_2050_THNB] + x[608_2021_AWR] + x[608_2025_AWR] + x[608_2030_AWR] + x[608_2050_AWR] + x[999_2021_AWR] + x[999_2021_CAR] + x[999_2021_NAR] + x[999_2021_SAR] + x[999_2025_AWR] + x[999_2025_CAR] + x[999_2025_NAR] + x[999_2025_SAR] + x[999_2030_AWR] + x[999_2030_CAR] + x[999_2030_NAR] + x[999_2030_SAR] + x[999_2050_AWR] + x[999_2050_CAR] + x[999_2050_NAR] + x[999_2050_SAR] : 2467184.0 :   True
+    YearlyAcreage_2021 :  -Inf :                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            x[167N_2021_THNB] + x[167S_2021_THNB] + x[505_2021_ASV] + x[505_2021_IFM] + x[505_2021_THNB] + x[608_2021_AWR] + x[999_2021_AWR] + x[999_2021_CAR] + x[999_2021_NAR] + x[999_2021_SAR] :  616795.0 :   True
+    YearlyAcreage_2025 :  -Inf :                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            x[167N_2025_THNB] + x[167S_2025_THNB] + x[505_2025_ASV] + x[505_2025_IFM] + x[505_2025_THNB] + x[608_2025_AWR] + x[999_2025_AWR] + x[999_2025_CAR] + x[999_2025_NAR] + x[999_2025_SAR] :  616795.0 :   True
+    YearlyAcreage_2030 :  -Inf :                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            x[167N_2030_THNB] + x[167S_2030_THNB] + x[505_2030_ASV] + x[505_2030_IFM] + x[505_2030_THNB] + x[608_2030_AWR] + x[999_2030_AWR] + x[999_2030_CAR] + x[999_2030_NAR] + x[999_2030_SAR] :  616795.0 :   True
+    YearlyAcreage_2050 :  -Inf :                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            x[167N_2050_THNB] + x[167S_2050_THNB] + x[505_2050_ASV] + x[505_2050_IFM] + x[505_2050_THNB] + x[608_2050_AWR] + x[999_2050_AWR] + x[999_2050_CAR] + x[999_2050_NAR] + x[999_2050_SAR] :  616795.0 :   True
+None
+
+
+==== Nicer Formatting ====
+Objective Value:  100686291.5995673
+
+Decision Variables
+167N_2021_THNB   221277.0
+167N_2021_THNP   0.0
+167N_2025_THNB   221277.0
+167N_2025_THNP   0.0
+167N_2030_THNB   221277.0
+167N_2030_THNP   0.0
+167N_2050_THNB   221277.0
+167N_2050_THNP   0.0
+167S_2021_THNB   197602.0
+167S_2021_THNP   0.0
+167S_2025_THNB   197602.0
+167S_2025_THNP   0.0
+167S_2030_THNB   197602.0
+167S_2030_THNP   0.0
+167S_2050_THNB   197602.0
+167S_2050_THNP   0.0
+505_2021_ASV   54907.0
+505_2021_IFM   0.0
+505_2021_THNB   0.0
+505_2021_THNP   0.0
+505_2025_ASV   54907.0
+505_2025_IFM   0.0
+505_2025_THNB   0.0
+505_2025_THNP   0.0
+505_2030_ASV   54907.0
+505_2030_IFM   0.0
+505_2030_THNB   0.0
+505_2030_THNP   0.0
+505_2050_ASV   54907.0
+505_2050_IFM   0.0
+505_2050_THNB   0.0
+505_2050_THNP   0.0
+608_2021_AWR   118164.0
+608_2025_AWR   118164.0
+608_2030_AWR   118164.0
+608_2050_AWR   118164.0
+999_2021_AWR   24845.0
+999_2021_CAR   0.0
+999_2021_NAR   0.0
+999_2021_SAR   0.0
+999_2025_AWR   24845.0
+999_2025_CAR   0.0
+999_2025_NAR   0.0
+999_2025_SAR   0.0
+999_2030_AWR   24845.0
+999_2030_CAR   0.0
+999_2030_NAR   0.0
+999_2030_SAR   0.0
+999_2050_AWR   24845.0
+999_2050_CAR   0.0
+999_2050_NAR   0.0
+999_2050_SAR   0.0
+dummy0   0.0
+dummy1   0.0
