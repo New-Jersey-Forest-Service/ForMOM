@@ -1,0 +1,26 @@
+# It took 1:13 to run the entire WY database :o
+DB_FILEPATH = './FIADB_WY.db'
+DB_NAME = 'FIADB_WY.db'
+INV_YEARS = [2015, 2016, 2017, 2018, 2019, 2020]
+
+# WARNING: This split was made with no regard
+#  to count locations and by a non-forester.
+#  It was helpful for testing the software, but
+#  should (probably) not be used for actual FVS runs
+COUNTY_SPLIT_DICT = {
+	'266': {
+		'266A': [1, 3, 7, 13, 19, 23],
+		'266B': [29, 33, 35],
+		'266C': [39]
+	},
+	'268': {
+		'268A': [3, 7, 13, 19, 23, 25, 29],
+		'268B': [33, 35, 39]
+	},
+	'281': {
+		'281A': [1, 3, 7, 13, 23],
+		'281C': [29],
+		'281B': [33, 35, 19],
+		'281D': [39]
+	}
+}

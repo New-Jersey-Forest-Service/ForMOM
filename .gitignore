@@ -128,5 +128,13 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-.vscode
+# Database work
 *.db
+*.db-journal
+
+# IDE Stuff
+.vscode
+.idea
+
+# For the vim users
+.swp
