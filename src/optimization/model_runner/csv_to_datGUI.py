@@ -10,8 +10,9 @@ William Zipse
 NJDEP
 '''
 
-from tkinter import *
 from tkinter import filedialog
+import tkinter as tk
+from tkinter import ttk
 
 from model_data_classes import *
 import csv_to_dat as converter
@@ -162,8 +163,8 @@ def doProcessing() -> None:
         # Lint Data
         objData, constrData, messages = converter.lintInputData(objData, constrData)
 
-        txtOutput.delete("1.0", END)
-        txtOutput.insert(END, "\n\n".join(messages))
+        txtOutput.delete("1.0", tk.END)
+        txtOutput.insert(tk.END, "\n\n".join(messages))
 
         if objData == None:
             txtOutput.insert("1.0", "[[ Errors Occured - Unable to Convert ]] \n\n")
@@ -176,8 +177,8 @@ def doProcessing() -> None:
         txtOutput.insert("1.0", "[[ Conversion Successful ]]\n\n")
 
     except Exception:
-        txtOutput.delete("1.0", END)
-        txtOutput.insert(END, "[[ Unkown Errors Occured :( - Unable to Convert ]]")
+        txtOutput.delete("1.0", tk.END)
+        txtOutput.insert(tk.END, "[[ Unkown Errors Occured :( - Unable to Convert ]]")
 
 
 
@@ -200,48 +201,55 @@ def main():
     global lblObj, lblConstr, lblDat, btnProc, txtOutput
 
     #create a main window
-    root = Tk()
+    root = tk.Tk()
+    root.option_add("*tearOff", False)
     root.title('NJFS ForMOM - CSV to Dat')
     root.geometry('450x600')
     root.rowconfigure(2, weight=1)
     root.columnconfigure(0, weight=1)
 
-    #Title + Instruction Label
-    frmTitle = Frame(root)
+    #Import Theme
+    style = ttk.Style(root)
+    root.tk.call("source", "./theme/forest-light.tcl")
+    style.theme_use("forest-light")
 
-    lblTitle = Label(frmTitle, text="NJFS .csv to .dat Converter", font=("Arial", 20), anchor="center")
-    lblInstruction = Label(frmTitle, text="Select Input CSV's and then Process", anchor="center")
+
+    #Title + Instruction Label
+    frmTitle = ttk.Frame(root)
+
+    lblTitle = ttk.Label(frmTitle, text="NJFS .csv to .dat Converter", font=("Arial", 20), anchor="center")
+    lblInstruction = ttk.Label(frmTitle, text="Select Input CSV's and then Process", anchor="center")
     lblTitle.grid(row=0, column=0)
     lblInstruction.grid(row=1, column=0)
 
     #File Selectors
-    frmFileSelectors = Frame(root)
+    frmFileSelectors = ttk.Frame(root)
     frmFileSelectors.rowconfigure([0, 1, 2], minsize=50, weight=1)
     frmFileSelectors.columnconfigure([0, 1], weight=1)
     frmFileSelectors.columnconfigure(0, minsize=125)
 
-    btnObjFile = Button(frmFileSelectors,text='Objective CSV',command=setObjFile)
-    lblObj     = Label(frmFileSelectors, text="No file selected", width=PATH_DISPLAY_LEN, anchor="w")
+    btnObjFile = ttk.Button(frmFileSelectors,text='Objective CSV',command=setObjFile)
+    lblObj     = ttk.Label(frmFileSelectors, text="No file selected", width=PATH_DISPLAY_LEN, anchor="w")
     btnObjFile.grid(row=0, column=0, sticky="nse", pady=5)
     lblObj.grid(row=0, column=1, sticky="nsw", padx=5)
 
-    btnConstrFile = Button(frmFileSelectors,text='Constraint CSV',command=setConstrFile)
-    lblConstr     = Label(frmFileSelectors, text="No file selected", width=PATH_DISPLAY_LEN, anchor="w")
+    btnConstrFile = ttk.Button(frmFileSelectors,text='Constraint CSV',command=setConstrFile)
+    lblConstr     = ttk.Label(frmFileSelectors, text="No file selected", width=PATH_DISPLAY_LEN, anchor="w")
     btnConstrFile.grid(row=1, column=0, sticky="nse", pady=5)
     lblConstr.grid(row=1, column=1, sticky="nsw", padx=5)
 
-    btnDatFile = Button(frmFileSelectors,text='Output DAT',command=setOutFile)
-    lblDat     = Label(frmFileSelectors, text="No file selected", width=PATH_DISPLAY_LEN, anchor="w")
+    btnDatFile = ttk.Button(frmFileSelectors,text='Output DAT',command=setOutFile)
+    lblDat     = ttk.Label(frmFileSelectors, text="No file selected", width=PATH_DISPLAY_LEN, anchor="w")
     btnDatFile.grid(row=2, column=0, sticky="nse", pady=5)
     lblDat.grid(row=2, column=1, sticky="nsw", padx=5)
 
     #Processing
-    frmProcess = Frame(root)
+    frmProcess = ttk.Frame(root)
     frmProcess.rowconfigure(1, weight=1)
     frmProcess.columnconfigure(0, weight=1)
 
-    btnProc = Button(frmProcess,text='Process',command=doProcessing)
-    txtOutput = Text(frmProcess, height=20)
+    btnProc = ttk.Button(frmProcess,text='Process',command=doProcessing)
+    txtOutput = tk.Text(frmProcess, height=20)
 
     btnProc.grid(row=0, column=0, pady=5, sticky="ns")
     txtOutput.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")

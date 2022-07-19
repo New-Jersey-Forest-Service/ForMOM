@@ -19,6 +19,11 @@ import model_data_classes as models
 
 
 
+# TODO:
+# [ ] Check for Dark / Light theme https://pypi.org/project/darkdetect/
+# [ ]
+
+
 
 
 # ======================================================
