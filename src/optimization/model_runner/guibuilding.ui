@@ -235,8 +235,25 @@
         </layout>
         <child>
           <object class="tk.Text" id="txt_status">
+            <property name="text" translatable="yes">     
+
+
+            888'Y88    
+            888 ,'Y  e88 88e  888,8,
+            888C8   d888 888b 888 " 
+            888 "   Y888 888P 888   
+            888      "88 88"  888   
+ 
+         e   e       e88 88e       e   e
+        d8b d8b     d888 888b     d8b d8b
+       e Y8b Y8b   C8888 8888D   e Y8b Y8b
+      d8b Y8b Y8b   Y888 888P   d8b Y8b Y8b
+     d888b Y8b Y8b   "88 88"   d888b Y8b Y8b
+
+  
+</property>
+            <property name="undo">true</property>
             <property name="width">50</property>
-            <property name="wrap">word</property>
             <layout manager="grid">
               <property name="column">0</property>
               <property name="padx">10</property>
