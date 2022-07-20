@@ -322,18 +322,16 @@ def checkVarNamesMatch (objVarNames: List[str], constVarNames: List[str]) -> str
 	varsOnlyInObj = set(objVarNames) - set(constVarNames)
 
 	if varsOnlyInConst:
-		return
-		'''
-			Found decision variables in the constraint file
-			that don't exist in the objective file:
-		''' + ", ".join([str(x) for x in varsOnlyInConst])
+		return \
+				"Found decision variables in the constraint file " + \
+				"that don't exist in the objective file: " + \
+				", ".join([str(x) for x in varsOnlyInConst])
 
 	if varsOnlyInObj:
-		return
-		'''
-			Found unconstrained variable, i.e. they exist in
-			the objective file but not the constraint file:
-		''' + ", ".join([str(x) for x in varsOnlyInObj])
+		return \
+				"Found unconstrained variable, i.e. they exist in " + \
+				"the objective file but not the constraint file: " + \
+				", ".join([str(x) for x in varsOnlyInObj])
 
 	# If the two sets are unequal, one of them should have a member
 	# the other doesn't. The code should never reach here.
