@@ -4,7 +4,10 @@ gui_main.py
 This file launches the program
 '''
 
+import os
+import pathlib
 import tkinter as tk
+from tkinter import ttk
 
 import gui_mainmenu
 import models
@@ -17,6 +20,13 @@ def main():
 
 	root = tk.Tk()
 	root.minsize(width=400, height=400)
+	root.option_add("*tearOff", False)
+
+	# Load Theme info
+	style = ttk.Style(root)
+	themepath = pathlib.Path(__file__).parent.joinpath('../theme/forest-light.tcl').absolute()
+	root.tk.call("source", themepath)
+	style.theme_use('forest-light')
 
 	gui_mainmenu.buildGUI_OpeningScreen(root, projectState)
 
