@@ -6,9 +6,13 @@ import tkinter.ttk as ttk
 import attrs
 import pathlib
 import os
+import tempfile
 
 import csv_to_dat as converter
 import model_data_classes as model
+import pyomo_runner
+import pyomo.environ as pyo
+import pyomo.opt as opt
 
 PATH_DISPLAY_LEN = 35
 CSV_FILES = [('CSV Files','*.csv'), ('All Files','*.*')]
@@ -19,10 +23,10 @@ CSV_FILES = [('CSV Files','*.csv'), ('All Files','*.*')]
 class GUIState:
 	objFileStr: str = ""
 	constFileStr: str = ""
-	loadSuccess: bool = False
-	runSuccess: bool = False
 
 	loadedModel: model.FinalModel = None
+	runInstance: pyo.ConcreteModel = None
+	runResult: opt.SolverResults = None
 
 
 
@@ -125,6 +129,7 @@ class GuibuildingApp:
 	def run(self):
 		self.mainwindow.mainloop()
 
+
 	def onbtn_import_obj(self):
 		'''
 			Select objective csv with a chooser
@@ -199,9 +204,27 @@ class GuibuildingApp:
 	def onbtn_run_run(self):
 		print("Now do the run")
 
-		self._write_new_status('')
+		datloc = tempfile.NamedTemporaryFile()
+		temppath = pathlib.Path(datloc.name).absolute()
+
+		converter.writeOutputDat(
+			self.state.loadedModel, 
+			temppath,
+			self.state.objFileStr,
+			self.state.constFileStr
+			)
+		
+		instance = pyomo_runner.loadPyomoModelFromDat(temppath)
+		instance, res = pyomo_runner.solveConcreteModel(instance)
+		resStr = pyomo_runner.getOutputStr(instance, res)
+
+		self.state.runInstance = instance
+		self.state.runResult = res
+
+		datloc.close()
+
+		self._write_new_status(resStr)
 		self._redraw_dynamics()
-		pass
 
 
 	def onbtn_output_save(self):
@@ -275,10 +298,8 @@ class GuibuildingApp:
 			self.btn_loadmodel['style'] = 'Accent.TButton'
 		
 		else:
-			self.state.loadedModel = None
-			self.state.loadSuccess = False
-			self.state.runSuccess = False
 			return
+
 
 		# Stage 2: Model loaded
 		lm = self.state.loadedModel
@@ -296,10 +317,24 @@ class GuibuildingApp:
 			self.lbl_run_modelstats.configure(text=model_str)
 		
 		else:
-			self.state.runSuccess = False
 			return
 		
+
 		# Stage 3: Model was run
+		res = self.state.runResult
+
+		if res == None:
+			return
+
+		term_cond = res.solver.termination_condition
+
+		if term_cond == pyo.TerminationCondition.optimal:
+			self.btn_output['state'] = 'normal'
+			self.btn_output['style'] = 'Accent.TButton'
+
+		else:
+			return
+
 
 
 
