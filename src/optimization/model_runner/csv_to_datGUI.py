@@ -10,6 +10,7 @@ William Zipse
 NJDEP
 '''
 
+import time
 from tkinter import filedialog
 import tkinter as tk
 from tkinter import ttk
@@ -125,8 +126,10 @@ def updateProcessButtonStatus() -> None:
 
     if objSel and constrSel and datSel:
         btnProc['state'] = 'normal'
+        btnProc['style'] = 'Accent.TButton'
     else:
         btnProc['state'] = 'disabled'
+        btnProc['style'] = ''
 
 
 def shrinkPathString(pathstr: str) -> str:
@@ -166,18 +169,29 @@ def doProcessing() -> None:
         txtOutput.delete("1.0", tk.END)
         txtOutput.insert(tk.END, "\n\n".join(messages))
 
+        cur_time = time.localtime(time.time())
+        time_str = "{Year}-{Month}-{Day}-{Hour}-{Min}-{Sec}".format(
+            Year=cur_time.tm_year, 
+            Month=str(cur_time.tm_mon).zfill(2),  # zfill pads the string with zeros
+            Day=str(cur_time.tm_mday).zfill(2),   # i.e. "3" -> "03"
+            Hour=str(cur_time.tm_hour).zfill(2),
+            Min=str(cur_time.tm_min).zfill(2),
+            Sec=str(cur_time.tm_sec).zfill(2)
+        )
+        txtOutput.insert("1.0", time_str + "\n")
+
         if objData == None:
-            txtOutput.insert("1.0", "[[ Errors Occured - Unable to Convert ]] \n\n")
+            txtOutput.insert("end", "[[ Errors Occured - Unable to Convert ]] \n\n")
             return
 
         # Output to File
         finalModel = converter.convertInputToFinalModel(objData, constrData)
         converter.writeOutputDat(finalModel, outputDatFileStr, objFileStr, constrFileStr)
 
-        txtOutput.insert("1.0", "[[ Conversion Successful ]]\n\n")
+        txtOutput.insert("end", "[[ Conversion Successful ]]\n\n")
 
     except Exception:
-        txtOutput.delete("1.0", tk.END)
+        txtOutput.delete("end", tk.END)
         txtOutput.insert(tk.END, "[[ Unkown Errors Occured :( - Unable to Convert ]]")
 
 
@@ -228,17 +242,17 @@ def main():
     frmFileSelectors.columnconfigure([0, 1], weight=1)
     frmFileSelectors.columnconfigure(0, minsize=125)
 
-    btnObjFile = ttk.Button(frmFileSelectors,text='Objective CSV',command=setObjFile)
+    btnObjFile = ttk.Button(frmFileSelectors,text='Objective CSV',command=setObjFile,style="Accent.TButton")
     lblObj     = ttk.Label(frmFileSelectors, text="No file selected", width=PATH_DISPLAY_LEN, anchor="w")
     btnObjFile.grid(row=0, column=0, sticky="nse", pady=5)
     lblObj.grid(row=0, column=1, sticky="nsw", padx=5)
 
-    btnConstrFile = ttk.Button(frmFileSelectors,text='Constraint CSV',command=setConstrFile)
+    btnConstrFile = ttk.Button(frmFileSelectors,text='Constraint CSV',command=setConstrFile,style="Accent.TButton")
     lblConstr     = ttk.Label(frmFileSelectors, text="No file selected", width=PATH_DISPLAY_LEN, anchor="w")
     btnConstrFile.grid(row=1, column=0, sticky="nse", pady=5)
     lblConstr.grid(row=1, column=1, sticky="nsw", padx=5)
 
-    btnDatFile = ttk.Button(frmFileSelectors,text='Output DAT',command=setOutFile)
+    btnDatFile = ttk.Button(frmFileSelectors,text='Output DAT',command=setOutFile,style="Accent.TButton")
     lblDat     = ttk.Label(frmFileSelectors, text="No file selected", width=PATH_DISPLAY_LEN, anchor="w")
     btnDatFile.grid(row=2, column=0, sticky="nse", pady=5)
     lblDat.grid(row=2, column=1, sticky="nsw", padx=5)
