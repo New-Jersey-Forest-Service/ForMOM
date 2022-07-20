@@ -157,6 +157,17 @@ def convertInputToFinalModel (objData: models.InputObjectiveData, constData: mod
 #                Input Linting & Validation
 # ======================================================
 
+def lintInputDataFromFilepaths (objFilePath: str, constrFilePath: str) -> Union[models.InputObjectiveData, models.InputConstraintData, str]:
+	'''
+		Same outputs as lintInputData()
+
+		Read its docstring for info
+	'''
+	objData = openAndReadObjectiveCSV(objFilePath)
+	constrData = openAndReadConstraintCSV(constrFilePath)
+	return lintInputData(objData, constrData)
+
+
 def lintInputData (objData: models.InputObjectiveData, constData: models.InputConstraintData) -> Union[models.InputObjectiveData, models.InputConstraintData, str]:
 	'''
 		Goes through the data in the CSVs and runs some checks. It will return either:

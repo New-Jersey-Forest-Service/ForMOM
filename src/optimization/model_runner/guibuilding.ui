@@ -49,7 +49,7 @@
         <layout manager="grid">
           <property name="column">0</property>
           <property name="padx">0</property>
-          <property name="pady">10</property>
+          <property name="pady">0</property>
           <property name="row">1</property>
           <property name="sticky">nsew</property>
         </layout>
@@ -174,6 +174,18 @@
                 </layout>
               </object>
             </child>
+            <child>
+              <object class="ttk.Label" id="lbl_run_modelstats">
+                <property name="text" translatable="yes">No Model Loaded</property>
+                <layout manager="grid">
+                  <property name="column">0</property>
+                  <property name="padx">10</property>
+                  <property name="pady">10</property>
+                  <property name="row">0</property>
+                  <property name="sticky">nsew</property>
+                </layout>
+              </object>
+            </child>
           </object>
         </child>
         <child>
@@ -191,7 +203,7 @@
               <property type="col" id="0" name="weight">1</property>
             </containerlayout>
             <child>
-              <object class="ttk.Button" id="button6">
+              <object class="ttk.Button" id="btn_output">
                 <property name="command" type="command" cbtype="simple">onbtn_output_save</property>
                 <property name="text" translatable="yes">Save Output</property>
                 <layout manager="grid">
@@ -210,55 +222,26 @@
       </object>
     </child>
     <child>
-      <object class="ttk.Separator" id="separator">
-        <property name="orient">vertical</property>
-        <layout manager="grid">
-          <property name="column">1</property>
-          <property name="padx">10</property>
-          <property name="pady">5</property>
-          <property name="row">1</property>
-          <property name="sticky">ns</property>
-        </layout>
-      </object>
-    </child>
-    <child>
-      <object class="ttk.Frame" id="frm_status">
+      <object class="ttk.Labelframe" id="lblfrm_status">
         <property name="height">200</property>
+        <property name="text" translatable="yes">Status</property>
         <property name="width">200</property>
         <layout manager="grid">
-          <property name="column">2</property>
+          <property name="column">1</property>
+          <property name="padx">20</property>
+          <property name="pady">10</property>
           <property name="row">1</property>
           <property name="sticky">nsew</property>
         </layout>
-        <containerlayout manager="grid">
-          <property type="col" id="0" name="pad">10</property>
-          <property type="row" id="0" name="pad">10</property>
-        </containerlayout>
         <child>
-          <object class="ttk.Label" id="label1">
-            <property name="anchor">w</property>
-            <property name="justify">left</property>
-            <property name="text" translatable="yes">Status</property>
-            <layout manager="grid">
-              <property name="column">0</property>
-              <property name="row">0</property>
-              <property name="sticky">w</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <object class="tk.Text" id="txt_statusbox">
-            <property name="text" translatable="yes">adsafds
-f asdfkasdjfkl jsadklfj sdklajfkl sdjalf jkl
-sadfjklsad 
-jksad f
-kj jskdfjlsadjfkl sjadklfj klsaj klf
-Objective .csv</property>
+          <object class="tk.Text" id="txt_status">
             <property name="width">50</property>
             <property name="wrap">word</property>
             <layout manager="grid">
               <property name="column">0</property>
-              <property name="row">1</property>
+              <property name="padx">10</property>
+              <property name="pady">10</property>
+              <property name="row">0</property>
               <property name="sticky">nsew</property>
             </layout>
           </object>

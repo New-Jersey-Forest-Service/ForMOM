@@ -1,30 +1,32 @@
 #!/usr/bin/python3
-from enum import Enum
+import time
 import tkinter as tk
 from tkinter import filedialog
 import tkinter.ttk as ttk
 import attrs
-from enum import Enum, auto
+import pathlib
+import os
 
+import csv_to_dat as converter
+import model_data_classes as model
 
 PATH_DISPLAY_LEN = 35
 CSV_FILES = [('CSV Files','*.csv'), ('All Files','*.*')]
 
 
-class GUIPhase(Enum):
-	IMPORT = auto()
-	RUN = auto()
-	OUTPUT = auto()
-
 
 @attrs.define
 class GUIState:
-	phase: GUIPhase = GUIPhase.IMPORT
-
 	objFileStr: str = ""
 	constFileStr: str = ""
-	loadErr: str = ""
-	runErr: str = ""
+	loadSuccess: bool = False
+	runSuccess: bool = False
+
+	loadedModel: model.FinalModel = None
+
+
+
+
 
 
 class GuibuildingApp:
@@ -33,7 +35,7 @@ class GuibuildingApp:
 		self.state = GUIState()
 
 		# build ui
-		self.im_a_top = tk.Tk() if master is None else master
+		self.im_a_top = master if master != None else tk.Tk()
 		self.frm_title = ttk.Frame(self.im_a_top)
 		self.lbl_title = ttk.Label(self.frm_title)
 		self.lbl_title.configure(text="ForMOM Linear Model Runner")
@@ -48,11 +50,11 @@ class GuibuildingApp:
 		self.frm_actualrunning = ttk.Frame(self.im_a_top)
 		self.lblfrm_import = ttk.Labelframe(self.frm_actualrunning)
 		self.btn_objcsv = ttk.Button(self.lblfrm_import)
-		self.btn_objcsv.configure(text="Objective .csv", style="Accent.TButton")
+		self.btn_objcsv.configure(text="Objective .csv")
 		self.btn_objcsv.grid(column=0, ipadx=2, ipady=2, padx=5, row=0, sticky="ew")
 		self.btn_objcsv.configure(command=self.onbtn_import_obj)
 		self.btn_constcsv = ttk.Button(self.lblfrm_import)
-		self.btn_constcsv.configure(text="Constraint .csv", style="Accent.TButton")
+		self.btn_constcsv.configure(text="Constraint .csv")
 		self.btn_constcsv.grid(column=0, ipadx=2, ipady=2, padx=5, row=1, sticky="ew")
 		self.btn_constcsv.configure(command=self.onbtn_import_const)
 		self.btn_loadmodel = ttk.Button(self.lblfrm_import)
@@ -82,40 +84,33 @@ class GuibuildingApp:
 			column=0, columnspan=1, ipadx=10, ipady=5, padx=10, pady=10, row=1
 		)
 		self.btn_run.configure(command=self.onbtn_run_run)
+		self.lbl_run_modelstats = ttk.Label(self.lblfrm_run)
+		self.lbl_run_modelstats.configure(text="No Model Loaded")
+		self.lbl_run_modelstats.grid(column=0, padx=10, pady=10, row=0, sticky="nsew")
 		self.lblfrm_run.configure(height=200, text="Run", width=200)
 		self.lblfrm_run.grid(column=0, pady=10, row=1, sticky="nsew")
 		self.lblfrm_run.columnconfigure(0, weight=1)
 		self.lblfrm_output = ttk.Labelframe(self.frm_actualrunning)
-		self.button6 = ttk.Button(self.lblfrm_output)
-		self.button6.configure(text="Save Output")
-		self.button6.grid(
+		self.btn_output = ttk.Button(self.lblfrm_output)
+		self.btn_output.configure(text="Save Output")
+		self.btn_output.grid(
 			column=0, columnspan=1, ipadx=10, ipady=5, padx=10, pady=10, row=1
 		)
-		self.button6.configure(command=self.onbtn_output_save)
+		self.btn_output.configure(command=self.onbtn_output_save)
 		self.lblfrm_output.configure(height=200, text="Output", width=200)
 		self.lblfrm_output.grid(column=0, pady=10, row=2, sticky="nsew")
 		self.lblfrm_output.columnconfigure(0, weight=1)
 		self.frm_actualrunning.configure(height=200, width=300)
-		self.frm_actualrunning.grid(column=0, padx=0, pady=10, row=1, sticky="nsew")
+		self.frm_actualrunning.grid(column=0, padx=0, pady=0, row=1, sticky="nsew")
 		self.frm_actualrunning.rowconfigure(1, pad=10)
 		self.frm_actualrunning.rowconfigure(2, pad=10)
 		self.frm_actualrunning.columnconfigure(0, minsize=300)
-		self.separator = ttk.Separator(self.im_a_top)
-		self.separator.configure(orient="vertical")
-		self.separator.grid(column=1, padx=10, pady=5, row=1, sticky="ns")
-		self.frm_status = ttk.Frame(self.im_a_top)
-		self.label1 = ttk.Label(self.frm_status)
-		self.label1.configure(anchor="w", justify="left", text="Status")
-		self.label1.grid(column=0, row=0, sticky="w")
-		self.txt_statusbox = tk.Text(self.frm_status)
-		self.txt_statusbox.configure(width=50, wrap="word")
-		_text_ = "adsafds\nf asdfkasdjfkl jsadklfj sdklajfkl sdjalf jkl\nsadfjklsad \njksad f\nkj jskdfjlsadjfkl sjadklfj klsaj klf\nObjective .csv"
-		self.txt_statusbox.insert("0.0", _text_)
-		self.txt_statusbox.grid(column=0, row=1, sticky="nsew")
-		self.frm_status.configure(height=200, width=200)
-		self.frm_status.grid(column=2, row=1, sticky="nsew")
-		self.frm_status.rowconfigure(0, pad=10)
-		self.frm_status.columnconfigure(0, pad=10)
+		self.lblfrm_status = ttk.Labelframe(self.im_a_top)
+		self.txt_status = tk.Text(self.lblfrm_status)
+		self.txt_status.configure(width=50, wrap="word")
+		self.txt_status.grid(column=0, padx=10, pady=10, row=0, sticky="nsew")
+		self.lblfrm_status.configure(height=200, text="Status", width=200)
+		self.lblfrm_status.grid(column=1, padx=20, pady=10, row=1, sticky="nsew")
 		self.im_a_top.configure(height=200, padx=10, pady=10, width=200)
 		self.im_a_top.columnconfigure(0, weight=1)
 		self.im_a_top.columnconfigure(1, pad=10)
@@ -123,6 +118,9 @@ class GuibuildingApp:
 
 		# Main widget
 		self.mainwindow = self.im_a_top
+
+		self._init_styling()
+		self._redraw_dynamics()
 
 	def run(self):
 		self.mainwindow.mainloop()
@@ -145,23 +143,170 @@ class GuibuildingApp:
 			self.lbl_objpath.config(text=shrinkPathString(objFileStr))
 			self.state.objFileStr = objFileStr
 		
-		self.update_and_redraw()
+		self._redraw_dynamics()
+
 
 	def onbtn_import_const(self):
-		pass
+		constrFileStr = filedialog.askopenfilename(
+			filetypes=CSV_FILES,
+			defaultextension=CSV_FILES
+			)
+
+		# TODO: Improve behaviour by checking if previous selection
+		# is valid, so that selecting nothing doesn't clear everything
+		if isInvalidFile(constrFileStr):
+			self.lbl_constpath.config(text="No file selected")
+			self.state.constFileStr = ""
+		else:
+			self.lbl_constpath.config(text=shrinkPathString(constrFileStr))
+			self.state.constFileStr = constrFileStr
+		
+		self._redraw_dynamics()
+
 
 	def onbtn_import_load(self):
-		pass
+		'''
+		This reads the objective and constraint file, linting them
+		'''
+		print("Loading model")
+		objData, constrData, messages = converter.lintInputDataFromFilepaths(
+			objFilePath=self.state.objFileStr,
+			constrFilePath=self.state.constFileStr
+		)
+
+		status_str = ""
+
+		if objData == None:
+			# Error
+			status_str = "XXXXXX\n[[ Errors Occured - Unable to Convert ]]\n"
+			status_str += "\n\n[[ Error ]]\n".join([''] + messages)
+			self.state.loadedModel = None
+
+		else:
+			# Success
+			status_str = "[[ Conversion Success ]]\n"
+			if len(messages) >= 1:
+				status_str += "\n\n[[ Warning ]]\n".join([''] + messages)
+			self.state.loadedModel = converter.convertInputToFinalModel(
+				objData=objData, 
+				constData=constrData
+			)
+
+		self._write_new_status(status_str)
+		self._redraw_dynamics()
+
 
 	def onbtn_run_run(self):
+		print("Now do the run")
+
+		self._write_new_status('')
+		self._redraw_dynamics()
 		pass
+
 
 	def onbtn_output_save(self):
 		pass
 
 	
-	def update_and_redraw(self):
-		pass
+	def _write_new_status(self, msg_str: str):
+		'''
+		Writes to the status box, clearing out whatever was there
+		before and timestamping it.
+		'''
+		self.txt_status.delete("1.0", tk.END)
+
+		# Insert Time Stamp
+		cur_time = time.localtime(time.time())
+		time_str = "{Year}-{Month}-{Day}-{Hour}-{Min}-{Sec}".format(
+			Year=cur_time.tm_year, 
+			Month=str(cur_time.tm_mon).zfill(2),  # zfill pads the string with zeros
+			Day=str(cur_time.tm_mday).zfill(2),   # i.e. "3" -> "03"
+			Hour=str(cur_time.tm_hour).zfill(2),
+			Min=str(cur_time.tm_min).zfill(2),
+			Sec=str(cur_time.tm_sec).zfill(2)
+		)
+		self.txt_status.insert(tk.END, time_str + "\n\n")
+
+		# Insert message
+		self.txt_status.insert(tk.END, msg_str)
+
+
+	def _init_styling(self):
+		'''
+		There's some style work that I don't know how to input into
+		pyguru designer so instead it's done here
+		'''
+		# Buttons that are always green
+		btns = [
+			self.btn_constcsv,
+			self.btn_objcsv
+		]
+
+		for b in btns:
+			b['state'] = 'normal'
+			b['style'] = 'Accent.TButton'
+		
+		# Text sizes
+		self.lbl_title.configure(font=("Arial", 18))
+
+
+
+
+	def _redraw_dynamics(self):
+		# Reset all dyanmics
+		# buttons
+		btns = [
+			self.btn_output, 
+			self.btn_loadmodel, 
+			self.btn_run
+		]
+
+		for b in btns:
+			b['state'] = 'disabled'
+			b['style'] = ''
+
+		# label
+		self.lbl_run_modelstats.configure(text="No Model Loaded")
+
+
+		# Stage 1: Files Selected for import
+		if self.state.constFileStr != '' and self.state.objFileStr != '':
+			self.btn_loadmodel['state'] = 'normal'
+			self.btn_loadmodel['style'] = 'Accent.TButton'
+		
+		else:
+			self.state.loadedModel = None
+			self.state.loadSuccess = False
+			self.state.runSuccess = False
+			return
+
+		# Stage 2: Model loaded
+		lm = self.state.loadedModel
+
+		if lm != None:
+			self.btn_run['state'] = 'normal'
+			self.btn_run['style'] = 'Accent.TButton'
+
+			num_vars = len(lm.var_names)
+			num_consts = len(lm.eq_vec) + len(lm.ge_vec) + len(lm.le_vec)
+			model_str = \
+				f"Model Loaded\n" + \
+				f"{num_vars} variables, {num_consts} constraints\n" + \
+				f"EQ: {len(lm.eq_vec)} | GE: {len(lm.ge_vec)} | LE: {len(lm.le_vec)}"
+			self.lbl_run_modelstats.configure(text=model_str)
+		
+		else:
+			self.state.runSuccess = False
+			return
+		
+		# Stage 3: Model was run
+
+
+
+
+
+
+
 
 
 
@@ -170,11 +315,11 @@ def isInvalidFile(dialogOutput) -> bool:
 	return dialogOutput == None or len(dialogOutput) == 0 or dialogOutput.strip() == ""
 
 def shrinkPathString(pathstr: str) -> str:
-    pathstr = str(pathstr)
-    if len(pathstr) <= PATH_DISPLAY_LEN:
-        return pathstr
-    else:
-        return '...' + pathstr[3 - PATH_DISPLAY_LEN:]
+	pathstr = str(pathstr)
+	if len(pathstr) <= PATH_DISPLAY_LEN:
+		return pathstr
+	else:
+		return '...' + pathstr[3 - PATH_DISPLAY_LEN:]
 
 
 
@@ -186,6 +331,8 @@ if __name__ == "__main__":
 
 	# Load theme
 	style = ttk.Style(root)
+
+	os.chdir(pathlib.Path(__file__).parent)
 	root.tk.call("source", "./theme/forest-light.tcl")
 	style.theme_use("forest-light")
 
