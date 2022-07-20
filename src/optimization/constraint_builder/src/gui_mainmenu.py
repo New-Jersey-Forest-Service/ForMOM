@@ -5,6 +5,8 @@ This gives the user the option to load a project or start fresh.
 '''
 
 import tkinter as tk
+import tkinter.messagebox as tkmsg
+from tkinter import ttk
 
 import gui_newproject
 import gui_projectoverview
@@ -34,17 +36,14 @@ def updateLoadProj():
 	global _passedProjectState
 
 	projFilepath: str = io_file.getOpenFilepath(PROJ_FILES)
-	
-	fileData = None
-	with open(projFilepath, 'r') as file:
-		fileData = file.read()
-	if fileData == None:
-		return
-	
-	newProjState = models.fromOutputStr(fileData, models.ProjectState)
-	if not isinstance(newProjState, models.ProjectState):
-		return
+	newProjState, err = models.readProjectStateFile(projFilepath)
 
+	if err != None:
+		tkmsg.showerror(
+			title="Load File Error", 
+			message=f"Unable to open project: {err}")
+		return
+	
 	_passedProjectState = newProjState
 	
 	transitionToOverview()
