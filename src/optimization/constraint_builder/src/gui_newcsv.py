@@ -373,6 +373,8 @@ class GUINewCSV:
 
 
 	def _update_processfile(self):
+		self._previewReady = False
+
 		self._varNamesRaw = None
 		self._errWithObjFile = None
 		self._tagLists = None
@@ -397,6 +399,8 @@ class GUINewCSV:
 
 
 	def _update_groupnaming(self):
+		self._previewReady = False
+
 		if self._nameEntVarList == None:
 			self._nameEntVarList = []
 
@@ -493,9 +497,9 @@ class GUINewCSV:
 		
 		# Group Changes
 		groupchange_str = \
+			f"Changed:\n" + ", ".join(self._changesGroups[ChangeOptions.KEPT]) + "\n\n" + \
 			f"New:\n" + ", ".join(self._changesGroups[ChangeOptions.ADDED]) + "\n\n" + \
-			f"Removed:\n" + ", ".join(self._changesGroups[ChangeOptions.REMOVED]) + "\n\n" + \
-			f"Same:\n" + ", ".join(self._changesGroups[ChangeOptions.KEPT])
+			f"Removed:\n" + ", ".join(self._changesGroups[ChangeOptions.REMOVED])
 		self.lbl_changes_group.configure(text=groupchange_str)
 
 		# Tag Member Changes

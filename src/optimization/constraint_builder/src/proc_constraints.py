@@ -205,16 +205,20 @@ def change_varsdata (newVarData: models.VarsData, projectstate: models.ProjectSt
 				)
 
 			transferedLeft = []
-			for x in const.selLeftTags:
+			for x in const.selLeftTags[tagGroup]:
 				if not x in removedTags:
 					transferedLeft.append(x)
 			newLeftTags[tagGroup] = transferedLeft
 
 			transferRight = []
-			for x in const.selRightTags:
+			for x in const.selRightTags[tagGroup]:
 				if not x in removedTags:
 					transferRight.append(x)
-			newLeftTags[tagGroup] = transferRight
+			newRightTags[tagGroup] = transferRight
+		
+		for tagGroup in newGroups:
+			newLeftTags[tagGroup] = []
+			newRightTags[tagGroup] = []
 
 		# Add to list
 		newconst = models.SetupConstraintGroup(
@@ -243,7 +247,7 @@ def change_varsdata (newVarData: models.VarsData, projectstate: models.ProjectSt
 if __name__ == '__main__':
 
 	import devtesting
-	devtesting.dummyOldProjectState()
+	devtesting.dummyProjectState()
 
 
 	# Input
