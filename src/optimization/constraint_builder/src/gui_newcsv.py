@@ -24,7 +24,7 @@ class DifferenceOptions :
 
 
 
-class ObjreplaceApp:
+class GUINewCSV:
 
 	# State
 	_passedProjectState: models.ProjectState = None
@@ -578,5 +578,5 @@ if __name__ == "__main__":
 	projState = dummyProjectState()
 
 	root = tk.Tk()
-	app = ObjreplaceApp(root, projState)
+	app = GUINewCSV(root, projState)
 	root.mainloop()
