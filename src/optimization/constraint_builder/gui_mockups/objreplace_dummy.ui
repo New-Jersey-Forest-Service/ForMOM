@@ -39,7 +39,7 @@
           <property name="sticky">nsew</property>
         </layout>
         <containerlayout manager="grid">
-          <property name="anchor">n</property>
+          <property name="anchor">center</property>
           <property type="col" id="0" name="pad">10</property>
           <property type="col" id="1" name="weight">1</property>
           <property type="row" id="0" name="pad">10</property>
@@ -80,13 +80,13 @@
           </object>
         </child>
         <child>
-          <object class="ttk.Label" id="lbl_import_samplevar">
+          <object class="ttk.Label" id="label5">
             <property name="text" translatable="yes">Select a file</property>
             <layout manager="grid">
               <property name="column">1</property>
               <property name="padx">10</property>
               <property name="row">2</property>
-              <property name="sticky">w</property>
+              <property name="sticky">ew</property>
             </layout>
           </object>
         </child>
@@ -111,7 +111,7 @@
               <property name="column">1</property>
               <property name="padx">10</property>
               <property name="row">0</property>
-              <property name="sticky">w</property>
+              <property name="sticky">ew</property>
             </layout>
           </object>
         </child>
@@ -135,120 +135,6 @@
           <property type="row" id="1" name="weight">1</property>
         </containerlayout>
         <child>
-          <object class="ttk.Separator" id="separator1">
-            <property name="orient">vertical</property>
-            <layout manager="grid">
-              <property name="column">1</property>
-              <property name="padx">10</property>
-              <property name="pady">10</property>
-              <property name="row">0</property>
-              <property name="rowspan">2</property>
-              <property name="sticky">ns</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <object class="ttk.Frame" id="frm_naming_prompts">
-            <property name="width">200</property>
-            <layout manager="grid">
-              <property name="column">0</property>
-              <property name="padx">10</property>
-              <property name="pady">10</property>
-              <property name="row">1</property>
-              <property name="sticky">w</property>
-            </layout>
-            <containerlayout manager="grid">
-              <property type="col" id="1" name="weight">1</property>
-            </containerlayout>
-            <child>
-              <object class="ttk.Entry" id="ent_import_tagname1">
-                <property name="validate">key</property>
-                <property name="validatecommand" type="command" cbtype="entry_validate" args="%P %v">onent_naming_row1</property>
-                <property name="width">15</property>
-                <layout manager="grid">
-                  <property name="column">0</property>
-                  <property name="row">0</property>
-                  <property name="sticky">ew</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="ttk.Label" id="lbl_import_exname1">
-                <property name="padding">5</property>
-                <property name="text" translatable="yes">167N, 167S, 999</property>
-                <layout manager="grid">
-                  <property name="column">1</property>
-                  <property name="row">0</property>
-                  <property name="sticky">ew</property>
-                </layout>
-              </object>
-            </child>
-          </object>
-        </child>
-        <child>
-          <object class="ttk.Frame" id="frm_naming_existing">
-            <property name="width">200</property>
-            <layout manager="grid">
-              <property name="column">2</property>
-              <property name="row">1</property>
-              <property name="sticky">w</property>
-            </layout>
-            <containerlayout manager="grid">
-              <property name="anchor">center</property>
-              <property type="col" id="1" name="weight">1</property>
-            </containerlayout>
-            <child>
-              <object class="ttk.Label" id="lbl_import_exist1_example">
-                <property name="anchor">w</property>
-                <property name="text" translatable="yes">167N, 167S, 409</property>
-                <layout manager="grid">
-                  <property name="column">1</property>
-                  <property name="padx">10</property>
-                  <property name="row">0</property>
-                  <property name="sticky">ew</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="ttk.Label" id="lbl_import_exist1_name">
-                <property name="anchor">center</property>
-                <property name="relief">ridge</property>
-                <property name="text" translatable="yes">for_type</property>
-                <layout manager="grid">
-                  <property name="column">0</property>
-                  <property name="ipadx">5</property>
-                  <property name="ipady">5</property>
-                  <property name="row">0</property>
-                  <property name="sticky">e</property>
-                </layout>
-              </object>
-            </child>
-          </object>
-        </child>
-        <child>
-          <object class="ttk.Label" id="label7">
-            <property name="anchor">w</property>
-            <property name="text" translatable="yes">Existing Tags</property>
-            <layout manager="grid">
-              <property name="column">2</property>
-              <property name="row">0</property>
-              <property name="sticky">ew</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <object class="ttk.Label" id="lbl_naming">
-            <property name="anchor">w</property>
-            <property name="text" translatable="yes">Imported Tag Groups</property>
-            <layout manager="grid">
-              <property name="column">0</property>
-              <property name="padx">10</property>
-              <property name="row">0</property>
-              <property name="sticky">ew</property>
-            </layout>
-          </object>
-        </child>
-        <child>
           <object class="tk.Message" id="msg_import_err">
             <property name="justify">left</property>
             <property name="text" translatable="yes">[[ Error ]]
@@ -258,7 +144,7 @@ Sometimes it really be like that :/</property>
               <property name="column">0</property>
               <property name="columnspan">3</property>
               <property name="pady">10</property>
-              <property name="row">2</property>
+              <property name="row">1</property>
             </layout>
           </object>
         </child>
@@ -272,8 +158,140 @@ Sometimes it really be like that :/</property>
               <property name="ipadx">5</property>
               <property name="ipady">5</property>
               <property name="pady">10</property>
-              <property name="row">3</property>
+              <property name="row">2</property>
             </layout>
+          </object>
+        </child>
+        <child>
+          <object class="ttk.Frame" id="frm_naming">
+            <property name="height">200</property>
+            <property name="width">200</property>
+            <layout manager="grid">
+              <property name="column">0</property>
+              <property name="columnspan">3</property>
+              <property name="row">0</property>
+              <property name="sticky">nsew</property>
+            </layout>
+            <containerlayout manager="grid">
+              <property type="col" id="0" name="weight">1</property>
+              <property type="col" id="2" name="weight">1</property>
+            </containerlayout>
+            <child>
+              <object class="ttk.Label" id="label7">
+                <property name="anchor">w</property>
+                <property name="text" translatable="yes">Existing Tags</property>
+                <layout manager="grid">
+                  <property name="column">2</property>
+                  <property name="row">0</property>
+                  <property name="sticky">ew</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="ttk.Label" id="lbl_naming">
+                <property name="anchor">w</property>
+                <property name="text" translatable="yes">Imported Tag Groups</property>
+                <layout manager="grid">
+                  <property name="column">0</property>
+                  <property name="padx">10</property>
+                  <property name="row">0</property>
+                  <property name="sticky">ew</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="ttk.Separator" id="separator1">
+                <property name="orient">vertical</property>
+                <layout manager="grid">
+                  <property name="column">1</property>
+                  <property name="padx">10</property>
+                  <property name="pady">10</property>
+                  <property name="row">0</property>
+                  <property name="rowspan">2</property>
+                  <property name="sticky">ns</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="ttk.Frame" id="frm_naming_prompts">
+                <property name="height">200</property>
+                <property name="width">200</property>
+                <layout manager="grid">
+                  <property name="column">0</property>
+                  <property name="padx">10</property>
+                  <property name="pady">10</property>
+                  <property name="row">1</property>
+                  <property name="sticky">w</property>
+                </layout>
+                <containerlayout manager="grid">
+                  <property type="col" id="1" name="weight">1</property>
+                </containerlayout>
+                <child>
+                  <object class="ttk.Entry" id="ent_import_tagname1">
+                    <property name="validate">key</property>
+                    <property name="validatecommand" type="command" cbtype="entry_validate" args="%P %v">onent_naming_row1</property>
+                    <property name="width">15</property>
+                    <layout manager="grid">
+                      <property name="column">0</property>
+                      <property name="row">0</property>
+                      <property name="sticky">ew</property>
+                    </layout>
+                  </object>
+                </child>
+                <child>
+                  <object class="ttk.Label" id="lbl_import_exname1">
+                    <property name="padding">5</property>
+                    <property name="text" translatable="yes">167N, 167S, 999</property>
+                    <layout manager="grid">
+                      <property name="column">1</property>
+                      <property name="row">0</property>
+                      <property name="sticky">ew</property>
+                    </layout>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="ttk.Frame" id="frm_naming_existing">
+                <property name="height">200</property>
+                <property name="width">200</property>
+                <layout manager="grid">
+                  <property name="column">2</property>
+                  <property name="row">1</property>
+                  <property name="sticky">w</property>
+                </layout>
+                <containerlayout manager="grid">
+                  <property name="anchor">center</property>
+                  <property type="col" id="1" name="weight">1</property>
+                </containerlayout>
+                <child>
+                  <object class="ttk.Label" id="lbl_import_exist1_example">
+                    <property name="anchor">w</property>
+                    <property name="text" translatable="yes">167N, 167S, 409</property>
+                    <layout manager="grid">
+                      <property name="column">2</property>
+                      <property name="padx">10</property>
+                      <property name="row">0</property>
+                      <property name="sticky">ew</property>
+                    </layout>
+                  </object>
+                </child>
+                <child>
+                  <object class="ttk.Label" id="lbl_import_exist1_name">
+                    <property name="anchor">center</property>
+                    <property name="relief">ridge</property>
+                    <property name="text" translatable="yes">for_type</property>
+                    <layout manager="grid">
+                      <property name="column">0</property>
+                      <property name="ipadx">5</property>
+                      <property name="ipady">5</property>
+                      <property name="row">0</property>
+                      <property name="sticky">e</property>
+                    </layout>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
       </object>
@@ -481,6 +499,19 @@ Changed: mng, for_type</property>
                 </layout>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Label" id="lbl_change_err">
+            <property name="padx">10</property>
+            <property name="pady">10</property>
+            <property name="text" translatable="yes">No changes to preview yet</property>
+            <layout manager="grid">
+              <property name="column">0</property>
+              <property name="columnspan">3</property>
+              <property name="row">1</property>
+              <property name="sticky">nsew</property>
+            </layout>
           </object>
         </child>
       </object>
