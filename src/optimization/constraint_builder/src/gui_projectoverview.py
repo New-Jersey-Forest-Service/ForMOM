@@ -5,11 +5,13 @@ Constraint Builder Constraints Overview Screen
 import copy
 import csv
 import tkinter as tk
+from tkinter import ttk
 from typing import List
 
 import proc_constraints as proc
 import proc_render as render
 import gui_variablefiltering
+import gui_newcsv
 import models
 from gui_consts import *
 import devtesting
@@ -88,8 +90,6 @@ def updateExportCSV () -> None:
 
 
 
-
-
 #
 # Transition Calls
 #
@@ -105,6 +105,18 @@ def transitionToEditing (constrInd: int) -> None:
 
 	gui_variablefiltering.buildGUI_VariableFiltering(_passedRoot, _passedProjectState, constrInd)
 
+
+def transitionToObjReplace () -> None:
+	global _passedProjectState, _passedRoot
+	print(f"Going to objective file replacement screen")
+
+	_passedProjectState.setupList = _constrGroupList
+
+	for child in _passedRoot.winfo_children():
+		child.destroy()
+	
+	newGui = gui_newcsv.GUINewCSV(_passedRoot, _passedProjectState)
+	
 
 
 
@@ -222,13 +234,16 @@ def buildConstraintButtonFrame(root: tk.Tk) -> tk.Frame:
 
 def buildExportButtonsFrame(root: tk.Tk) -> tk.Frame:
 	frmExport = tk.Frame(root)
-	frmExport.columnconfigure(0, weight=1)
+	frmExport.columnconfigure([0, 1], weight=1)
+
+	btnChangeCsv = ttk.Button(frmExport, text="Change Objective .csv", command=transitionToObjReplace)
+	btnChangeCsv.grid(row=0, column=0, sticky="e")
 
 	btnSaveProj = tk.Button(frmExport, text="Save Project", command=updateSaveProject)
-	btnSaveProj.grid(row=0, column=0, sticky="e")
+	btnSaveProj.grid(row=0, column=1, sticky="e")
 
 	btnExportProj = tk.Button(frmExport, text="Export to .csv", command=updateExportCSV)
-	btnExportProj.grid(row=0, column=1, sticky="e", padx=10, pady=10)
+	btnExportProj.grid(row=0, column=2, sticky="e", padx=10, pady=10)
 
 	return frmExport
 

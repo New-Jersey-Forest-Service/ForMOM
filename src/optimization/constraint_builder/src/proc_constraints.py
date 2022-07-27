@@ -179,6 +179,64 @@ def buildConstraintGroup (groupSetup: models.SetupConstraintGroup, varData: mode
 
 
 
+def change_varsdata (newVarData: models.VarsData, projectstate: models.ProjectState) -> models.ProjectState:
+	oldVarData = projectstate.varData
+	newstate: models.ProjectState = models.ProjectState(
+		varData=newVarData,
+		setupList=[]
+	)
+
+	for const in projectstate.setupList:
+		newsplits = []
+		for x in const.splitBy:
+			if x in newVarData.tag_order:
+				newsplits.append(x)
+
+		# Transfer over the tags that stayed the same
+		newGroups = list(set(newVarData.tag_order) - set(oldVarData.tag_order))
+		sameGroups = list(set(newVarData.tag_order).intersection(set(oldVarData.tag_order)))
+		newLeftTags = {}
+		newRightTags = {}
+
+		for tagGroup in sameGroups:
+			removedTags = list(
+				set(oldVarData.tag_members[tagGroup]) - 
+				set(newVarData.tag_members[tagGroup])
+				)
+
+			transferedLeft = []
+			for x in const.selLeftTags[tagGroup]:
+				if not x in removedTags:
+					transferedLeft.append(x)
+			newLeftTags[tagGroup] = transferedLeft
+
+			transferRight = []
+			for x in const.selRightTags[tagGroup]:
+				if not x in removedTags:
+					transferRight.append(x)
+			newRightTags[tagGroup] = transferRight
+		
+		for tagGroup in newGroups:
+			newLeftTags[tagGroup] = []
+			newRightTags[tagGroup] = []
+
+		# Add to list
+		newconst = models.SetupConstraintGroup(
+			namePrefix=const.namePrefix,
+			splitBy=newsplits,
+			defComp=const.defComp,
+			defLeftCoef=const.defLeftCoef,
+			defRightCoef=const.defRightCoef,
+			defConstant=const.defConstant,
+			selLeftTags=newLeftTags,
+			selRightTags=newRightTags
+		)
+		newstate.setupList.append(newconst)
+
+	return newstate
+
+
+
 
 
 
@@ -189,7 +247,7 @@ def buildConstraintGroup (groupSetup: models.SetupConstraintGroup, varData: mode
 if __name__ == '__main__':
 
 	import devtesting
-	devtesting.dummyOldProjectState()
+	devtesting.dummyProjectState()
 
 
 	# Input
