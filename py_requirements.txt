@@ -1,4 +1,0 @@
-attrs==21.4.0
-pkg-resources==0.0.0
-ply==3.11
-Pyomo==6.4.0

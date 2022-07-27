@@ -1,5 +1,0 @@
-const_name,amnt_caramel,amnt_vanilla,amnt_chocolate,operator,rtSide
-storage,20,10,30,le,1000
-min_caramel,1,0,0,ge,8
-min_vanilla,0,1,0,ge,8
-min_chocolate,0,0,1,ge,8
