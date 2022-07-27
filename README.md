@@ -69,60 +69,11 @@ are aware this is an issue.
 
 # Runnable Software
 
+The ForMOM Project maintains three pieces of software
 
+ - [ForMOM DB Reformatter](https://github.com/New-Jersey-Forest-Service/ForMOM-DBReformatter) - for simplifying FIADB data
+ - [ForMOM Builder](https://github.com/New-Jersey-Forest-Service/ForMOM-Builder) - for building constraints and models
+ - [ForMOM Runner](https://github.com/New-Jersey-Forest-Service/ForMOM-Runner) - for running linear optimization models
 
-## DBRebuild
-Command Line Utility, Located on main in [src/fvs/input](https://github.com/New-Jersey-Forest-Service/ForMOM/tree/main/src/fvs/input).
-
-![20Week_DBRebuild](https://user-images.githubusercontent.com/49537988/178081051-e70ae0e2-faeb-45b7-9502-6a4190c1dbf1.png)
-
-This program takes a raw sqlite3 database from FIA Datamart and re-organizes it so that it can be run through FVS. 
-We have it setup for New Jersey, but it is configurable for other states - there are example configs for MD and WY.
-Check out the [wiki page](https://github.com/New-Jersey-Forest-Service/ForMOM/wiki/FVS#inputs) for more information on running it.
-
-**Credits**: The actual re-organization process was thought of and developed by Lauren and Courtney, it was only automated by Michael.
-
-
-
-## Constraint Builder
-GUI Application, Located on dev-optimization branch in [src/optimization/constraint_builder](https://github.com/New-Jersey-Forest-Service/ForMOM/tree/dev-optimization/src/optimization/constraint_builder). The file to run is src/launchgui.py.
-
-![19Week_TwosidedConstrs_Smol](https://user-images.githubusercontent.com/49537988/178080432-701964e5-15b7-4950-bfb8-081804732d44.png)
-
-This program is a generic tool to build constraints. As input you give it an [objective function](https://github.com/New-Jersey-Forest-Service/ForMOM/blob/dev-optimization/src/optimization/constraint_builder/sample_data/minimodel_obj.csv) 
-in csv format, and it scrapes the variable names. These variables names are expected to be structured with seperators, eg: '167N_2021_SBNP' has three
-tags, '167N', '2021', 'SBNP'. You could for example have a constriant with all variables involving '167N' because it processes with the tags.
-
-The program is under development so there is no usage guide yet. 
-**If you want a usage guide or demo**, please don't hesitate to reach out to me at 
-[michael.gorbunov@dep.nj.gov](mailto:michael.gorbunov@dep.nj.gov).
-You can try it yourself by running launchgui.py and using one of the files in the sample_data folder.
-
-**Credits**: All development by Michael Gorbunov, but a lot of good 
-feedback and ideas came from others on the team - specifically Bill, Bernie, and Courtney
-
-
-
-## CSV to Dat
-GUI Application, Located on dev-optimization branch in [src/optimization/convert_to_dat](https://github.com/New-Jersey-Forest-Service/ForMOM/tree/dev-optimization/src/optimization/convert_to_dat). The file to run is csv_to_datGUI.py
-
-![20Week_CSVToDat](https://user-images.githubusercontent.com/49537988/178082801-357ac544-3d1a-42dd-bb92-abad91ca7347.png)
-
-This program takes two csvs specifying constraints and the objective file, and produces a .dat file.
-
-If the constraint builder were fully fleshed out, this program would be unnecessary, so this will eventually be pruned from the project.
-
-**Credits**: The original csv format was made by Bill, and the converter was written by both Michael and Bill
-
-
-## Dependencies
-
-Python version must be >= 3.6.
-It was developed in 3.8.0, so if there are issues
-use that.
-
-Python dependencies can be found in py_requirements.txt.
-
-
-
+Each of them live in their own repo, which are linked in the above bullet points. Additionally, you find info on the Wiki.
 
