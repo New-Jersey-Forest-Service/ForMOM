@@ -1,0 +1,5 @@
+'/home/velcro/Documents/Professional/NJDEP/TechWork/ForMOM/src/optimization/convert_to_dat/sample_data/minimodel_obj.csv'
+_
+species
+year
+mng
