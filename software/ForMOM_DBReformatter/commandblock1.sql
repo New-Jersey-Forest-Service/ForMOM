@@ -1,0 +1,28 @@
+--
+-- Extract Tables with Inventory years from INVYEARS
+--
+
+-- STANDINIT
+CREATE TABLE FVS_STANDINIT_PLOT_INVYEARST AS 
+	SELECT * FROM FVS_STANDINIT_PLOT
+	-- The python script will replace $$INVENTORY_YEARS$$ with the actual years
+	-- If you wish to run this sql, replace it with the inventory years you need
+	WHERE INV_YEAR IN ($$INVENTORY_YEARS$$)
+;
+
+-- PLOTINIT
+CREATE TABLE FVS_PLOTINIT_PLOT_INVYEARST AS 
+	SELECT * FROM FVS_PLOTINIT_PLOT
+	WHERE INV_YEAR IN ($$INVENTORY_YEARS$$)
+;
+
+-- TREEINIT
+-- Treeinit doesn't have an INV_YEAR column so we cross reference with
+-- other tables and join with STAND_CN
+CREATE TABLE FVS_TREEINIT_PLOT_INVYEARST AS
+	SELECT FVS_TREEINIT_PLOT.*
+	FROM FVS_TREEINIT_PLOT, FVS_STANDINIT_PLOT_INVYEARST
+	WHERE FVS_TREEINIT_PLOT.STAND_CN = FVS_STANDINIT_PLOT_INVYEARST.STAND_CN
+;
+
+
