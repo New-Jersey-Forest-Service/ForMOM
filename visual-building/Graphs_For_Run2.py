@@ -32,7 +32,7 @@ np.random.seed(444)
 # eg: 'TotalAcerage    | 24324.0' => ['TotalAcerage', 24324.0]
 #
 
-raw_file = Path('C:/sfs/GitHub/ForMOM/MiniModelRunning/run2/rawPyoOut_MiniModel2_1Development.txt')
+raw_file = Path('C:/sfs/GitHub/ForMOM/minimodel-running/run2/rawPyoOut_MiniModel2_FirstRun.txt')
 
 # All 4 lists look like [['167N_2021_PLSQ', 221277.0], ... ]
 vars_list = []
@@ -164,15 +164,18 @@ plt.show()
 
 #create sunburst
 import plotly.express as px
-from plotly.offline import download_plotlyjs, init_notebook_mode,  plot
-from plotly.graph_objs import *
+
 #create lists from columns
 years = df_cmb['year'].tolist()
 for_type = df_cmb['for_type'].tolist()
 acres = df_cmb['acres'].tolist()
 mng = df_cmb['mng'].tolist()
 
-
+#create sunburst
+import plotly.express as px
+from plotly.offline import download_plotlyjs, init_notebook_mode,  plot
+from plotly.graph_objs import *
+init_notebook_mode()
 fig = px.sunburst(data_frame = df_cmb, path=['year', 'for_type','mng'],values='acres',hover_data=['acres'],maxdepth=-1,width=1000,height=800,color_discrete_sequence=px.colors.qualitative.Dark24)
 plot(fig)
 
