@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[364]:
-
-
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
@@ -13,8 +7,6 @@ import os
 from typing import List
 from pathlib import Path
 from plotnine import *
-
-#from plotnine.data import * use this for sample data with ggplot2
 
 
 # # Reading Pyo Output File
@@ -123,39 +115,43 @@ dfvars
 
 #create stacked bars grpahs
 #forest type over time
-dfvars['year'] = dfvars['year'].astype(str)
-dfvars.dtypes
-(ggplot(dfvars,aes('year', 'acres', fill = 'for_type'))
- + geom_col()
- + ggtitle("Forest Type Acres Over Time")
-)
-
-
-# mng over time
-(ggplot(dfvars,aes('year', 'acres', fill = 'mng'))
- + geom_col()
- +ggtitle("Management Acres Over Time")
-)
+# =============================================================================
+# dfvars['year'] = dfvars['year'].astype(str)
+# dfvars.dtypes
+# (ggplot(dfvars,aes('year', 'acres', fill = 'for_type'))
+#  + geom_col()
+#  + ggtitle("Forest Type Acres Over Time")
+# )
+# 
+# 
+# # mng over time
+# (ggplot(dfvars,aes('year', 'acres', fill = 'mng'))
+#  + geom_col()
+#  +ggtitle("Management Acres Over Time")
+# )
+# =============================================================================
 
 #%%
 # create unique dataframes for each year in model
 #change year to int64
-df_cmb.dtypes
-df_cmb['year'] = pd.to_numeric(df_cmb['year'])
-df_cmb.dtypes
-
-#create year specific dataframes
-df_cmb2021 = df_cmb.loc[df_cmb['year'] == 2021]
-df_cmb2025 = df_cmb.loc[df_cmb['year'] == 2025]
-df_cmb2030 = df_cmb.loc[df_cmb['year'] == 2030]
-df_cmb2050 = df_cmb.loc[df_cmb['year'] == 2050]
-
-#create lists from columns if lists are needed for visuals
-years = df_cmb['year'].tolist()
-for_type = df_cmb['for_type'].tolist()
-acres = df_cmb['acres'].tolist()
-mng = df_cmb['mng'].tolist()
-
+# =============================================================================
+# df_cmb.dtypes
+# df_cmb['year'] = pd.to_numeric(df_cmb['year'])
+# df_cmb.dtypes
+# 
+# #create year specific dataframes
+# df_cmb2021 = df_cmb.loc[df_cmb['year'] == 2021]
+# df_cmb2025 = df_cmb.loc[df_cmb['year'] == 2025]
+# df_cmb2030 = df_cmb.loc[df_cmb['year'] == 2030]
+# df_cmb2050 = df_cmb.loc[df_cmb['year'] == 2050]
+# 
+# #create lists from columns if lists are needed for visuals
+# years = df_cmb['year'].tolist()
+# for_type = df_cmb['for_type'].tolist()
+# acres = df_cmb['acres'].tolist()
+# mng = df_cmb['mng'].tolist()
+# 
+# =============================================================================
 #%%
 
 #create sunburst plot with plotly
@@ -173,92 +169,4 @@ figtm = px.treemap(df_cmb, path=['year', 'for_type','mng'], values='acres')
 figtm.update_traces(root_color='lightgrey')
 figtm.update_layout(margin = dict(t=50, l=25, r=25, b=25))
 plot(figtm)
-
-# In[334]:
-
-
-year_list = dfvars.index                     .droplevel(['mng', 'for_type'])                     .unique()                      .astype(int)                     .to_list()
-year_list.sort()
-year_list_str = [str(x) for x in year_list]
-year_list
-
-
-# In[367]:
-
-
-fortype_list = dfvars.index                     .droplevel(['mng', 'year'])                     .unique()                     .astype(str)                     .to_list()
-fortype_list.sort()
-fortype_list
-
-
-# In[399]:
-
-
-mng_list = dfvars.index                 .droplevel(['for_type', 'year'])                 .unique()                 .astype(str)                 .to_list()
-mng_list.sort()
-mng_list
-
-
-# ### Figure 1 - Management by Forest Type over Time
-
-# In[398]:
-
-
-WIDTH = 0.65
-fig, ax = plt.subplots(ncols=1, nrows=len(fortype_list), figsize=(8, 30))
-
-for ind, ft in enumerate(fortype_list):
-    df_ft = dfvars.loc[ft]
-    
-    #
-    # Step 1: Pull out data
-    
-    # I gave up trying to find a more pythonic / pandas friendly way to do
-    # all this. What I did here is definitely not ideal
-    loc_mnglist = df_ft.index.droplevel(['year']).unique().to_list()
-    list_dict  ={}
-    for mng in loc_mnglist:
-        list_dict[mng] = []
-    
-    for year in year_list:
-        dfyr = df_ft.loc[str(year)]
-        for mng in loc_mnglist:
-            list_dict[mng].append(float(dfyr.loc[mng]['acres']))
-    
-    #
-    # Step 2: Draw Graph
-    ft_ax = ax[ind]
-    
-    bottoms = [0] * len(list_dict[loc_mnglist[0]])
-    for mng in loc_mnglist:
-        series = list_dict[mng]
-        ft_ax.bar(year_list_str, series, WIDTH, label=mng, bottom=bottoms)
-        bottoms = [bottoms[i] + x for i, x in enumerate(series)]
-    
-    ft_ax.set_title(f'{ft} over time')
-    ft_ax.legend(bbox_to_anchor=(1, 0.5), loc='center left')
-    ft_ax.set_ylabel('Total Acres')
-    ft_ax.set_xlabel('Year')
-    
-    # This adds commas to big numbers, '10000' => '10,000'
-    # See: https://stackoverflow.com/questions/25973581/how-do-i-format-axis-number-format-to-thousands-with-a-comma-in-matplotlib
-    ft_ax.get_yaxis().set_major_formatter(
-        matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
-
-
-# ### Figure 2 - Acres of Forest Types Over Time
-
-# In[431]:
-
-
-fig, ax = plt.subplots()
-
-# Yea... I give up trying to use Pandas for now
-varsdict = dfvars.to_dict()
-
-
-# In[ ]:
-
-
-
 
