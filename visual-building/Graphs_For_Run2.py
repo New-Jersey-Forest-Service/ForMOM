@@ -13,10 +13,8 @@ import os
 from typing import List
 from pathlib import Path
 from plotnine import *
-import squarify
-#from plotnine.data import * use this for sample data with ggplot2
 
-np.random.seed(444)
+#from plotnine.data import * use this for sample data with ggplot2
 
 
 # # Reading Pyo Output File
@@ -105,6 +103,8 @@ dfvars_index = dfvars.set_index(['for_type', 'year', 'mng'])
 # create a dataframe with forest type and mng together in a column
 df_cmb = dfvars
 df_cmb["fortype_mng"] = df_cmb['for_type'].astype(str) + "_" + df_cmb['mng']
+#remove rows with 0 in acres
+df_cmb = df_cmb.loc[df_cmb['acres'] != 0]
 
 # TODO: Convert other lists into dataframes
 dfshadowprice = None
@@ -121,7 +121,7 @@ dfvars
 # # Making Visuals
 # Now with a dataframe, lets make some visuals
 
-# stacked bars
+#create stacked bars grpahs
 #forest type over time
 dfvars['year'] = dfvars['year'].astype(str)
 dfvars.dtypes
@@ -131,7 +131,6 @@ dfvars.dtypes
 )
 
 
-
 # mng over time
 (ggplot(dfvars,aes('year', 'acres', fill = 'mng'))
  + geom_col()
@@ -139,45 +138,41 @@ dfvars.dtypes
 )
 
 #%%
-# pull out year df's from df_cmb to create tree maps for each year
+# create unique dataframes for each year in model
 #change year to int64
 df_cmb.dtypes
 df_cmb['year'] = pd.to_numeric(df_cmb['year'])
 df_cmb.dtypes
-#remove rows with 0 in acres
-df_cmb = df_cmb.loc[df_cmb['acres'] != 0]
+
 #create year specific dataframes
 df_cmb2021 = df_cmb.loc[df_cmb['year'] == 2021]
 df_cmb2025 = df_cmb.loc[df_cmb['year'] == 2025]
 df_cmb2030 = df_cmb.loc[df_cmb['year'] == 2030]
 df_cmb2050 = df_cmb.loc[df_cmb['year'] == 2050]
 
-
-
-
-
-# create tree maps
-#2021
-squarify.plot(sizes=df_cmb2021['acres'], label=df_cmb2021['fortype_mng'], alpha=.8)
-plt.axis('off')
-plt.show()
-
-#create sunburst
-import plotly.express as px
-
-#create lists from columns
+#create lists from columns if lists are needed for visuals
 years = df_cmb['year'].tolist()
 for_type = df_cmb['for_type'].tolist()
 acres = df_cmb['acres'].tolist()
 mng = df_cmb['mng'].tolist()
 
-#create sunburst
+#%%
+
+#create sunburst plot with plotly
+# sunburst hierarchy: year>forest type>management>acres as value
 import plotly.express as px
 from plotly.offline import download_plotlyjs, init_notebook_mode,  plot
 from plotly.graph_objs import *
 init_notebook_mode()
 fig = px.sunburst(data_frame = df_cmb, path=['year', 'for_type','mng'],values='acres',hover_data=['acres'],maxdepth=-1,width=1000,height=800,color_discrete_sequence=px.colors.qualitative.Dark24)
 plot(fig)
+
+#%% create tree diagrams
+
+figtm = px.treemap(df_cmb, path=['year', 'for_type','mng'], values='acres')
+figtm.update_traces(root_color='lightgrey')
+figtm.update_layout(margin = dict(t=50, l=25, r=25, b=25))
+plot(figtm)
 
 # In[334]:
 
