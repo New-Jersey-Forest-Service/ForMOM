@@ -98,12 +98,21 @@ df_cmb["fortype_mng"] = df_cmb['for_type'].astype(str) + "_" + df_cmb['mng']
 #remove rows with 0 in acres
 df_cmb = df_cmb.loc[df_cmb['acres'] != 0]
 
-# TODO: Convert other lists into dataframes
-dfshadowprice = None
 
-dfslackge = None
 
-dfslackle = None
+# Other lists
+
+# Build the dataframe for shadow prices
+dfshadowprice = pd.DataFrame(shadowprice_list)
+dfshadowprice.columns = ['constraint', 'shadow_price']
+
+# Build the dataframe for slacks of GE constraints
+dfslackge = pd.DataFrame(slackge_list)
+dfslackge.columns = ['constraint', 'slack']
+
+# Build the dataframe for slacks of LE constraints
+dfslackle = pd.DataFrame(slackle_list)
+dfslackle.columns = ['constriant', 'slack']
 
 
 
