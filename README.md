@@ -1,4 +1,4 @@
-# ForMOM
+<h1 align="center"> ForMOM </h1>
 Forest Management Optimization Model
 
 A set of tools to optimize forest management for carbon, presently 
