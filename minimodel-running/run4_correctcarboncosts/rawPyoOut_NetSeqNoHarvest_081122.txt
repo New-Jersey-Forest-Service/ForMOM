@@ -1,0 +1,146 @@
+Solve attempted
+Status: ok
+Termination Condition: optimal
+
+
+
+
+
+
+
+ == Variables
+167N_2021_PLSQ       | 0.0
+167N_2021_THNB       | 221277.0
+167N_2025_PLSQ       | 0.0
+167N_2025_THNB       | 221277.0
+167N_2030_PLSQ       | 0.0
+167N_2030_THNB       | 221277.0
+167N_2050_PLSQ       | 0.0
+167N_2050_THNB       | 221277.0
+167S_2021_PLSQ       | 197602.0
+167S_2021_THNB       | 0.0
+167S_2025_PLSQ       | 197602.0
+167S_2025_THNB       | 0.0
+167S_2030_PLSQ       | 197602.0
+167S_2030_THNB       | 0.0
+167S_2050_PLSQ       | 197602.0
+167S_2050_THNB       | 0.0
+505_2021_ASV         | 54907.0
+505_2021_IFM         | 0.0
+505_2021_PLSQ        | 0.0
+505_2021_THNB        | 0.0
+505_2025_ASV         | 0.0
+505_2025_IFM         | 0.0
+505_2025_PLSQ        | 54907.0
+505_2025_THNB        | 0.0
+505_2030_ASV         | 0.0
+505_2030_IFM         | 0.0
+505_2030_PLSQ        | 54907.0
+505_2030_THNB        | 0.0
+505_2050_ASV         | 54907.0
+505_2050_IFM         | 0.0
+505_2050_PLSQ        | 0.0
+505_2050_THNB        | 0.0
+608_2021_AWR         | 0.0
+608_2021_PLSQ        | 118164.0
+608_2025_AWR         | 0.0
+608_2025_PLSQ        | 118164.0
+608_2030_AWR         | 0.0
+608_2030_PLSQ        | 118164.0
+608_2050_AWR         | 20000.0
+608_2050_PLSQ        | 98164.0
+999_2021_AWR         | 0.0
+999_2021_CAR         | 0.0
+999_2021_NAR         | 0.0
+999_2021_PLSQ        | 0.0
+999_2021_SAR         | 24845.0
+999_2025_AWR         | 0.0
+999_2025_CAR         | 0.0
+999_2025_NAR         | 0.0
+999_2025_PLSQ        | 0.0
+999_2025_SAR         | 24845.0
+999_2030_AWR         | 0.0
+999_2030_CAR         | 0.0
+999_2030_NAR         | 0.0
+999_2030_PLSQ        | 0.0
+999_2030_SAR         | 24845.0
+999_2050_AWR         | 0.0
+999_2050_CAR         | 0.0
+999_2050_NAR         | 0.0
+999_2050_PLSQ        | 0.0
+999_2050_SAR         | 24845.0
+
+ == Shadow Prices
+ARstart_2021                             | 3.63178825378413
+AWRConvert2021Ac                         | 0.0
+AWRConvert2025Ac                         | 0.0
+AWRConvert2030Ac                         | 0.0
+AWRConvert2050Ac                         | 10.3369197845459
+AWRTotalAc_2021                          | 0.0
+AWRTotalAc_2025                          | 0.0
+AWRTotalAc_2030                          | 0.0
+AWRTotalAc_2050                          | 0.0
+ThinSetup                                | 0.0
+TotalAcreage                             | 0.0
+YearlyAcreage_2021                       | 0.0
+YearlyAcreage_2025                       | 0.0
+YearlyAcreage_2030                       | 0.0
+YearlyAcreage_2050                       | 0.0
+167NAcreage_2021                         | 0.0
+167NAcreage_2025                         | 16.1749801635743
+167NAcreage_2030                         | -0.386123657226598
+167NAcreage_2050                         | 6.9491920471191
+167SAcreage_2021                         | 0.0
+167SAcreage_2025                         | 5.6978988647461
+167SAcreage_2030                         | 6.0457038879394
+167SAcreage_2050                         | 14.331241607666
+505Acreage_2021                          | 0.122047424316399
+505Acreage_2025                          | 4.3222618103027
+505Acreage_2030                          | 5.055492401123
+505Acreage_2050                          | 31.0356254577637
+608Acreage_2021                          | 0.0
+608Acreage_2025                          | 3.2434158325195
+608Acreage_2030                          | 3.1871528625489
+608Acreage_2050                          | 15.234691619873
+999Acreage_2021                          | 0.0
+999Acreage_2025                          | -0.10102605819702
+999Acreage_2030                          | 2.23123264312744
+999Acreage_2050                          | 13.2245960235595
+ARCont2025_CAR                           | 0.60586738586426
+ARCont2025_NAR                           | 0.79984855651856
+ARCont2025_SAR                           | 0.53437232971191
+ARcont2030_CAR                           | 1.40834760665893
+ARcont2030_NAR                           | 2.04646396636963
+ARcont2030_SAR                           | 1.11899137496948
+ARcont2050_CAR                           | -5.45060443878173
+ARcont2050_NAR                           | -2.22257518768313
+ARcont2050_SAR                           | -7.49145412445063
+ThinCont2025_167N                        | 15.1300048828125
+ThinCont2025_167S                        | 5.0010833740234
+ThinCont2025_505                         | 2.908935546875
+ThinCont2030_167N                        | -1.4760131835937
+ThinCont2030_167S                        | 4.9009742736816
+ThinCont2030_505                         | 2.15177536010729
+ThinCont2050_167N                        | -14.2382774353028
+ThinCont2050_167S                        | -9.87394714355469
+ThinCont2050_505                         | 3.3148765563966
+
+ == Slacks for GE
+
+
+ == Slacks for LE
+TotalAcreage                             | inf
+YearlyAcreage_2021                       | inf
+YearlyAcreage_2025                       | inf
+YearlyAcreage_2030                       | inf
+YearlyAcreage_2050                       | inf
+AWRTotalAc_2021                          | inf
+AWRTotalAc_2025                          | inf
+AWRTotalAc_2030                          | inf
+AWRTotalAc_2050                          | inf
+AWRConvert2021Ac                         | inf
+AWRConvert2025Ac                         | inf
+AWRConvert2030Ac                         | inf
+AWRConvert2050Ac                         | inf
+ThinSetup                                | inf
+ARstart_2021                             | inf
