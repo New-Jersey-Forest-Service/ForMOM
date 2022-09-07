@@ -17,9 +17,9 @@ of visuals was primarily completed by Bernie Isaacson and Ben Pisano. The
 development of the database automation process, the constraint builder, and 
 the .csv to .dat converter were completed by Michael Gorbunov.
 
-This repository is maintained mostly by Michael Gorbunov. If you have 
+If you have 
 questions specifically about the software
-here, please reach out at [michael.gorbunov@nj.dep.gov](michael.gorbunov@nj.dep.gov).
+here, please reach out at [William.Zipse@dep.nj.gov](William.Zipse@dep.nj.gov).
 
 
 
