@@ -1,0 +1,16 @@
+constraint,slack_le
+TotalAcreage,4.0
+YearlyAcreage_2021,0.0
+YearlyAcreage_2025,0.0
+YearlyAcreage_2030,0.0
+YearlyAcreage_2050,0.0
+AWRTotalAc_2021,142009.0
+AWRTotalAc_2025,139009.0
+AWRTotalAc_2030,138009.0
+AWRTotalAc_2050,123009.0
+AWRConvert2021Ac,0.0
+AWRConvert2025Ac,0.0
+AWRConvert2030Ac,0.0
+AWRConvert2050Ac,0.0
+ThinSetup,418879.0
+ARstart_2021,24845.0
