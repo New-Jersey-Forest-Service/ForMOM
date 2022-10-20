@@ -1,0 +1,15 @@
+name,comparison,value,lower_bound,upper_bound,binding,shadow_price,lower_slack,upper_slack
+AFRE,le,0,-inf,2440.0,False,0,inf,2440.0
+ASV,le,5197.0,-inf,5197.0,True,14.06283569,inf,0
+NoMgmt,le,252529.0,-inf,289226.0,False,0,inf,36697.0
+THNB,le,1500.0,-inf,246251.0,False,0,inf,244751.0
+167NAcreage,eq,127759.0,127759.0,127759.0,True,50.44137192,0,0
+167SAcreage,eq,113295.0,113295.0,113295.0,True,56.7223053,0,0
+505Acreage,eq,5197.0,5197.0,5197.0,True,73.61157227,0,0
+608Acreage,eq,40535.0,40535.0,40535.0,True,68.23196411,0,0
+999Acreage,eq,2440.0,2440.0,2440.0,True,53.85225295,0,0
+THN22,eq,1000.0,1000.0,1000.0,True,2.07998657,0,0
+THN30,eq,500.0,500.0,500.0,True,-4.84025955,0,0
+TotalAcreage,eq,289226.0,289226.0,289226.0,True,0,0,0
+TotalCedar_AW30,eq,15000.0,15000.0,15000.0,True,-34.29963302,0,0
+TotalCedar_AWR,eq,15000.0,15000.0,15000.0,True,-21.50358581,0,0

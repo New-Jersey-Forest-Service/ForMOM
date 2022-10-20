@@ -1,0 +1,8 @@
+name,comparison,value,lower_bound,upper_bound,binding,shadow_price,lower_slack,upper_slack
+608_x4,eq,163144.0,163144.0,163144.0,True,68.23196411,0,0
+999_x4,eq,12276.0,12276.0,12276.0,True,30.15151024,0,0
+AcreageByYear_2021,eq,43855.0,43855.0,43855.0,True,-22.30419922,0,0
+AcreageByYear_2025,eq,43855.0,43855.0,43855.0,True,-19.12900925,0,0
+AcreageByYear_2030,eq,43855.0,43855.0,43855.0,True,-15.84556961,0,0
+AcreageByYear_2050,eq,43855.0,43855.0,43855.0,True,0,0,0
+TotalAcreage,eq,175420.0,175420.0,175420.0,True,0,0,0
