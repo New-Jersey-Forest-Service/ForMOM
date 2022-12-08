@@ -1,6 +1,0 @@
-name,comparison,value,lower_bound,upper_bound,binding,shadow_price,lower_slack,upper_slack
-NoMgmt,le,12975.0,-inf,42975.0,False,0,inf,30000.0
-608Acreage,eq,40535.0,40535.0,40535.0,True,68.23196411,0,0
-999Acreage,eq,2440.0,2440.0,2440.0,True,51.65509605,0,0
-TotalAcreage,eq,42975.0,42975.0,42975.0,True,0,0,0
-TotalCedar,eq,30000.0,30000.0,30000.0,True,-21.50358581,0,0
