@@ -10,10 +10,31 @@ NJDEP
 04/2022
 '''
 
-# TODO:
-# [~] Handle Malformed DB
-#  - [x] Check that all tables needed are found
-#  - [ ] Never index into elements without checking their length
+
+
+
+#
+# Instructions:
+#
+# To RUN the reformatter, place the database in the same directory as this and the other
+# files. Then, run this file (DBRebuild_Main.py).
+#
+# To CONFIGURE settings, make changes in DBRebuild_Config.py
+#
+# All settings in this file are set by the developer and do not need to be changed.
+#
+
+
+
+
+
+
+
+
+
+
+
+
 
 import sqlite3
 import re
