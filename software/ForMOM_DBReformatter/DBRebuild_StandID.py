@@ -13,7 +13,7 @@ Michael Gorbunov
 
 import sqlite3
 import sys
-from typing import List, Dict, Union
+from typing import List, Dict, Tuple
 
 # TODO: Less magic numbers
 #   - [ ] Somehow explain or derive the 7
@@ -26,6 +26,11 @@ COUNTY_KEY = 'county'
 YEAR_KEY = 'year'
 
 def parse_as_int_if_valid(float_str: str) -> int:
+	'''
+	Returns the value casted to int if the value is an int or float.
+
+	Otherwise -1
+	'''
 	try:
 		float(float_str)
 		return int(float(float_str))
@@ -33,9 +38,16 @@ def parse_as_int_if_valid(float_str: str) -> int:
 		return -1
 
 
-def create_dict_fortype_of_standcn(cur: sqlite3.Cursor, tables: List[str], county_split_dict: Dict[str, Dict[str, List[int]]]):
-	# creates a map from for_type (str) -> list of STAND_CN (List[int])
-	stand_fortype_map = {}
+def create_dict_fortype_of_standcn(
+		cur: sqlite3.Cursor, 
+		tables: List[str], 
+		county_split_dict: Dict[str, Dict[str, List[int]]]) -> Tuple[Dict[str, List[int]], dict]:
+	'''
+	Creates a map of for_type (str) -> list of STAND_CN (List[int])
+
+	Returns stand_fortype_map, errdict
+	'''
+	stand_fortype_map: Dict[str, List[int]] = {}
 
 	errdict = {}
 	fortypes_to_split = list(county_split_dict.keys())
@@ -65,7 +77,9 @@ def create_dict_fortype_of_standcn(cur: sqlite3.Cursor, tables: List[str], count
 	return stand_fortype_map, errdict
 
 
-def create_dict_fortype_of_standcn_by_county(cur: sqlite3.Cursor, tables: List[str], county_split_dict: Dict[str, Dict[str, List[int]]]) -> Union[dict, dict]:
+def create_dict_fortype_of_standcn_by_county(cur: sqlite3.Cursor, 
+											tables: List[str], 
+											county_split_dict: Dict[str, Dict[str, List[int]]]) -> Tuple[Dict[str, Dict[int, List[int]]], dict]:
 	'''
 	Generates a map associating forest types with counties with stand_cn
 	{	
@@ -113,7 +127,16 @@ def create_dict_fortype_of_standcn_by_county(cur: sqlite3.Cursor, tables: List[s
 	return stand_fortype_by_county, split_errdict
 
 
-def county_split_id (for_type: str, county: int, str_groups: List[str], stand_cn: str, county_split_dict: dict, err_dict: Dict[str, Dict[str, list]]) -> Union[str, dict]:
+def county_split_id (for_type: str, 
+					county: int, 
+					str_groups: List[str], 
+					stand_cn: str, 
+					county_split_dict: dict, 
+					err_dict: Dict[str, Dict[str, list]]) -> Tuple[str, Dict[str, Dict[str, list]]]:
+	'''
+	Looks into the county_split_dict and returns what the forest type of the
+	split should be + the error dictionary.
+	'''
 	for new_fortype in county_split_dict[for_type].keys():
 		if county in county_split_dict[for_type][new_fortype]:
 			return new_fortype, err_dict
@@ -125,12 +148,12 @@ def county_split_id (for_type: str, county: int, str_groups: List[str], stand_cn
 		if type(x) == str and x[:len(YEAR_PREFIX)] == YEAR_PREFIX:
 			year = x[len(YEAR_PREFIX):]
 			break
-
+	
 	if year == None:
 		print(" > [[ Warning ]]")
 		print(f" > \tFound entry for {for_type} outside of specified counties but without year info")
 		print(f" > Expected to find {YEAR_PREFIX} in {str_groups}, but did not")
-		
+	
 	if for_type not in err_dict.keys():
 		err_dict[for_type] = {COUNTY_KEY: set(), YEAR_KEY: set()}
 	err_dict[for_type][COUNTY_KEY].add(county)
@@ -141,7 +164,18 @@ def county_split_id (for_type: str, county: int, str_groups: List[str], stand_cn
 
 
 def replace_ids_in_table(cur: sqlite3.Cursor, table_name:str, cn_to_fortype_dict: Dict[str, List[int]]) -> None:
-	for ind, key in enumerate(list(cn_to_fortype_dict.keys())):
+	'''
+	Goes through table table_name, and replaces STAND_ID with the forest type it belongs to.
+
+	Example input:
+	cn_to_fortype_dict = {	
+		'167N': [4324543, 54234, 243243, ...],
+		'167S': [ ... ],
+	}
+
+	No return
+	'''
+	for key in cn_to_fortype_dict.keys():
 		for_type = key
 		stand_cn_list = [str(x) for x in cn_to_fortype_dict[key]]
 
@@ -196,7 +230,13 @@ def get_num_fortypes_by_county(cur: sqlite3.Cursor, table: str, county_split_dic
 	return county_size_dict
 
 
-def do_id_replace(cur: sqlite3.Cursor, county_split_dict: dict) -> None:
+def do_id_replace(cur: sqlite3.Cursor, county_split_dict: Dict[str, Dict[str, List[int]]]) -> None:
+	'''
+	This is the main function to call. It will build the dictionary to do replacements with, 
+	and then replace the ids of entries in the important tables.
+
+	county_split_dict is the one specified by the user in config.
+	'''
 	# Actual processing
 	fortype_dict, err_dict = create_dict_fortype_of_standcn(
 		cur, 
@@ -236,14 +276,16 @@ def do_id_replace(cur: sqlite3.Cursor, county_split_dict: dict) -> None:
 	print(" > Finished ID Replace")
 
 
+
+
+
+
 if __name__ == '__main__':
 	DB_PATH = "./FIADB_NJ.db"
 	db_connection = sqlite3.connect(DB_PATH)
 	cur = db_connection.cursor()
 
 	print("WARNING: This file only runs the ID replacement steps.")
-	print("\tIt is automatically run from the main file, so you")
-	print("\tdo not need to run this seperately.")
 	print("\tIt is meant to be run by developers for TESTING PURPOSES.")
 	print()
 

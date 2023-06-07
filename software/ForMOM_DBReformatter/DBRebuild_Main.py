@@ -14,36 +14,13 @@ NJDEP
 # [~] Handle Malformed DB
 #  - [x] Check that all tables needed are found
 #  - [ ] Never index into elements without checking their length
-# [ ] Cleaner SQL
-#  - Run everything through an auto-formatter
-# [x] Better Feedback
-#  - [x] Debug progress of queries to console
-#  - [x] Condense feedback for table deletion
-#  - [ ] Add those cool progress bars that pip install uses
-# [x] Actually get county counts
-#  - This would be helpful on a national scale but 
-#    I think it's a little too much effort right now
-# [~] Ask about creating a new DB at the beginning
-#  - [x] At least inform the user it's going to override the file before startign
-# [x] Lint the passed split dict
 
 import sqlite3
 import re
 import sys
-from typing import Union
+from typing import Optional
 import DBRebuild_StandID as dbStandID
-
-
-# State Specific Configuration
-DB_FILEPATH = './FIADB_NJ.db'
-DB_NAME = 'FIADB_NJ.db'
-INV_YEARS = [2015, 2016, 2017, 2018, 2019, 2020]
-COUNTY_SPLIT_DICT = {
-	'167': {
-		'167N': [23, 25, 29, 1, 19],
-		'167S': [5, 7, 15, 11, 9]
-	}
-}
+from DBRebuild_Config import *
 
 
 
@@ -75,13 +52,18 @@ def main():
 	global DB_FILEPATH
 
 	print()
-	err_with_config = lint_config() # Everything is lives in the globals
+
+	print("Warning: Running this script will PERMANENTLY CHANGE the file")
+	print(f"\t{DB_FILEPATH}\n")
+	print("Create a backup of it before continuing.\n")
+
+	# All config parameters live in the globals
+	err_with_config = lint_config() 
 	if err_with_config:
 		err_and_exit(err_with_config)
+	print()
 
-	print("Warning: Running this script will overwrite (permanently change) the file")
-	print(f"\t{DB_FILEPATH}\n")
-	usr_input = str(input("Do you wish to continue? (y/n)"))
+	usr_input = str(input("Do you wish to continue? (y/n) "))
 	if (usr_input.strip().lower() != 'y'):
 		print("Ok, exiting")
 		sys.exit(0)
@@ -114,6 +96,10 @@ def main():
 	)
 
 	print()
+	print("Making FVS_STANDINIT_PLOT.STAND_ID non-unique")
+	run_script(cur, './nonunique_standid.sql')
+
+	print()
 	print("Doing ID Replace")
 	dbStandID.do_id_replace(cur, COUNTY_SPLIT_DICT)
 
@@ -144,8 +130,7 @@ def run_script(cur: sqlite3.Cursor, path: str) -> None:
 # Linting the config
 #
 
-# TODO: Warn for missing consecutive years
-def lint_config() -> str:
+def lint_config() -> Optional[str]:
 	'''
 		Returns an error message if there is an error, otherwise None.
 
@@ -236,8 +221,9 @@ def delete_extra_tables_and_check_for_all_expected_ones(cur: sqlite3.Cursor) -> 
 	print(f" > Removed {num_removed} tables and kept {num_kept} tables")
 	
 	if len(tables_not_found) > 0:
+		sepStr = '\n > \t * '
 		print(f" > [[ WARNING ]]")
-		print(f" > \tDid not find expected tables {','.join(tables_not_found)}")
+		print(f" > \tDid not find expected tables {sepStr.join([''] + tables_not_found)}")
 	else:
 		print(f" > Found all expected tables and removed unnecessary ones")
 
@@ -245,6 +231,10 @@ def delete_extra_tables_and_check_for_all_expected_ones(cur: sqlite3.Cursor) -> 
 
 
 def create_inventory_year_tables(cur: sqlite3.Cursor) -> None:
+	'''
+		Creates tables with entries only from the config-specified
+		inventory years.
+	'''
 	got_to_end = False
 
 	with open('./commandblock1.sql', 'r') as f:
@@ -264,6 +254,9 @@ def create_inventory_year_tables(cur: sqlite3.Cursor) -> None:
 
 
 def update_groupaddfilesandkeywords(cur: sqlite3.Cursor) -> None:
+	'''
+	Updates the groupaddfilesandkeywords table
+	'''
 	TABLE_NAME = 'FVS_GROUPADDFILESANDKEYWORDS'
 
 	# Rename All_FIA_Plots to All_FIA_ForestTypes
@@ -295,10 +288,15 @@ def update_groupaddfilesandkeywords(cur: sqlite3.Cursor) -> None:
 #
 # Step 6
 #
-# Checking for particularly large stands (> 3000)
+# Very large stands break FVS, so this checks for them
 #
 
 def check_for_large_stands(cur: sqlite3.Cursor, county_count_dict: dict) -> None:
+	'''
+	Looks for stands with > 3000 entries.
+
+	For large stands, county_count_dict is used to print a warning message.
+	'''
 	trees_in_stand = '''
 		SELECT STAND_ID, COUNT(*) AS AMNT 
 		FROM FVS_TREEINIT_PLOT 
@@ -335,7 +333,11 @@ def check_for_large_stands(cur: sqlite3.Cursor, county_count_dict: dict) -> None
 
 
 
+
 def err_and_exit(err: str) -> None:
+	'''
+	Prints err and exits the program
+	'''
 	print(f'\n\t[[ Error ]]\n{err}')
 	print(f'\nNow aborting')
 	sys.exit(1)
