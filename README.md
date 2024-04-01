@@ -1,3 +1,7 @@
+<div align="center"> 
+  <img src= "https://github.com/New-Jersey-Forest-Service/ForMOM/assets/101826099/8dde7d22-1bbb-470e-a368-b3bde741ccaa" />
+</div>
+
 <h1 align="center"> ForMOM </h1>
 Forest Management Optimization Model
 
